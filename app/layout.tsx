@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 import Navigation from '@/components/Navigation'
-import CustomCursor from '@/components/CustomCursor'
+// import CustomCursor from '@/components/CustomCursor' // Disabled for performance
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
@@ -28,7 +28,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className="grain-overlay">
-          <CustomCursor />
+          {/* <CustomCursor /> */}
           <Navigation />
           <main className="min-h-screen">
             {children}

@@ -9,16 +9,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Warm San Diego palette
-        sand: '#F5F0E8',
-        midnight: '#1A1A2E',
-        terracotta: '#C4785A',
-        ocean: '#2D5A7B',
-        sunset: '#E8A87C',
-        cream: '#FAF7F2',
+        // Refined palette - warm ambers + cool blues
+        ink: '#0a0a0a',
+        paper: '#f8f7f4',
+        amber: '#FFBA00',
+        peach: '#FFB366',
+        cyan: '#22E8E8',
+        sky: '#5CB8E8',
+        royal: '#0066FF',
+        steel: '#7A8F9E',
+        muted: '#7A8F9E',
+        // Legacy colors mapped to new palette
+        sand: '#f8f7f4',
+        midnight: '#0a0a0a',
+        terracotta: '#FFB366',
+        ocean: '#0066FF',
+        sunset: '#FFBA00',
+        cream: '#f8f7f4',
       },
       fontFamily: {
-        display: ['var(--font-display)', 'serif'],
+        display: ['var(--font-display)', 'sans-serif'],
         body: ['var(--font-body)', 'sans-serif'],
       },
       animation: {
