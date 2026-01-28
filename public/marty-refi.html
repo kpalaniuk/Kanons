@@ -150,9 +150,9 @@
   </header>
 
   <div class="savings-box">
-    <div class="savings-amount">$1,410/mo</div>
+    <div class="savings-amount" id="savingsAmount">$1,410/mo</div>
     <div class="savings-label">Estimated Monthly Savings</div>
-    <div class="savings-annual">$16,920 per year</div>
+    <div class="savings-annual" id="savingsAnnual">$16,920 per year</div>
   </div>
 
   <div class="structure">
@@ -302,7 +302,9 @@
       prepaids: 5763,
       ccBalance: 45000,
       ccMonthlyPayment: 1075,
-      ccRate: 18
+      ccRate: 18,
+      currentTotalMonthly: 9875,
+      newPITI: 5330 + 1409 + 1726
     };
     
     function formatCurrency(n) {
@@ -320,10 +322,18 @@
       const skippedAmount = skippedPayments * CONFIG.skippedPaymentAmount;
       document.getElementById('skippedPaymentAmt').textContent = '$' + formatCurrency(skippedAmount) + ' (' + skippedPayments + ')';
       
-      // Calculate remaining CC payment (rough estimate)
+      // Calculate remaining CC payment (rough estimate based on 36mo payoff)
       const remainingBalance = CONFIG.ccBalance - ccPayoff;
       const remainingPayment = remainingBalance > 0 ? Math.round((remainingBalance * (CONFIG.ccRate/100/12)) / (1 - Math.pow(1 + CONFIG.ccRate/100/12, -36))) : 0;
       document.getElementById('remainingCCPayment').textContent = formatCurrency(remainingPayment);
+      
+      // Update monthly savings based on CC payoff
+      const newTotalMonthly = CONFIG.newPITI + remainingPayment;
+      const monthlySavings = CONFIG.currentTotalMonthly - newTotalMonthly;
+      const annualSavings = monthlySavings * 12;
+      
+      document.getElementById('savingsAmount').textContent = '$' + formatCurrency(Math.round(monthlySavings)) + '/mo';
+      document.getElementById('savingsAnnual').textContent = '$' + formatCurrency(Math.round(annualSavings)) + ' per year';
       
       // Total sources = loans + escrow refund + skipped payments
       const totalSources = CONFIG.baseSources + CONFIG.escrowRefund + skippedAmount;
