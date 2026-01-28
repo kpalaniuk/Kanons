@@ -150,9 +150,9 @@
   </header>
 
   <div class="savings-box">
-    <div class="savings-amount" id="savingsAmount">$1,410/mo</div>
+    <div class="savings-amount" id="savingsAmount">$2,926/mo</div>
     <div class="savings-label">Estimated Monthly Savings</div>
-    <div class="savings-annual" id="savingsAnnual">$16,920 per year</div>
+    <div class="savings-annual" id="savingsAnnual">$35,112 per year</div>
   </div>
 
   <div class="structure">
@@ -185,25 +185,27 @@
       <table>
         <tr><td>Loan Balance</td><td>$996,511</td></tr>
         <tr><td>Interest Rate</td><td>7.25%</td></tr>
-        <tr><td>Principal & Interest</td><td>$6,864</td></tr>
+        <tr><td>Principal & Interest</td><td>$8,380</td></tr>
+        <tr><td>Taxes</td><td>$1,188</td></tr>
+        <tr><td>Insurance</td><td>$333</td></tr>
         <tr><td>Mortgage Insurance</td><td>$210</td></tr>
-        <tr><td>Taxes & Insurance</td><td>$1,726</td></tr>
-        <tr><td><strong>Total PITI</strong></td><td><strong>$8,800</strong></td></tr>
+        <tr><td><strong>Total PITI</strong></td><td><strong>$10,111</strong></td></tr>
         <tr><td>Credit Card Payments</td><td style="color: var(--red);">$1,075</td></tr>
-        <tr class="highlight"><td><strong>Total Monthly</strong></td><td><strong>$9,875</strong></td></tr>
+        <tr class="highlight"><td><strong>Total Monthly</strong></td><td><strong>$11,186</strong></td></tr>
       </table>
     </div>
 
     <div class="card new">
       <h2>New Scenario</h2>
       <table>
-        <tr><td>1st Lien P&I</td><td>$5,330</td></tr>
-        <tr><td>2nd HELOC (IO)</td><td>$1,409</td></tr>
+        <tr><td>1st Lien @ 6.625%</td><td>$5,330</td></tr>
+        <tr><td>2nd HELOC @ 8.75% (IO)</td><td>$1,409</td></tr>
+        <tr><td>Taxes</td><td>$1,188</td></tr>
+        <tr><td>Insurance</td><td>$333</td></tr>
         <tr><td>Mortgage Insurance</td><td style="color: var(--green);">$0</td></tr>
-        <tr><td>Taxes & Insurance</td><td>$1,726</td></tr>
-        <tr><td><strong>Total PITI</strong></td><td><strong>$8,465</strong></td></tr>
-        <tr><td>Credit Card Payments</td><td style="color: var(--green);">$0 (paid off)</td></tr>
-        <tr class="highlight"><td><strong>Total Monthly</strong></td><td><strong>$8,465</strong></td></tr>
+        <tr><td><strong>Total PITI</strong></td><td><strong>$8,260</strong></td></tr>
+        <tr><td>Credit Card Payments</td><td id="newCCPayment" style="color: var(--green);">$0 (paid off)</td></tr>
+        <tr class="highlight"><td><strong>Total Monthly</strong></td><td id="newTotalMonthly"><strong>$8,260</strong></td></tr>
       </table>
     </div>
   </div>
@@ -303,8 +305,8 @@
       ccBalance: 45000,
       ccMonthlyPayment: 1075,
       ccRate: 18,
-      currentTotalMonthly: 9875,
-      newPITI: 5330 + 1409 + 1726
+      currentTotalMonthly: 11186,
+      newPITI: 8260
     };
     
     function formatCurrency(n) {
@@ -327,8 +329,19 @@
       const remainingPayment = remainingBalance > 0 ? Math.round((remainingBalance * (CONFIG.ccRate/100/12)) / (1 - Math.pow(1 + CONFIG.ccRate/100/12, -36))) : 0;
       document.getElementById('remainingCCPayment').textContent = formatCurrency(remainingPayment);
       
-      // Update monthly savings based on CC payoff
+      // Update New Scenario card
+      if (remainingPayment > 0) {
+        document.getElementById('newCCPayment').textContent = '$' + formatCurrency(remainingPayment);
+        document.getElementById('newCCPayment').style.color = '#fc8181';
+      } else {
+        document.getElementById('newCCPayment').textContent = '$0 (paid off)';
+        document.getElementById('newCCPayment').style.color = '#48bb78';
+      }
+      
       const newTotalMonthly = CONFIG.newPITI + remainingPayment;
+      document.getElementById('newTotalMonthly').innerHTML = '<strong>$' + formatCurrency(newTotalMonthly) + '</strong>';
+      
+      // Update monthly savings based on CC payoff
       const monthlySavings = CONFIG.currentTotalMonthly - newTotalMonthly;
       const annualSavings = monthlySavings * 12;
       
