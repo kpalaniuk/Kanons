@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Refinance Analysis - Martin Weinstein</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --card: #1a1f2e;
+      --border: #2d3748;
+      --text: #e2e8f0;
+      --muted: #a0aec0;
+      --accent: #4299e1;
+      --green: #48bb78;
+      --red: #fc8181;
+      --gold: #ecc94b;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    h1 { 
+      font-size: 1.75rem; 
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    
+    .property-address {
+      color: var(--accent);
+      font-size: 1.1rem;
+      margin-top: 8px;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .card.current { border-left: 4px solid var(--red); }
+    .card.new { border-left: 4px solid var(--green); }
+    .card.savings { border-left: 4px solid var(--gold); }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 10px 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    th {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    td:last-child {
+      text-align: right;
+      font-family: 'SF Mono', Monaco, monospace;
+    }
+    
+    .highlight {
+      background: rgba(72, 187, 120, 0.1);
+      color: var(--green);
+      font-weight: 600;
+    }
+    
+    .eliminated {
+      color: var(--green);
+      text-decoration: line-through;
+      text-decoration-color: var(--green);
+    }
+    
+    .savings-box {
+      background: linear-gradient(135deg, rgba(236, 201, 75, 0.1) 0%, rgba(72, 187, 120, 0.1) 100%);
+      border: 1px solid var(--gold);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      margin: 24px 0;
+    }
+    
+    .savings-amount {
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--gold);
+      font-family: 'SF Mono', Monaco, monospace;
+    }
+    
+    .savings-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+    
+    .savings-annual {
+      font-size: 1.5rem;
+      color: var(--green);
+      margin-top: 12px;
+      font-weight: 600;
+    }
+    
+    .benefits {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    
+    .benefit {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .benefit-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+    
+    .benefit-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .benefit-desc {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    
+    .loan-structure {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    
+    .loan-structure h2 {
+      margin-bottom: 16px;
+    }
+    
+    .structure-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .structure-row:last-child {
+      border-bottom: none;
+    }
+    
+    .structure-label {
+      color: var(--muted);
+    }
+    
+    .structure-value {
+      font-family: 'SF Mono', Monaco, monospace;
+      font-weight: 600;
+    }
+    
+    .ltv-bar {
+      height: 24px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 16px 0;
+      display: flex;
+    }
+    
+    .ltv-first {
+      background: var(--accent);
+      width: 75%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .ltv-second {
+      background: var(--gold);
+      width: 14.99%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #000;
+    }
+    
+    footer {
+      text-align: center;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    
+    .logo {
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    .disclaimer {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 16px;
+      font-style: italic;
+    }
+    
+    @media (max-width: 600px) {
+      body { padding: 16px; }
+      .savings-amount { font-size: 2.5rem; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🏠 Refinance Analysis</h1>
+    <div class="subtitle">Prepared for</div>
+    <div class="property-address">Martin Weinstein<br>3445 Herman Ave, San Diego CA 92104</div>
+    <div class="subtitle" style="margin-top: 12px;">January 28, 2026</div>
+  </header>
+
+  <div class="savings-box">
+    <div class="savings-amount">$931/mo</div>
+    <div class="savings-label">Estimated Monthly Savings</div>
+    <div class="savings-annual">$11,172 per year</div>
+  </div>
+
+  <div class="loan-structure">
+    <h2>📊 New Loan Structure (75/15 Combo)</h2>
+    <div class="ltv-bar">
+      <div class="ltv-first">1st: 75% LTV</div>
+      <div class="ltv-second">2nd: 15%</div>
+    </div>
+    <div class="structure-row">
+      <span class="structure-label">Property Value</span>
+      <span class="structure-value">$1,140,000</span>
+    </div>
+    <div class="structure-row">
+      <span class="structure-label">1st Lien (75% LTV)</span>
+      <span class="structure-value">$855,000 @ 7.125%</span>
+    </div>
+    <div class="structure-row">
+      <span class="structure-label">2nd HELOC (14.99% LTV)</span>
+      <span class="structure-value">$170,886 @ 8.75%</span>
+    </div>
+    <div class="structure-row">
+      <span class="structure-label">Combined LTV</span>
+      <span class="structure-value">89.99%</span>
+    </div>
+    <div class="structure-row">
+      <span class="structure-label">Cash Out (CC Payoff)</span>
+      <span class="structure-value" style="color: var(--green);">$45,000</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card current">
+      <h2>📋 Current Situation</h2>
+      <table>
+        <tr>
+          <td>Loan Balance</td>
+          <td>$996,511</td>
+        </tr>
+        <tr>
+          <td>Interest Rate</td>
+          <td>7.250%</td>
+        </tr>
+        <tr>
+          <td>Principal & Interest</td>
+          <td>$6,864</td>
+        </tr>
+        <tr>
+          <td>Mortgage Insurance</td>
+          <td>$210</td>
+        </tr>
+        <tr>
+          <td>Taxes & Insurance</td>
+          <td>$1,726</td>
+        </tr>
+        <tr>
+          <td><strong>Total PITI</strong></td>
+          <td><strong>$8,590</strong></td>
+        </tr>
+        <tr>
+          <td>Credit Card Payments</td>
+          <td style="color: var(--red);">$1,075</td>
+        </tr>
+        <tr class="highlight">
+          <td><strong>Total Monthly</strong></td>
+          <td><strong>$9,665</strong></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card new">
+      <h2>✨ New Scenario</h2>
+      <table>
+        <tr>
+          <td>1st Lien P&I</td>
+          <td>$5,762</td>
+        </tr>
+        <tr>
+          <td>2nd HELOC (I/O)</td>
+          <td>$1,246</td>
+        </tr>
+        <tr>
+          <td>Mortgage Insurance</td>
+          <td class="eliminated">$0</td>
+        </tr>
+        <tr>
+          <td>Taxes & Insurance</td>
+          <td>$1,726</td>
+        </tr>
+        <tr>
+          <td><strong>Total PITI</strong></td>
+          <td><strong>$8,734</strong></td>
+        </tr>
+        <tr>
+          <td>Credit Card Payments</td>
+          <td class="eliminated">$0 (paid off!)</td>
+        </tr>
+        <tr class="highlight">
+          <td><strong>Total Monthly</strong></td>
+          <td><strong>$8,734</strong></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card savings">
+    <h2>💰 Savings Breakdown</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Monthly Savings</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Lower 1st Mortgage Payment</td>
+          <td style="color: var(--green);">+$1,102</td>
+        </tr>
+        <tr>
+          <td>New 2nd HELOC Payment</td>
+          <td style="color: var(--red);">-$1,246</td>
+        </tr>
+        <tr>
+          <td>MI Eliminated</td>
+          <td style="color: var(--green);">+$210</td>
+        </tr>
+        <tr>
+          <td>CC Debt Paid Off ($45k @ 18%)</td>
+          <td style="color: var(--green);">+$1,075</td>
+        </tr>
+        <tr class="highlight">
+          <td><strong>Net Monthly Savings</strong></td>
+          <td><strong>$931</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="benefits">
+    <div class="benefit">
+      <div class="benefit-icon">🚫</div>
+      <div class="benefit-title">MI Removed</div>
+      <div class="benefit-desc">$2,520/year savings by going under 80% LTV on the 1st</div>
+    </div>
+    <div class="benefit">
+      <div class="benefit-icon">💳</div>
+      <div class="benefit-title">Debt Consolidated</div>
+      <div class="benefit-desc">$45,000 in CC debt @ 18% → Gone</div>
+    </div>
+    <div class="benefit">
+      <div class="benefit-icon">📉</div>
+      <div class="benefit-title">Lower Rate</div>
+      <div class="benefit-desc">7.250% → 7.125% on smaller balance</div>
+    </div>
+    <div class="benefit">
+      <div class="benefit-icon">💵</div>
+      <div class="benefit-title">Cash Flow</div>
+      <div class="benefit-desc">~$931/month back in your pocket</div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="logo">Granada House Home Funding</div>
+    <div>Kyle Palaniuk | NMLS# 1234567</div>
+    <div style="margin-top: 8px;">📞 (858) 555-0123 | ✉️ kyle@granadahouse.com</div>
+    <div class="disclaimer">
+      This is an estimate based on information provided. Actual rates, payments, and savings may vary. 
+      Subject to credit approval and property appraisal. Contact us for a personalized quote.
+    </div>
+  </footer>
+</body>
+</html>
