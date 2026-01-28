@@ -224,32 +224,99 @@
     </div>
   </div>
   <div class="structure" style="margin-top: 24px;">
-    <h2>Settlement Statement</h2>
+    <h2>Settlement Calculator</h2>
+    
+    <div style="background: var(--card); border: 1px solid var(--accent); border-radius: 6px; padding: 16px; margin-bottom: 20px;">
+      <div style="font-size: 0.8rem; color: var(--muted); margin-bottom: 8px;">CREDIT CARD DEBT TO PAY OFF</div>
+      <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+        <div>
+          <label style="font-size: 0.75rem; color: var(--muted);">Total CC Balance: $45,000</label>
+        </div>
+        <div style="flex: 1; min-width: 200px;">
+          <input type="range" id="ccPayoff" min="0" max="45000" value="45000" 
+            style="width: 100%; accent-color: var(--accent);" oninput="updateSettlement()">
+        </div>
+        <div>
+          <span style="font-family: 'SF Mono', Monaco, monospace; font-size: 1.1rem; color: var(--accent);">$<span id="ccPayoffDisplay">45,000</span></span>
+        </div>
+      </div>
+      <div style="margin-top: 8px; font-size: 0.75rem; color: var(--muted);">
+        Remaining CC Payment: $<span id="remainingCCPayment">1,075</span>/mo at 18% APR
+      </div>
+    </div>
+    
     <div class="grid" style="margin-top: 16px;">
       <div>
         <h3 style="font-size: 0.8rem; color: var(--green); margin-bottom: 12px; text-transform: uppercase;">Sources of Funds</h3>
         <table>
-          <tr><td>New 1st Lien</td><td>$832,750</td></tr>
-          <tr><td>New 2nd HELOC</td><td>$193,116</td></tr>
-          <tr class="highlight"><td><strong>Total Sources</strong></td><td><strong>$1,025,866</strong></td></tr>
+          <tr><td>New 1st Lien</td><td id="src1">$832,750</td></tr>
+          <tr><td>New 2nd HELOC</td><td id="src2">$193,116</td></tr>
+          <tr class="highlight"><td><strong>Total Sources</strong></td><td id="totalSources"><strong>$1,025,866</strong></td></tr>
         </table>
       </div>
       <div>
         <h3 style="font-size: 0.8rem; color: var(--red); margin-bottom: 12px; text-transform: uppercase;">Uses of Funds</h3>
         <table>
           <tr><td>Payoff 1st Mortgage</td><td>$996,511</td></tr>
-          <tr><td>Payoff Credit Cards</td><td>$45,000</td></tr>
+          <tr><td>Payoff Credit Cards</td><td id="useCC">$45,000</td></tr>
           <tr><td>Closing Costs</td><td>$8,237</td></tr>
           <tr><td>Prepaids & Reserves</td><td>$5,763</td></tr>
-          <tr class="highlight"><td><strong>Total Uses</strong></td><td><strong>$1,055,511</strong></td></tr>
+          <tr class="highlight"><td><strong>Total Uses</strong></td><td id="totalUses"><strong>$1,055,511</strong></td></tr>
         </table>
       </div>
     </div>
-    <div style="margin-top: 20px; padding: 16px; background: var(--border); border-radius: 6px; text-align: center;">
-      <div style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase;">Estimated Cash from Borrower</div>
-      <div style="font-size: 1.5rem; font-weight: 700; color: var(--red); font-family: 'SF Mono', Monaco, monospace;">$29,645</div>
+    <div id="netResult" style="margin-top: 20px; padding: 16px; background: var(--border); border-radius: 6px; text-align: center;">
+      <div id="netLabel" style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase;">Estimated Cash from Borrower</div>
+      <div id="netAmount" style="font-size: 1.5rem; font-weight: 700; color: var(--red); font-family: 'SF Mono', Monaco, monospace;">$29,645</div>
     </div>
   </div>
+  
+  <script>
+    const CONFIG = {
+      totalSources: 1025866,
+      payoffMortgage: 996511,
+      closingCosts: 8237,
+      prepaids: 5763,
+      ccBalance: 45000,
+      ccMonthlyPayment: 1075,
+      ccRate: 18
+    };
+    
+    function formatCurrency(n) {
+      return n.toLocaleString('en-US');
+    }
+    
+    function updateSettlement() {
+      const ccPayoff = parseInt(document.getElementById('ccPayoff').value);
+      document.getElementById('ccPayoffDisplay').textContent = formatCurrency(ccPayoff);
+      document.getElementById('useCC').textContent = '$' + formatCurrency(ccPayoff);
+      
+      // Calculate remaining CC payment (rough estimate)
+      const remainingBalance = CONFIG.ccBalance - ccPayoff;
+      const remainingPayment = remainingBalance > 0 ? Math.round((remainingBalance * (CONFIG.ccRate/100/12)) / (1 - Math.pow(1 + CONFIG.ccRate/100/12, -36))) : 0;
+      document.getElementById('remainingCCPayment').textContent = formatCurrency(remainingPayment);
+      
+      const totalUses = CONFIG.payoffMortgage + ccPayoff + CONFIG.closingCosts + CONFIG.prepaids;
+      document.getElementById('totalUses').innerHTML = '<strong>$' + formatCurrency(totalUses) + '</strong>';
+      
+      const net = CONFIG.totalSources - totalUses;
+      const netLabel = document.getElementById('netLabel');
+      const netAmount = document.getElementById('netAmount');
+      
+      if (net >= 0) {
+        netLabel.textContent = 'Estimated Cash to Borrower';
+        netAmount.style.color = '#48bb78';
+        netAmount.textContent = '$' + formatCurrency(net);
+      } else {
+        netLabel.textContent = 'Estimated Cash from Borrower';
+        netAmount.style.color = '#fc8181';
+        netAmount.textContent = '$' + formatCurrency(Math.abs(net));
+      }
+    }
+    
+    // Initialize
+    updateSettlement();
+  </script>
   <footer>
     <div style="font-weight: 600;">C2 Financial Corporation</div>
     <div>Kyle Palaniuk | NMLS# 984138</div>
