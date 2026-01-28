@@ -14,11 +14,8 @@
       --accent: #4299e1;
       --green: #48bb78;
       --red: #fc8181;
-      --gold: #ecc94b;
     }
-    
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg);
@@ -28,270 +25,148 @@
       margin: 0 auto;
       line-height: 1.6;
     }
-    
     header {
       text-align: center;
       margin-bottom: 32px;
       padding-bottom: 24px;
       border-bottom: 1px solid var(--border);
     }
-    
-    h1 { 
-      font-size: 1.75rem; 
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-    
-    .subtitle {
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-    
-    .property-address {
-      color: var(--accent);
-      font-size: 1.1rem;
-      margin-top: 8px;
-    }
-    
+    h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 8px; }
+    .subtitle { color: var(--muted); font-size: 0.95rem; }
+    .property-address { color: var(--accent); font-size: 1.1rem; margin-top: 8px; }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 20px;
       margin-bottom: 24px;
     }
-    
     .card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 8px;
       padding: 20px;
     }
-    
     .card h2 {
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 600;
       margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .card.current { border-left: 4px solid var(--red); }
-    .card.new { border-left: 4px solid var(--green); }
-    .card.savings { border-left: 4px solid var(--gold); }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    
-    th, td {
-      padding: 10px 8px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-    
-    th {
       color: var(--muted);
-      font-weight: 500;
-      font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
-    td:last-child {
-      text-align: right;
-      font-family: 'SF Mono', Monaco, monospace;
-    }
-    
-    .highlight {
-      background: rgba(72, 187, 120, 0.1);
-      color: var(--green);
-      font-weight: 600;
-    }
-    
-    .eliminated {
-      color: var(--green);
-      text-decoration: line-through;
-      text-decoration-color: var(--green);
-    }
-    
+    .card.current { border-left: 3px solid var(--red); }
+    .card.new { border-left: 3px solid var(--green); }
+    .card.costs { border-left: 3px solid var(--accent); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px 4px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; }
+    td:last-child { text-align: right; font-family: 'SF Mono', Monaco, monospace; font-size: 0.9rem; }
+    .highlight { background: rgba(72, 187, 120, 0.1); }
+    .highlight td { color: var(--green); font-weight: 600; }
     .savings-box {
-      background: #1a1f2e 0%, rgba(72, 187, 120, 0.1) 100%);
-      border: 1px solid var(--gold);
-      border-radius: 12px;
+      background: var(--card);
+      border: 1px solid var(--green);
+      border-radius: 8px;
       padding: 24px;
       text-align: center;
       margin: 24px 0;
     }
-    
-    .savings-amount {
-      font-size: 3rem;
-      font-weight: 700;
-      color: var(--gold);
-      font-family: 'SF Mono', Monaco, monospace;
-    }
-    
-    .savings-label {
-      color: var(--muted);
-      font-size: 0.9rem;
-      margin-top: 4px;
-    }
-    
-    .savings-annual {
-      font-size: 1.5rem;
-      color: var(--green);
-      margin-top: 12px;
-      font-weight: 600;
-    }
-    
-    .benefits {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-top: 24px;
-    }
-    
-    .benefit {
+    .savings-amount { font-size: 2.5rem; font-weight: 700; color: var(--green); font-family: 'SF Mono', Monaco, monospace; }
+    .savings-label { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .savings-annual { font-size: 1.25rem; color: var(--text); margin-top: 8px; }
+    .structure {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 16px;
-      text-align: center;
-    }
-    
-    .benefit-icon {
-      font-size: 2rem;
-      margin-bottom: 8px;
-    }
-    
-    .benefit-title {
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    
-    .benefit-desc {
-      color: var(--muted);
-      font-size: 0.85rem;
-    }
-    
-    .loan-structure {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
       padding: 20px;
       margin-bottom: 24px;
     }
-    
-    .loan-structure h2 {
-      margin-bottom: 16px;
-    }
-    
+    .structure h2 { font-size: 0.9rem; font-weight: 600; margin-bottom: 16px; color: var(--muted); text-transform: uppercase; }
     .structure-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
+      padding: 10px 0;
       border-bottom: 1px solid var(--border);
     }
-    
-    .structure-row:last-child {
-      border-bottom: none;
-    }
-    
-    .structure-label {
-      color: var(--muted);
-    }
-    
-    .structure-value {
-      font-family: 'SF Mono', Monaco, monospace;
-      font-weight: 600;
-    }
-    
+    .structure-row:last-child { border-bottom: none; }
+    .structure-label { color: var(--muted); }
+    .structure-value { font-family: 'SF Mono', Monaco, monospace; font-weight: 500; }
     .ltv-bar {
-      height: 24px;
+      height: 20px;
       background: var(--border);
       border-radius: 4px;
       overflow: hidden;
       margin: 16px 0;
       display: flex;
     }
-    
     .ltv-first {
       background: var(--accent);
-      width: 75%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 600;
     }
-    
     .ltv-second {
-      background: var(--gold);
-      width: 14.99%;
+      background: #ecc94b;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 600;
       color: #000;
     }
-    
     footer {
       text-align: center;
       margin-top: 32px;
       padding-top: 24px;
       border-top: 1px solid var(--border);
       color: var(--muted);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
-    
-    .logo {
-      font-weight: 600;
-      color: var(--text);
-    }
-    
     .disclaimer {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--muted);
       margin-top: 16px;
-      font-style: italic;
+      text-align: left;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.5;
     }
-    
     @media (max-width: 600px) {
       body { padding: 16px; }
-      .savings-amount { font-size: 2.5rem; }
+      .savings-amount { font-size: 2rem; }
       .grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1> Refinance Analysis</h1>
+    <h1>Refinance Analysis</h1>
     <div class="subtitle">Prepared for</div>
     <div class="property-address">Martin Weinstein<br>3445 Herman Ave, San Diego CA 92104</div>
     <div class="subtitle" style="margin-top: 12px;">January 28, 2026</div>
   </header>
 
   <div class="savings-box">
-    <div class="savings-amount">$1,200/mo</div>
+    <div class="savings-amount">$1,410/mo</div>
     <div class="savings-label">Estimated Monthly Savings</div>
-    <div class="savings-annual">$14,400 per year</div>
+    <div class="savings-annual">$16,920 per year</div>
   </div>
 
-  <div class="loan-structure">
-    <h2> New Loan Structure (75/15 Combo)</h2>
+  <div class="structure">
+    <h2>New Loan Structure</h2>
     <div class="ltv-bar">
-      <div class="ltv-first" style="width: 73.05%;">1st: 73% LTV</div>
-      <div class="ltv-second" style="width: 16.94%;">2nd: 17%</div>
+      <div class="ltv-first" style="width: 73.0%;">1st: 73%</div>
+      <div class="ltv-second" style="width: 16.9%;">2nd: 17%</div>
     </div>
     <div class="structure-row">
       <span class="structure-label">Property Value</span>
       <span class="structure-value">$1,140,000</span>
     </div>
     <div class="structure-row">
-      <span class="structure-label">1st Lien (Conforming)</span>
+      <span class="structure-label">1st Lien (CONFORMING)</span>
       <span class="structure-value">$832,750 @ 6.625%</span>
     </div>
     <div class="structure-row">
@@ -300,165 +175,75 @@
     </div>
     <div class="structure-row">
       <span class="structure-label">Combined LTV</span>
-      <span class="structure-value">89.99%</span>
-    </div>
-    <div class="structure-row">
-      <span class="structure-label">Total New Financing</span>
-      <span class="structure-value">$1,025,866</span>
-    </div>
-    <div class="structure-row">
-      <span class="structure-label">Payoff Existing Loan</span>
-      <span class="structure-value">-$996,511</span>
-    </div>
-    <div class="structure-row">
-      <span class="structure-label">Est. Closing Costs</span>
-      <span class="structure-value">-$12,000</span>
-    </div>
-    <div class="structure-row">
-      <span class="structure-label"><strong>Cash Back to You</strong></span>
-      <span class="structure-value" style="color: var(--green);"><strong>~$17,355</strong></span>
+      <span class="structure-value">90.0%</span>
     </div>
   </div>
 
   <div class="grid">
     <div class="card current">
-      <h2>📋 Current Situation</h2>
+      <h2>Current Situation</h2>
       <table>
-        <tr>
-          <td>Loan Balance</td>
-          <td>$996,511</td>
-        </tr>
-        <tr>
-          <td>Interest Rate</td>
-          <td>7.250%</td>
-        </tr>
-        <tr>
-          <td>Principal & Interest</td>
-          <td>$6,864</td>
-        </tr>
-        <tr>
-          <td>Mortgage Insurance</td>
-          <td>$210</td>
-        </tr>
-        <tr>
-          <td>Taxes & Insurance</td>
-          <td>$1,726</td>
-        </tr>
-        <tr>
-          <td><strong>Total PITI</strong></td>
-          <td><strong>$8,590</strong></td>
-        </tr>
-        <tr>
-          <td>Credit Card Payments</td>
-          <td style="color: var(--red);">$1,075</td>
-        </tr>
-        <tr class="highlight">
-          <td><strong>Total Monthly</strong></td>
-          <td><strong>$9,665</strong></td>
-        </tr>
+        <tr><td>Loan Balance</td><td>$996,511</td></tr>
+        <tr><td>Interest Rate</td><td>7.25%</td></tr>
+        <tr><td>Principal & Interest</td><td>$6,864</td></tr>
+        <tr><td>Mortgage Insurance</td><td>$210</td></tr>
+        <tr><td>Taxes & Insurance</td><td>$1,726</td></tr>
+        <tr><td><strong>Total PITI</strong></td><td><strong>$8,800</strong></td></tr>
+        <tr><td>Credit Card Payments</td><td style="color: var(--red);">$1,075</td></tr>
+        <tr class="highlight"><td><strong>Total Monthly</strong></td><td><strong>$9,875</strong></td></tr>
       </table>
     </div>
 
     <div class="card new">
-      <h2>✨ New Scenario</h2>
+      <h2>New Scenario</h2>
       <table>
-        <tr>
-          <td>1st Lien P&I</td>
-          <td>$5,330</td>
-        </tr>
-        <tr>
-          <td>2nd HELOC (I/O)</td>
-          <td>$1,409</td>
-        </tr>
-        <tr>
-          <td>Mortgage Insurance</td>
-          <td class="eliminated">$0</td>
-        </tr>
-        <tr>
-          <td>Taxes & Insurance</td>
-          <td>$1,726</td>
-        </tr>
-        <tr>
-          <td><strong>Total PITI</strong></td>
-          <td><strong>$8,465</strong></td>
-        </tr>
-        <tr>
-          <td>Credit Card Payments</td>
-          <td class="eliminated">$0 (paid off!)</td>
-        </tr>
-        <tr class="highlight">
-          <td><strong>Total Monthly</strong></td>
-          <td><strong>$8,465</strong></td>
-        </tr>
+        <tr><td>1st Lien P&I</td><td>$5,330</td></tr>
+        <tr><td>2nd HELOC (IO)</td><td>$1,409</td></tr>
+        <tr><td>Mortgage Insurance</td><td style="color: var(--green);">$0</td></tr>
+        <tr><td>Taxes & Insurance</td><td>$1,726</td></tr>
+        <tr><td><strong>Total PITI</strong></td><td><strong>$8,465</strong></td></tr>
+        <tr><td>Credit Card Payments</td><td style="color: var(--green);">$0 (paid off)</td></tr>
+        <tr class="highlight"><td><strong>Total Monthly</strong></td><td><strong>$8,465</strong></td></tr>
       </table>
     </div>
   </div>
 
-  <div class="card savings">
-    <h2> Savings Breakdown</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th>Monthly Savings</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Lower 1st Mortgage Payment</td>
-          <td style="color: var(--green);">+$1,534</td>
-        </tr>
-        <tr>
-          <td>New 2nd HELOC Payment</td>
-          <td style="color: var(--red);">-$1,409</td>
-        </tr>
-        <tr>
-          <td>MI Eliminated</td>
-          <td style="color: var(--green);">+$210</td>
-        </tr>
-        <tr>
-          <td>CC Debt Paid Off ($45k @ 18%)</td>
-          <td style="color: var(--green);">+$1,075</td>
-        </tr>
-        <tr class="highlight">
-          <td><strong>Net Monthly Savings</strong></td>
-          <td><strong>$1,200</strong></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <div class="grid">
+    <div class="card costs">
+      <h2>Estimated Closing Costs</h2>
+      <table>
+        <tr><td>Processing Fee</td><td>$995</td></tr>
+        <tr><td>Underwriting Fee</td><td>$1,295</td></tr>
+        <tr><td>Appraisal</td><td>$750</td></tr>
+        <tr><td>Title & Escrow</td><td>$3,331</td></tr>
+        <tr><td>Recording</td><td>$250</td></tr>
+        <tr><td>Notary</td><td>$200</td></tr>
+        <tr><td>Credit Report</td><td>$75</td></tr>
+        <tr><td>Flood Certification</td><td>$25</td></tr>
+        <tr class="highlight"><td><strong>Total Closing Costs</strong></td><td><strong>$6,921</strong></td></tr>
+      </table>
+    </div>
 
-  <div class="benefits">
-    <div class="benefit">
-      <div class="benefit-icon"></div>
-      <div class="benefit-title">MI Removed</div>
-      <div class="benefit-desc">$2,520/year savings by going under 80% LTV on the 1st</div>
-    </div>
-    <div class="benefit">
-      <div class="benefit-icon"></div>
-      <div class="benefit-title">Debt Consolidated</div>
-      <div class="benefit-desc">$45,000 in CC debt @ 18% → Gone</div>
-    </div>
-    <div class="benefit">
-      <div class="benefit-icon"></div>
-      <div class="benefit-title">Lower Rate</div>
-      <div class="benefit-desc">7.250% → 6.625% (conforming)</div>
-    </div>
-    <div class="benefit">
-      <div class="benefit-icon"></div>
-      <div class="benefit-title">Cash Back</div>
-      <div class="benefit-desc">~$17,355 cash back at closing</div>
+    <div class="card costs">
+      <h2>Cash at Closing</h2>
+      <table>
+        <tr><td>Total New Financing</td><td>$1,025,866</td></tr>
+        <tr><td>Payoff Existing Loan</td><td>-$996,511</td></tr>
+        <tr><td>Closing Costs</td><td>-$6,921</td></tr>
+        <tr><td>Prepaids & Reserves</td><td>-$7,512</td></tr>
+        <tr class="highlight"><td><strong>Est. Cash to You</strong></td><td><strong>$14,922</strong></td></tr>
+      </table>
     </div>
   </div>
 
   <footer>
-    <div class="logo">C2 Financial Corporation</div>
+    <div style="font-weight: 600;">C2 Financial Corporation</div>
     <div>Kyle Palaniuk | NMLS# 984138</div>
-    <div style="margin-top: 8px;"> 619-777-5700 |  planpreparehome.com</div>
-    <div class="disclaimer" style="margin-top: 16px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
+    <div style="margin-top: 8px;">619-777-5700 | planpreparehome.com</div>
+    <div class="disclaimer">
       C2 Financial Corporation NMLS# 135622 | CA BRE# 01821025<br>
       Kyle Palaniuk NMLS# 984138 | CA BRE# 01932878<br><br>
-      This licensee is performing acts for which a real estate license is required. C2 Financial Corporation is licensed by the California Bureau of Real Estate, Broker #01821025; NMLS# 135622. Loan approval is not guaranteed and is subject to lender review of information. All loan approvals are conditional and all conditions must be met by borrower. Loan is only approved when lender has issued approval in writing and is subject to the Lender conditions. Specified rates may not be available for all borrowers. Rate subject to change with market conditions. C2 Financial Corporation is an Equal Opportunity Mortgage Broker/Lender.<br><br>
+      This licensee is performing acts for which a real estate license is required. Loan approval is not guaranteed and is subject to lender review of information. All loan approvals are conditional and all conditions must be met by borrower. Specified rates may not be available for all borrowers. Rate subject to change with market conditions. C2 Financial Corporation is an Equal Opportunity Mortgage Broker/Lender.<br><br>
       This is an estimate based on information provided. Actual rates, payments, and savings may vary.
     </div>
   </footer>
