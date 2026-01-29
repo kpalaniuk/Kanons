@@ -1,577 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kyle's Life Dashboard</title>
-  <style>
-    :root {
-      --bg: #0f0f0f;
-      --card: #1a1a1a;
-      --border: #2a2a2a;
-      --text: #e0e0e0;
-      --muted: #888;
-      --accent: #4a9eff;
-      --urgent: #ff4a4a;
-      --high: #ff9f4a;
-      --medium: #ffd44a;
-      --low: #4aff9f;
-      --done: #666;
-    }
-    
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding: 20px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-    
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-    }
-    
-    h1 { font-size: 1.5rem; font-weight: 600; }
-    .date { color: var(--muted); font-size: 0.9rem; }
-    
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 20px;
-    }
-    
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-    }
-    
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    
-    .card h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .card h2 .emoji { font-size: 1.2rem; }
-    
-    .badge {
-      font-size: 0.7rem;
-      padding: 2px 8px;
-      border-radius: 10px;
-      background: var(--border);
-      color: var(--muted);
-    }
-    
-    .task-list { list-style: none; }
-    
-    .task {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    
-    .task:last-child { border-bottom: none; }
-    
-    .priority {
-      width: 4px;
-      height: 100%;
-      min-height: 40px;
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
-    
-    .priority.urgent { background: var(--urgent); }
-    .priority.high { background: var(--high); }
-    .priority.medium { background: var(--medium); }
-    .priority.low { background: var(--low); }
-    .priority.done { background: var(--done); }
-    
-    .task-content { flex: 1; }
-    
-    .task-title {
-      font-weight: 500;
-      margin-bottom: 4px;
-    }
-    
-    .task-meta {
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-    
-    .task-tags {
-      display: flex;
-      gap: 6px;
-      margin-top: 6px;
-      flex-wrap: wrap;
-    }
-    
-    .tag {
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: var(--border);
-    }
-    
-    .tag.deadline { background: #4a2020; color: #ff8080; }
-    .tag.waiting { background: #3a3a20; color: #e0e080; }
-    .tag.active { background: #204a30; color: #80ff80; }
-    
-    .quick-stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    
-    .stat {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
-      text-align: center;
-    }
-    
-    .stat-value {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--accent);
-    }
-    
-    .stat-label {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-    
-    .legend {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-    
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-    
-    .legend-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 3px;
-    }
-    
-    .section-title {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin: 20px 0 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    .today-schedule {
-      background: linear-gradient(135deg, #1a2a3a 0%, #1a1a2a 100%);
-      border-color: #2a3a4a;
-    }
-    
-    .event {
-      display: flex;
-      gap: 12px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    
-    .event:last-child { border-bottom: none; }
-    
-    .event-time {
-      font-size: 0.85rem;
-      color: var(--accent);
-      min-width: 70px;
-    }
-    
-    .event-title { font-weight: 500; }
-    
-    .notes {
-      background: #1a1a20;
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-top: 12px;
-      white-space: pre-wrap;
-    }
-    
-    .update-prompt {
-      background: linear-gradient(135deg, #2a1a3a 0%, #1a1a2a 100%);
-      border-color: #3a2a4a;
-      margin-top: 20px;
-    }
-    
-    .update-prompt p {
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-    
-    .update-prompt code {
-      background: var(--border);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jasper Status Dashboard</title>
+    <meta http-equiv="refresh" content="60">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a; 
+            color: #e5e5e5;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 2rem; }
+        h1 { font-size: 1.5rem; font-weight: 600; color: #fff; }
+        .subtitle { color: #666; font-size: 0.875rem; margin-top: 0.25rem; }
+        .card {
+            background: #141414;
+            border: 1px solid #262626;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .card-title { font-weight: 600; color: #fff; }
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge-green { background: #064e3b; color: #34d399; }
+        .badge-yellow { background: #713f12; color: #fbbf24; }
+        .badge-blue { background: #1e3a5f; color: #60a5fa; }
+        .badge-gray { background: #262626; color: #a3a3a3; }
+        .task-list { list-style: none; }
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #262626;
+        }
+        .task-item:last-child { border-bottom: none; }
+        .check { color: #22c55e; }
+        .pending { color: #666; }
+        .working { color: #f59e0b; }
+        .task-text { flex: 1; }
+        .task-text.done { color: #666; text-decoration: line-through; }
+        .timestamp { 
+            color: #525252; 
+            font-size: 0.75rem; 
+            margin-top: 1rem;
+            text-align: right;
+        }
+        .progress-bar {
+            height: 8px;
+            background: #262626;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            transition: width 0.3s ease;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .stat {
+            text-align: center;
+            padding: 1rem;
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: #fff; }
+        .stat-label { font-size: 0.75rem; color: #666; margin-top: 0.25rem; }
+        .log {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.8rem;
+            background: #0a0a0a;
+            padding: 1rem;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry { padding: 0.25rem 0; color: #a3a3a3; }
+        .log-time { color: #525252; }
+        .log-success { color: #22c55e; }
+        .log-info { color: #60a5fa; }
+        .log-warn { color: #f59e0b; }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>🧭 Kyle's Life Dashboard</h1>
-    <div class="date" id="currentDate"></div>
-  </header>
+    <div class="container">
+        <header>
+            <h1>Jasper Status Dashboard</h1>
+            <p class="subtitle">Refi Machine Enhancement Sprint • Auto-refreshes every 60s</p>
+        </header>
 
-  <div class="quick-stats">
-    <div class="stat">
-      <div class="stat-value">3</div>
-      <div class="stat-label">🔥 Urgent</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value">7</div>
-      <div class="stat-label">📋 Active</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value">4</div>
-      <div class="stat-label">⏳ Waiting</div>
-    </div>
-    <div class="stat">
-      <div class="stat-value">5</div>
-      <div class="stat-label">🎯 This Week</div>
-    </div>
-  </div>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">7</div>
+                <div class="stat-label">Tasks Complete</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">5</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">3</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
 
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background: var(--urgent)"></div> Urgent (Today)</div>
-    <div class="legend-item"><div class="legend-dot" style="background: var(--high)"></div> High (This Week)</div>
-    <div class="legend-item"><div class="legend-dot" style="background: var(--medium)"></div> Medium (Soon)</div>
-    <div class="legend-item"><div class="legend-dot" style="background: var(--low)"></div> Low (Backlog)</div>
-    <div class="legend-item"><div class="legend-dot" style="background: var(--done)"></div> Waiting/Blocked</div>
-  </div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Current Sprint Progress</span>
+                <span class="badge badge-yellow">In Progress</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 55%"></div>
+            </div>
+            <ul class="task-list">
+                <li class="task-item">
+                    <span class="check">✓</span>
+                    <span class="task-text done">Fix Hydration Error #418 (Schema Cache)</span>
+                </li>
+                <li class="task-item">
+                    <span class="check">✓</span>
+                    <span class="task-text done">Add Resend email integration</span>
+                </li>
+                <li class="task-item">
+                    <span class="check">✓</span>
+                    <span class="task-text done">Create Landing Page</span>
+                </li>
+                <li class="task-item">
+                    <span class="check">✓</span>
+                    <span class="task-text done">Admin Dashboard - Invite User Form</span>
+                </li>
+                <li class="task-item">
+                    <span class="check">✓</span>
+                    <span class="task-text done">API: /api/invite endpoint</span>
+                </li>
+                <li class="task-item">
+                    <span class="check">✓</span>
+                    <span class="task-text done">API: /api/analyze-statement (AI/OCR)</span>
+                </li>
+                <li class="task-item">
+                    <span class="check">✓</span>
+                    <span class="task-text done">Loan Verification Toggle + Activity Log</span>
+                </li>
+                <li class="task-item">
+                    <span class="working">◐</span>
+                    <span class="task-text">Deploy to Vercel (auto-deploying...)</span>
+                </li>
+                <li class="task-item">
+                    <span class="working">◐</span>
+                    <span class="task-text">Run SQL migrations in Supabase</span>
+                </li>
+                <li class="task-item">
+                    <span class="working">◐</span>
+                    <span class="task-text">Create user: jim@planpreparehome.com</span>
+                </li>
+                <li class="task-item">
+                    <span class="working">◐</span>
+                    <span class="task-text">Create user: anthony@planpreparehome.com</span>
+                </li>
+                <li class="task-item">
+                    <span class="working">◐</span>
+                    <span class="task-text">Create user: matt@mattchao.com (separate team)</span>
+                </li>
+                <li class="task-item">
+                    <span class="pending">○</span>
+                    <span class="task-text">Collapsible scenarios UI</span>
+                </li>
+                <li class="task-item">
+                    <span class="pending">○</span>
+                    <span class="task-text">Confidence scoring tied to verification</span>
+                </li>
+                <li class="task-item">
+                    <span class="pending">○</span>
+                    <span class="task-text">Polish upload wizard for Matt</span>
+                </li>
+            </ul>
+        </div>
 
-  <div class="grid">
-    
-    <!-- TODAY'S SCHEDULE -->
-    <div class="card today-schedule">
-      <div class="card-header">
-        <h2><span class="emoji">📅</span> Today</h2>
-        <span class="badge">Tue Jan 28</span>
-      </div>
-      <div class="event">
-        <span class="event-time">9:30 AM</span>
-        <span class="event-title">✅ Massage (Sandy)</span>
-      </div>
-      <div class="event">
-        <span class="event-time">~11:15</span>
-        <span class="event-title">🏢 Office / Deep Work</span>
-      </div>
-      <div class="event">
-        <span class="event-time">Evening</span>
-        <span class="event-title">🍽️ Dinner with Jim (South Park?)</span>
-      </div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Activity Log</span>
+                <span class="badge badge-gray">Live</span>
+            </div>
+            <div class="log">
+                <div class="log-entry"><span class="log-time">18:56</span> <span class="log-info">[SPAWN]</span> Sub-agent started on Opus for remaining tasks</div>
+                <div class="log-entry"><span class="log-time">18:55</span> <span class="log-success">[PUSH]</span> Code pushed to GitHub, Vercel deploying</div>
+                <div class="log-entry"><span class="log-time">18:54</span> <span class="log-success">[COMMIT]</span> 20 files changed, 1717 insertions</div>
+                <div class="log-entry"><span class="log-time">18:53</span> <span class="log-info">[WRITE]</span> Created USER_SETUP.md with instructions</div>
+                <div class="log-entry"><span class="log-time">18:52</span> <span class="log-success">[CREATE]</span> SQL migration: team users setup</div>
+                <div class="log-entry"><span class="log-time">18:51</span> <span class="log-success">[CREATE]</span> Landing page at /</div>
+                <div class="log-entry"><span class="log-time">18:50</span> <span class="log-success">[CREATE]</span> /api/invite with Resend integration</div>
+                <div class="log-entry"><span class="log-time">18:48</span> <span class="log-info">[INSTALL]</span> npm install resend</div>
+                <div class="log-entry"><span class="log-time">18:42</span> <span class="log-success">[CREATE]</span> /api/analyze-statement endpoint</div>
+                <div class="log-entry"><span class="log-time">18:42</span> <span class="log-success">[CREATE]</span> SQL migration: verification fields</div>
+                <div class="log-entry"><span class="log-time">18:38</span> <span class="log-warn">[SPAWN]</span> First sub-agent hit Gemini rate limit (253/250 RPD)</div>
+                <div class="log-entry"><span class="log-time">17:26</span> <span class="log-success">[FIX]</span> Hydration error - patched JSON configs in DB</div>
+                <div class="log-entry"><span class="log-time">17:19</span> <span class="log-success">[FIX]</span> Added missing columns: new_hoa, comparison_group</div>
+                <div class="log-entry"><span class="log-time">17:05</span> <span class="log-info">[DEBUG]</span> Schema cache reload via NOTIFY pgrst</div>
+            </div>
+        </div>
+
+        <p class="timestamp">Last updated: <span id="time"></span></p>
     </div>
-
-    <!-- WORK: MORTGAGE / SDMC -->
-    <div class="card">
-      <div class="card-header">
-        <h2><span class="emoji">💼</span> Mortgage / SDMC</h2>
-        <span class="badge">Revenue</span>
-      </div>
-      <ul class="task-list">
-        <li class="task">
-          <div class="priority urgent"></div>
-          <div class="task-content">
-            <div class="task-title">Marty Weinstein Refi Quote</div>
-            <div class="task-meta">75/15 combo — calculate savings & send quote</div>
-            <div class="task-tags">
-              <span class="tag active">Active</span>
-              <span class="tag">Refi Machine Lead</span>
-            </div>
-          </div>
-        </li>
-        <li class="task">
-          <div class="priority high"></div>
-          <div class="task-content">
-            <div class="task-title">Client Follow-up Calls</div>
-            <div class="task-meta">Check offer-accepted status, hot leads</div>
-            <div class="task-tags">
-              <span class="tag">Pipeline</span>
-            </div>
-          </div>
-        </li>
-        <li class="task">
-          <div class="priority medium"></div>
-          <div class="task-content">
-            <div class="task-title">Personal Loan Research</div>
-            <div class="task-meta">Need loan in 1-2 months — TBD purpose</div>
-            <div class="task-tags">
-              <span class="tag waiting">Needs Info</span>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <!-- WORK: LOBUDDY / TECH -->
-    <div class="card">
-      <div class="card-header">
-        <h2><span class="emoji">🤖</span> LOBuddy / Tech</h2>
-        <span class="badge">Building</span>
-      </div>
-      <ul class="task-list">
-        <li class="task">
-          <div class="priority urgent"></div>
-          <div class="task-content">
-            <div class="task-title">LO Nerd Tool</div>
-            <div class="task-meta">Finish Claude tool for Loan Officer workflow</div>
-            <div class="task-tags">
-              <span class="tag active">In Progress</span>
-            </div>
-          </div>
-        </li>
-        <li class="task">
-          <div class="priority high"></div>
-          <div class="task-content">
-            <div class="task-title">LO Ninja — Chad Sync</div>
-            <div class="task-meta">Check Chad's schedule, plan session</div>
-            <div class="task-tags">
-              <span class="tag waiting">Waiting</span>
-            </div>
-          </div>
-        </li>
-        <li class="task">
-          <div class="priority medium"></div>
-          <div class="task-content">
-            <div class="task-title">Refi Machine Refinements</div>
-            <div class="task-meta">Working — found Marty. Iterate on filters?</div>
-            <div class="task-tags">
-              <span class="tag">LOBuddy</span>
-            </div>
-          </div>
-        </li>
-        <li class="task">
-          <div class="priority low"></div>
-          <div class="task-content">
-            <div class="task-title">RallyIt (iOS App)</div>
-            <div class="task-meta">Native app for App Store — backlog</div>
-            <div class="task-tags">
-              <span class="tag">Side Project</span>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <!-- MUSIC -->
-    <div class="card">
-      <div class="card-header">
-        <h2><span class="emoji">🎵</span> Music</h2>
-        <span class="badge">Creative</span>
-      </div>
-      <ul class="task-list">
-        <li class="task">
-          <div class="priority high"></div>
-          <div class="task-content">
-            <div class="task-title">StronGnome — "Vast" Release</div>
-            <div class="task-meta">Artwork → Bios → Distribution</div>
-            <div class="task-tags">
-              <span class="tag active">Next Up</span>
-              <span class="tag">w/ Seth</span>
-            </div>
-          </div>
-        </li>
-        <li class="task">
-          <div class="priority medium"></div>
-          <div class="task-content">
-            <div class="task-title">Well Well Well — Pappy & Harriet's</div>
-            <div class="task-meta">March 12 gig. Book lodging for 2 couples.</div>
-            <div class="task-tags">
-              <span class="tag deadline">Mar 12</span>
-              <span class="tag">Pioneertown</span>
-            </div>
-          </div>
-        </li>
-        <li class="task">
-          <div class="priority low"></div>
-          <div class="task-content">
-            <div class="task-title">Granada House Sessions</div>
-            <div class="task-meta">Writing originals. Name → Tangerine Tee?</div>
-            <div class="task-tags">
-              <span class="tag">Ongoing</span>
-            </div>
-          </div>
-        </li>
-        <li class="task">
-          <div class="priority low"></div>
-          <div class="task-content">
-            <div class="task-title">Tu Lengua</div>
-            <div class="task-meta">Dual intl hip-hop jazz — chill, fun</div>
-            <div class="task-tags">
-              <span class="tag">Ongoing</span>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <!-- HOME & FAMILY -->
-    <div class="card">
-      <div class="card-header">
-        <h2><span class="emoji">🏠</span> Home & Family</h2>
-        <span class="badge">Life</span>
-      </div>
-      <ul class="task-list">
-        <li class="task">
-          <div class="priority high"></div>
-          <div class="task-content">
-            <div class="task-title">Den Redesign</div>
-            <div class="task-meta">Review new design with Paige</div>
-            <div class="task-tags">
-              <span class="tag">GH Design</span>
-              <span class="tag waiting">Needs Review</span>
-            </div>
-          </div>
-        </li>
-        <li class="task">
-          <div class="priority medium"></div>
-          <div class="task-content">
-            <div class="task-title">Mike ADU Project</div>
-            <div class="task-meta">Status TBD</div>
-            <div class="task-tags">
-              <span class="tag">Construction</span>
-            </div>
-          </div>
-        </li>
-        <li class="task">
-          <div class="priority low"></div>
-          <div class="task-content">
-            <div class="task-title">1991 Westfalia Van</div>
-            <div class="task-meta">Restoration project — backlog</div>
-            <div class="task-tags">
-              <span class="tag">Fun</span>
-            </div>
-          </div>
-        </li>
-        <li class="task">
-          <div class="priority medium"></div>
-          <div class="task-content">
-            <div class="task-title">Ireland & Scotland Trip</div>
-            <div class="task-meta">July — HomeExchange + mobile week bookings</div>
-            <div class="task-tags">
-              <span class="tag deadline">July</span>
-              <span class="tag">Travel</span>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <!-- GRANADA HOUSE (VENUE) -->
-    <div class="card">
-      <div class="card-header">
-        <h2><span class="emoji">🏪</span> Granada House (Venue)</h2>
-        <span class="badge">Community</span>
-      </div>
-      <ul class="task-list">
-        <li class="task">
-          <div class="priority high"></div>
-          <div class="task-content">
-            <div class="task-title">Storefront Sign</div>
-            <div class="task-meta">Get sign-up finalized / installed</div>
-            <div class="task-tags">
-              <span class="tag active">In Progress</span>
-            </div>
-          </div>
-        </li>
-        <li class="task">
-          <div class="priority low"></div>
-          <div class="task-content">
-            <div class="task-title">Podcast — "The Moment We Begin"</div>
-            <div class="task-meta">Ep 1 done (w/ Hannah). Plan next?</div>
-            <div class="task-tags">
-              <span class="tag">Content</span>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <!-- COACHING -->
-    <div class="card">
-      <div class="card-header">
-        <h2><span class="emoji">⚽</span> Coaching</h2>
-        <span class="badge">FC Balboa</span>
-      </div>
-      <ul class="task-list">
-        <li class="task">
-          <div class="priority low"></div>
-          <div class="task-content">
-            <div class="task-title">Practice / Games Schedule</div>
-            <div class="task-meta">Head coach — be a great role model</div>
-            <div class="task-tags">
-              <span class="tag">Recurring</span>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-  </div>
-
-  <!-- UPDATE PROMPT -->
-  <div class="card update-prompt">
-    <div class="card-header">
-      <h2><span class="emoji">💬</span> Update Me</h2>
-    </div>
-    <p>
-      Tell me what changed and I'll update this dashboard. Examples:<br><br>
-      <code>"Marty quote sent — waiting for response"</code><br>
-      <code>"Add task: Call electrician for den — high priority"</code><br>
-      <code>"Den redesign is done"</code><br>
-      <code>"LO Nerd tool is urgent — need it today"</code><br>
-      <code>"Add new project: Backyard fence — medium, home"</code>
-    </p>
-  </div>
-
-  <script>
-    // Update date
-    const dateEl = document.getElementById('currentDate');
-    const now = new Date();
-    dateEl.textContent = now.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
-    });
-  </script>
+    <script>
+        document.getElementById('time').textContent = new Date().toLocaleString('en-US', {
+            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
+        });
+    </script>
 </body>
 </html>
