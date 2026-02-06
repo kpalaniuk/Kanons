@@ -33,6 +33,9 @@ export default function Navigation() {
     setIsMobileMenuOpen(false)
   }, [pathname])
 
+  // Hide navigation on client portal pages
+  if (pathname?.startsWith('/clients')) return null
+
   return (
     <>
       <motion.header
