@@ -225,3 +225,749 @@ section {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-amber);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   GRANADA HOUSE — Client Portal Styles
+   Dark premium mortgage UI
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── SHARED FOUNDATIONS ── */
+.gh-login-wrapper,
+.gh-admin-wrapper,
+.gh-client-page,
+.gh-not-found,
+.gh-loading {
+  font-family: var(--font-body);
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+  min-height: 100vh;
+}
+
+/* ── BUTTONS ── */
+.gh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.4rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font-body);
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: nowrap;
+}
+.gh-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.gh-btn-primary {
+  background: var(--color-amber);
+  color: var(--color-ink);
+  border-color: var(--color-amber);
+  font-weight: 600;
+}
+.gh-btn-primary:hover:not(:disabled) {
+  background: #e6a800;
+  border-color: #e6a800;
+  box-shadow: 0 0 20px rgba(255, 186, 0, 0.2);
+}
+.gh-btn-secondary {
+  background: transparent;
+  color: var(--color-paper);
+  border-color: rgba(248, 247, 244, 0.15);
+}
+.gh-btn-secondary:hover:not(:disabled) {
+  border-color: rgba(248, 247, 244, 0.35);
+  background: rgba(248, 247, 244, 0.05);
+}
+.gh-btn-ghost {
+  background: transparent;
+  color: var(--color-steel);
+  border-color: transparent;
+  padding: 0.5rem 0.8rem;
+}
+.gh-btn-ghost:hover:not(:disabled) {
+  color: var(--color-paper);
+  background: rgba(248, 247, 244, 0.05);
+}
+.gh-btn-danger {
+  background: transparent;
+  color: #ff5c5c;
+  border-color: rgba(255, 92, 92, 0.25);
+}
+.gh-btn-danger:hover:not(:disabled) {
+  background: rgba(255, 92, 92, 0.1);
+  border-color: rgba(255, 92, 92, 0.5);
+}
+.gh-btn-sm {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+/* ── LOGIN GATE ── */
+.gh-login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.gh-login-box {
+  width: 100%;
+  max-width: 380px;
+  animation: fadeUp 0.6s ease-out forwards;
+}
+.gh-login-box h1 {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+  color: var(--color-paper);
+}
+.gh-login-box p {
+  color: var(--color-steel);
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+.gh-login-box input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: rgba(248, 247, 244, 0.04);
+  border: 1px solid rgba(248, 247, 244, 0.12);
+  border-radius: 6px;
+  color: var(--color-paper);
+  font-size: 1.1rem;
+  font-family: var(--font-body);
+  letter-spacing: 0.15em;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s ease;
+  outline: none;
+}
+.gh-login-box input:focus {
+  border-color: var(--color-amber);
+  box-shadow: 0 0 0 2px rgba(255, 186, 0, 0.1);
+}
+.gh-login-box .gh-btn {
+  width: 100%;
+  padding: 0.85rem;
+  font-size: 1rem;
+}
+.gh-error {
+  background: rgba(255, 92, 92, 0.1);
+  border: 1px solid rgba(255, 92, 92, 0.25);
+  color: #ff5c5c;
+  padding: 0.65rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+/* ── ADMIN DASHBOARD ── */
+.gh-admin-wrapper {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 3rem 2rem 4rem;
+  animation: fadeUp 0.6s ease-out forwards;
+}
+.gh-admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(248, 247, 244, 0.08);
+}
+.gh-admin-header h1 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--color-paper);
+}
+.gh-admin-header-right {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+.gh-empty-state {
+  text-align: center;
+  padding: 5rem 2rem;
+  animation: fadeIn 0.8s ease-out forwards;
+}
+.gh-empty-state h3 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--color-paper);
+  margin-bottom: 0.5rem;
+}
+.gh-empty-state p {
+  color: var(--color-steel);
+  font-size: 0.9rem;
+}
+
+/* ── SCENARIO LIST ── */
+.gh-scenario-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.gh-scenario-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.4rem;
+  background: rgba(248, 247, 244, 0.025);
+  border: 1px solid rgba(248, 247, 244, 0.06);
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.gh-scenario-item:hover {
+  border-color: rgba(248, 247, 244, 0.12);
+  background: rgba(248, 247, 244, 0.04);
+  transform: translateY(-1px);
+}
+.gh-scenario-info h3 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-paper);
+  margin-bottom: 0.35rem;
+}
+.gh-scenario-meta {
+  display: flex;
+  gap: 1.2rem;
+  font-size: 0.8rem;
+  color: var(--color-steel);
+}
+.gh-scenario-meta span:first-child {
+  color: var(--color-amber);
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+.gh-scenario-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* ── MODALS ── */
+.gh-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  overflow-y: auto;
+  z-index: 900;
+  animation: fadeIn 0.2s ease-out;
+}
+.gh-modal-content {
+  width: 100%;
+  max-width: 680px;
+  background: #111;
+  border: 1px solid rgba(248, 247, 244, 0.08);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: auto;
+  animation: fadeUp 0.3s ease-out forwards;
+}
+.gh-modal-content h2 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--color-paper);
+  margin-bottom: 1.5rem;
+}
+.gh-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(248, 247, 244, 0.06);
+}
+
+/* ── FORMS ── */
+.gh-form-section {
+  margin-bottom: 1.5rem;
+}
+.gh-form-section-title {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-amber);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 186, 0, 0.15);
+}
+.gh-form-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.gh-form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.gh-form-group label {
+  font-size: 0.72rem;
+  color: var(--color-steel);
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+.gh-form-group input,
+.gh-modal-content input {
+  padding: 0.6rem 0.8rem;
+  background: rgba(248, 247, 244, 0.04);
+  border: 1px solid rgba(248, 247, 244, 0.1);
+  border-radius: 5px;
+  color: var(--color-paper);
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+.gh-form-group input:focus,
+.gh-modal-content input:focus {
+  border-color: var(--color-amber);
+  box-shadow: 0 0 0 2px rgba(255, 186, 0, 0.08);
+}
+.gh-form-group input[type="number"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── TERM BLOCKS ── */
+.gh-term-block {
+  background: rgba(248, 247, 244, 0.02);
+  border: 1px solid rgba(248, 247, 244, 0.06);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+.gh-term-block-header {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+}
+.gh-ltv-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  margin-bottom: 0.4rem;
+}
+.gh-ltv-row > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.gh-ltv-row label {
+  font-size: 0.65rem;
+  color: var(--color-steel);
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.gh-ltv-row input {
+  padding: 0.45rem 0.6rem;
+  font-size: 0.82rem;
+}
+
+/* ── TOAST ── */
+.gh-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-amber);
+  color: var(--color-ink);
+  padding: 0.7rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  z-index: 999;
+  animation: fadeUp 0.3s ease-out forwards;
+  box-shadow: 0 4px 24px rgba(255, 186, 0, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CLIENT-FACING SCENARIO PAGE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── HERO ── */
+.gh-client-hero {
+  text-align: center;
+  padding: 4rem 2rem 2.5rem;
+  animation: fadeUp 0.6s ease-out forwards;
+}
+.gh-client-hero-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-amber);
+  border: 1px solid rgba(255, 186, 0, 0.25);
+  padding: 0.45rem 1.2rem;
+  border-radius: 999px;
+  margin-bottom: 1.5rem;
+}
+.gh-client-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: var(--color-paper);
+  margin-bottom: 0.75rem;
+}
+.gh-client-hero p {
+  color: var(--color-steel);
+  font-size: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ── CONTAINER ── */
+.gh-client-container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 2rem 2rem;
+}
+
+/* ── SLIDER SECTION ── */
+.gh-client-slider-section {
+  background: rgba(248, 247, 244, 0.03);
+  border: 1px solid rgba(248, 247, 244, 0.07);
+  border-radius: 12px;
+  padding: 2rem 2.5rem;
+  margin-bottom: 3rem;
+  animation: fadeUp 0.6s 0.15s ease-out both;
+}
+.gh-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.25rem;
+}
+.gh-slider-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-steel);
+}
+.gh-price-display {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-amber);
+}
+.gh-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.gh-slider-bound {
+  font-size: 0.75rem;
+  color: var(--color-steel);
+  font-variant-numeric: tabular-nums;
+  min-width: 45px;
+}
+
+/* ── RANGE SLIDER ── */
+.gh-slider-row input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--color-amber) 0%,
+    var(--color-amber) var(--pct, 50%),
+    rgba(248, 247, 244, 0.1) var(--pct, 50%),
+    rgba(248, 247, 244, 0.1) 100%
+  );
+  outline: none;
+  cursor: pointer;
+  border: none;
+}
+.gh-slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-amber);
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(255, 186, 0, 0.4);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+.gh-slider-row input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 20px rgba(255, 186, 0, 0.6);
+  transform: scale(1.15);
+}
+.gh-slider-row input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-amber);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 12px rgba(255, 186, 0, 0.4);
+}
+.gh-slider-row input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(248, 247, 244, 0.1);
+}
+
+/* ── SLIDER EXTRAS ── */
+.gh-slider-extras {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(248, 247, 244, 0.05);
+}
+.gh-slider-extra-item {
+  font-size: 0.78rem;
+  color: var(--color-steel);
+}
+.gh-slider-extra-item span {
+  color: var(--color-paper);
+  font-weight: 500;
+}
+
+/* ── LOAN TERM SECTIONS ── */
+.gh-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  animation: fadeUp 0.5s ease-out both;
+}
+.gh-section-title h2 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-paper);
+}
+.gh-term-badge {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-steel);
+  background: rgba(248, 247, 244, 0.06);
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+}
+
+/* ── OPTION CARDS GRID ── */
+.gh-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+}
+
+/* ── OPTION CARD ── */
+.gh-option-card {
+  background: rgba(248, 247, 244, 0.025);
+  border: 1px solid rgba(248, 247, 244, 0.07);
+  border-radius: 10px;
+  padding: 1.5rem;
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: fadeUp 0.5s ease-out both;
+}
+.gh-option-card:hover {
+  border-color: rgba(255, 186, 0, 0.2);
+  background: rgba(248, 247, 244, 0.04);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+.gh-card-ltv {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-amber);
+  margin-bottom: 0.15rem;
+}
+.gh-card-rate {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  color: var(--color-paper);
+  line-height: 1.2;
+}
+.gh-card-credit {
+  font-size: 0.78rem;
+  color: var(--color-peach);
+  min-height: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+.gh-card-divider {
+  height: 1px;
+  background: rgba(248, 247, 244, 0.06);
+  margin: 0.75rem 0;
+}
+.gh-card-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  font-size: 0.85rem;
+}
+.gh-card-row-label {
+  color: var(--color-steel);
+}
+.gh-card-row-value {
+  color: var(--color-paper);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.gh-pmi .gh-card-row-label,
+.gh-pmi .gh-card-row-value {
+  color: var(--color-peach);
+  font-style: italic;
+}
+.gh-piti-total {
+  background: rgba(255, 186, 0, 0.06);
+  border: 1px solid rgba(255, 186, 0, 0.12);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+  text-align: center;
+}
+.gh-piti-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-amber);
+  margin-bottom: 0.2rem;
+}
+.gh-piti-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-paper);
+}
+
+/* ── FOOTER & DISCLAIMER ── */
+.gh-lo-footer {
+  text-align: center;
+  padding: 2rem 0;
+  font-size: 0.85rem;
+  color: var(--color-steel);
+  border-top: 1px solid rgba(248, 247, 244, 0.06);
+}
+.gh-lo-footer strong {
+  color: var(--color-paper);
+}
+.gh-disclaimer {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 3rem;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: rgba(122, 143, 158, 0.6);
+}
+.gh-disclaimer strong {
+  color: var(--color-steel);
+}
+
+/* ── NOT FOUND & LOADING STATES ── */
+.gh-not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+.gh-not-found h1 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-paper);
+  margin-bottom: 0.5rem;
+}
+.gh-not-found p {
+  color: var(--color-steel);
+  font-size: 0.9rem;
+}
+.gh-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  color: var(--color-steel);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .gh-admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .gh-scenario-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .gh-scenario-meta {
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .gh-form-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .gh-ltv-row {
+    flex-wrap: wrap;
+  }
+  .gh-client-slider-section {
+    padding: 1.5rem 1.25rem;
+  }
+  .gh-price-display {
+    font-size: 1.5rem;
+  }
+  .gh-slider-extras {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .gh-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .gh-option-card {
+    padding: 1.2rem;
+  }
+  .gh-card-rate {
+    font-size: 1.4rem;
+  }
+  .gh-modal-content {
+    padding: 1.5rem;
+  }
+}
