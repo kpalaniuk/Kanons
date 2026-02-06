@@ -1,5 +1,11 @@
-import { kv } from "@vercel/kv";
+import { createClient } from "@vercel/kv";
 import { Scenario } from "./types";
+
+// Create KV client using the kanons-prefixed env vars from Vercel Redis marketplace
+const kv = createClient({
+  url: process.env.kanons_KV_REST_API_URL!,
+  token: process.env.kanons_KV_REST_API_TOKEN!,
+});
 
 const SCENARIOS_KEY = "scenarios:index";
 const scenarioKey = (slug: string) => `scenario:${slug}`;
