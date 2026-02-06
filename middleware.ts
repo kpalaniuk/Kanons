@@ -1,23 +1,23 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
-const isPublicRoute = createRouteMatcher([
-  '/',
-  '/about',
-  '/music',
-  '/professional',
-  '/contact',
-  '/sign-in(.*)',
-  '/sign-up(.*)',
-  '/clients(.*)',
-  '/api/auth(.*)',
-  '/api/scenarios(.*)',
-])
+export default function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
 
-export default clerkMiddleware((auth, request) => {
-  if (!isPublicRoute(request)) {
-    auth().protect()
+  // Client portal routes: no auth middleware needed
+  // (these use their own password-based auth via /api/auth)
+  if (
+    path.startsWith('/clients') ||
+    path.startsWith('/api/auth') ||
+    path.startsWith('/api/scenarios') ||
+    path.startsWith('/api/debug')
+  ) {
+    return NextResponse.next();
   }
-})
+
+  // All other routes: let them through for now
+  // (Clerk can be re-enabled when keys are configured)
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
