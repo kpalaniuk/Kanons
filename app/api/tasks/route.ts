@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY
 const TASK_QUEUE_DB = '579dc054ab6247bba8d64771b13a190b'
+
+// Allowed email addresses
+const ALLOWED_EMAILS = (process.env.FAMILY_ALLOWED_EMAILS || 'kpalaniuk@gmail.com')
+  .split(',')
+  .map((e) => e.trim().toLowerCase())
+
+async function verifyAllowedUser(userId: string): Promise<boolean> {
+  try {
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const email = user.emailAddresses?.[0]?.emailAddress?.toLowerCase()
+    return !!email && ALLOWED_EMAILS.includes(email)
+  } catch {
+    return false
+  }
+}
 
 interface NotionSelectProperty {
   select: { name: string } | null
@@ -56,6 +72,10 @@ export async function GET(request: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!(await verifyAllowedUser(userId))) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   if (!NOTION_API_KEY) {
@@ -142,6 +162,10 @@ export async function PATCH(request: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!(await verifyAllowedUser(userId))) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   if (!NOTION_API_KEY) {
