@@ -1,10 +1,10 @@
-import { supabase } from "./supabase";
+import { getSupabase } from "./supabase";
 import { Scenario } from "./types";
 
 const TABLE = "purchase_scenarios";
 
 export async function listScenarios(): Promise<Scenario[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from(TABLE)
     .select("*")
     .order("updated_at", { ascending: false });
@@ -19,7 +19,7 @@ export async function listScenarios(): Promise<Scenario[]> {
 }
 
 export async function getScenario(slug: string): Promise<Scenario | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from(TABLE)
     .select("*")
     .eq("slug", slug)
@@ -43,7 +43,7 @@ export async function createScenario(input: Scenario): Promise<Scenario> {
   const now = new Date().toISOString();
   const scenario: Scenario = { ...input, createdAt: now, updatedAt: now };
 
-  const { error } = await supabase.from(TABLE).insert({
+  const { error } = await getSupabase().from(TABLE).insert({
     slug: scenario.slug,
     data: scenario,
     created_at: now,
@@ -64,7 +64,7 @@ export async function updateScenario(
   const now = new Date().toISOString();
   const updated: Scenario = { ...existing, ...patch, slug, updatedAt: now };
 
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from(TABLE)
     .update({ data: updated, updated_at: now })
     .eq("slug", slug);
@@ -74,7 +74,7 @@ export async function updateScenario(
 }
 
 export async function deleteScenario(slug: string): Promise<boolean> {
-  const { error } = await supabase.from(TABLE).delete().eq("slug", slug);
+  const { error } = await getSupabase().from(TABLE).delete().eq("slug", slug);
   if (error) throw new Error(`deleteScenario: ${error.message}`);
   return true;
 }
