@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 
 const socialLinks = [
   { href: 'https://linkedin.com/in/kylepalaniuk', label: 'LinkedIn' },
-  { href: 'https://instagram.com/kylepalaniuk', label: 'Instagram' },
+  { href: 'https://instagram.com/kyle_theukrainian', label: 'Instagram' },
   // Add more as needed
 ]
 

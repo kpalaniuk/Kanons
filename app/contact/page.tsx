@@ -75,7 +75,7 @@ export default function Contact() {
 
             {/* Instagram */}
             <a
-              href="https://instagram.com/kylepalaniuk"
+              href="https://instagram.com/kyle_theukrainian"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-cream rounded-2xl p-8 hover:shadow-lg transition-shadow group"
@@ -84,7 +84,7 @@ export default function Contact() {
                 <span className="text-2xl">📸</span>
               </div>
               <h3 className="font-display text-2xl text-midnight mb-2">Instagram</h3>
-              <p className="text-sunset font-medium">@kylepalaniuk</p>
+              <p className="text-sunset font-medium">@kyle_theukrainian</p>
               <p className="text-midnight/60 text-sm mt-2">
                 Behind the scenes
               </p>

@@ -77,8 +77,8 @@ export default function Music() {
                   both physically and emotionally.
                 </p>
                 <p>
-                  Working with Seth and Jaime, we've been crafting an album that 
-                  captures the energy of our live shows while exploring new sonic 
+                  Working with Seth Imming, we've been crafting an album that
+                  captures the energy of our live shows while exploring new sonic
                   territory in the studio.
                 </p>
               </div>
@@ -188,7 +188,7 @@ export default function Music() {
             The Band
           </h2>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
             <div className="text-center">
               <div className="w-32 h-32 bg-cream/10 rounded-full mx-auto mb-4" />
               <h3 className="font-semibold text-lg">Kyle Palaniuk</h3>
@@ -196,12 +196,7 @@ export default function Music() {
             </div>
             <div className="text-center">
               <div className="w-32 h-32 bg-cream/10 rounded-full mx-auto mb-4" />
-              <h3 className="font-semibold text-lg">Seth</h3>
-              <p className="text-cream/60">Instrument</p>
-            </div>
-            <div className="text-center">
-              <div className="w-32 h-32 bg-cream/10 rounded-full mx-auto mb-4" />
-              <h3 className="font-semibold text-lg">Jaime</h3>
+              <h3 className="font-semibold text-lg">Seth Imming</h3>
               <p className="text-cream/60">Instrument</p>
             </div>
           </div>

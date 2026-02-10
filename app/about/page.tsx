@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
 
 export default function About() {
@@ -39,10 +40,13 @@ export default function About() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="aspect-square bg-ink rounded-3xl overflow-hidden relative"
             >
-              {/* Placeholder for headshot */}
-              <div className="w-full h-full bg-gradient-to-br from-royal/30 to-amber/20 flex items-center justify-center">
-                <span className="text-paper/40 text-sm">Your photo here</span>
-              </div>
+              <Image
+                src="/kyle-headshot.jpg"
+                alt="Kyle Palaniuk"
+                fill
+                className="object-cover"
+                priority
+              />
               {/* Decorative accent */}
               <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-cyan rounded-2xl -z-10" />
             </motion.div>
