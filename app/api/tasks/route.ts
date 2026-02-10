@@ -157,6 +157,86 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// POST /api/tasks — create a new task in Notion
+export async function POST(request: NextRequest) {
+  const { userId } = await auth()
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!(await verifyAllowedUser(userId))) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  if (!NOTION_API_KEY) {
+    return NextResponse.json({ error: 'Notion API key not configured' }, { status: 500 })
+  }
+
+  try {
+    const body = await request.json()
+    const { title, priority = 'Medium', category = 'Other', dueDate, notes = '' } = body
+
+    if (!title || !title.trim()) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+    }
+
+    const properties: Record<string, unknown> = {
+      Task: {
+        title: [{ text: { content: title.trim() } }],
+      },
+      Status: {
+        select: { name: 'Not Started' },
+      },
+      Priority: {
+        select: { name: priority },
+      },
+      Category: {
+        select: { name: category },
+      },
+      'Assigned By': {
+        select: { name: 'Kyle' },
+      },
+    }
+
+    if (dueDate) {
+      properties['Due Date'] = {
+        date: { start: dueDate },
+      }
+    }
+
+    if (notes.trim()) {
+      properties.Notes = {
+        rich_text: [{ text: { content: notes.trim() } }],
+      }
+    }
+
+    const response = await fetch('https://api.notion.com/v1/pages', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${NOTION_API_KEY}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        parent: { database_id: TASK_QUEUE_DB },
+        properties,
+      }),
+    })
+
+    if (!response.ok) {
+      const err = await response.json()
+      console.error('Notion create error:', err)
+      return NextResponse.json({ error: 'Failed to create task' }, { status: 500 })
+    }
+
+    const data = await response.json()
+    return NextResponse.json({ success: true, taskId: data.id })
+  } catch (error) {
+    console.error('Tasks POST error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
 // PATCH /api/tasks — update a task's status in Notion
 export async function PATCH(request: NextRequest) {
   const { userId } = await auth()

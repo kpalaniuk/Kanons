@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion'
 
 interface Task {
   id: string
@@ -67,7 +67,20 @@ const LIFE_AREAS = {
 const STATUS_FLOW: string[] = ['Not Started', 'In Progress', 'Waiting on Kyle', 'Done']
 
 // Weekly schedule context
-const WEEKLY_SCHEDULE = {
+interface DaySchedule {
+  label: string
+  constraints: string[]
+  availableHours: string
+  emoji: string
+  workEnd?: string
+  reminder?: {
+    icon: string
+    title: string
+    message: string
+  }
+}
+
+const WEEKLY_SCHEDULE: Record<number, DaySchedule> = {
   0: { // Sunday
     label: 'Sunday',
     constraints: [],
@@ -119,6 +132,8 @@ const WEEKLY_SCHEDULE = {
     emoji: '🌟',
   },
 }
+
+type QuickFilterType = 'all' | 'focus' | 'waiting' | 'overdue' | 'done'
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return ''
@@ -187,13 +202,23 @@ export default function TasksPage() {
     status: 'all',
     showDone: false,
   })
+  const [quickFilter, setQuickFilter] = useState<QuickFilterType>('all')
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
   const [expandedTask, setExpandedTask] = useState<string | null>(null)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [newTask, setNewTask] = useState({
+    title: '',
+    priority: 'Medium',
+    category: 'Other',
+    dueDate: '',
+    notes: '',
+  })
+  const [creating, setCreating] = useState(false)
 
   const fetchTasks = useCallback(async () => {
     try {
       const params = new URLSearchParams()
-      if (filter.showDone) params.set('showDone', 'true')
+      if (filter.showDone || quickFilter === 'done') params.set('showDone', 'true')
 
       const res = await fetch(`/api/tasks?${params.toString()}`)
       if (!res.ok) throw new Error('Failed to fetch tasks')
@@ -206,12 +231,37 @@ export default function TasksPage() {
     } finally {
       setLoading(false)
     }
-  }, [filter.showDone])
+  }, [filter.showDone, quickFilter])
 
   useEffect(() => {
     setLoading(true)
     fetchTasks()
   }, [fetchTasks])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger shortcuts when typing in inputs
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault()
+        setShowAddModal(true)
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault()
+        setQuickFilter(quickFilter === 'focus' ? 'all' : 'focus')
+      } else if (e.key === 'k' || e.key === 'K') {
+        e.preventDefault()
+        setViewMode(viewMode === 'kanban' ? 'list' : 'kanban')
+      } else if (e.key === 'Escape') {
+        setShowAddModal(false)
+        setExpandedTask(null)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [quickFilter, viewMode])
 
   const updateStatus = async (taskId: string, newStatus: string) => {
     setUpdating(taskId)
@@ -227,7 +277,7 @@ export default function TasksPage() {
         prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
       )
 
-      if ((newStatus === 'Done' || newStatus === 'Cancelled') && !filter.showDone) {
+      if ((newStatus === 'Done' || newStatus === 'Cancelled') && !filter.showDone && quickFilter !== 'done') {
         setTimeout(() => {
           setTasks((prev) => prev.filter((t) => t.id !== taskId))
         }, 600)
@@ -246,15 +296,57 @@ export default function TasksPage() {
     updateStatus(task.id, STATUS_FLOW[nextIdx])
   }
 
+  const createTask = async () => {
+    if (!newTask.title.trim()) return
+
+    setCreating(true)
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTask),
+      })
+      if (!res.ok) throw new Error('Failed to create task')
+
+      setShowAddModal(false)
+      setNewTask({ title: '', priority: 'Medium', category: 'Other', dueDate: '', notes: '' })
+      fetchTasks()
+    } catch (err) {
+      console.error(err)
+      alert('Failed to create task')
+    } finally {
+      setCreating(false)
+    }
+  }
+
   // Today's context
   const today = new Date()
   const dayOfWeek = today.getDay()
-  const todaySchedule = WEEKLY_SCHEDULE[dayOfWeek as keyof typeof WEEKLY_SCHEDULE]
+  const todaySchedule = WEEKLY_SCHEDULE[dayOfWeek]
   const timeBlocks = getTimeRemaining()
+
+  // Apply quick filters
+  const applyQuickFilter = (tasks: Task[]) => {
+    switch (quickFilter) {
+      case 'focus':
+        return tasks.filter(t => 
+          (t.priority === 'Urgent' || t.priority === 'High') &&
+          (t.status === 'Not Started' || t.status === 'In Progress')
+        )
+      case 'waiting':
+        return tasks.filter(t => t.status === 'Waiting on Kyle')
+      case 'overdue':
+        return tasks.filter(t => isOverdue(t.dueDate) && t.status !== 'Done')
+      case 'done':
+        return tasks.filter(t => t.status === 'Done')
+      default:
+        return tasks
+    }
+  }
 
   // Filter tasks by life area and priority
   const filteredTasks = useMemo(() => {
-    let result = tasks
+    let result = applyQuickFilter(tasks)
 
     // Filter by life area
     if (filter.lifeArea !== 'all') {
@@ -262,18 +354,45 @@ export default function TasksPage() {
       result = result.filter(t => categories.includes(t.category))
     }
 
-    // Filter by priority
-    if (filter.priority !== 'all') {
+    // Filter by priority (unless quick filter is active)
+    if (filter.priority !== 'all' && quickFilter === 'all') {
       result = result.filter(t => t.priority === filter.priority)
     }
 
-    // Filter by status
-    if (filter.status !== 'all') {
+    // Filter by status (unless quick filter is active)
+    if (filter.status !== 'all' && quickFilter === 'all') {
       result = result.filter(t => t.status === filter.status)
     }
 
     return result
-  }, [tasks, filter.lifeArea, filter.priority, filter.status])
+  }, [tasks, filter.lifeArea, filter.priority, filter.status, quickFilter])
+
+  // Count tasks per life area
+  const lifeAreaCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    Object.entries(LIFE_AREAS).forEach(([area, categories]) => {
+      counts[area] = tasks.filter(t => categories.includes(t.category) && t.status !== 'Done' && t.status !== 'Cancelled').length
+    })
+    return counts
+  }, [tasks])
+
+  // Quick filter counts
+  const quickFilterCounts = useMemo(() => ({
+    focus: tasks.filter(t => 
+      (t.priority === 'Urgent' || t.priority === 'High') &&
+      (t.status === 'Not Started' || t.status === 'In Progress')
+    ).length,
+    waiting: tasks.filter(t => t.status === 'Waiting on Kyle').length,
+    overdue: tasks.filter(t => isOverdue(t.dueDate) && t.status !== 'Done').length,
+    done: tasks.filter(t => t.status === 'Done').length,
+  }), [tasks])
+
+  // Progress calculation
+  const progress = useMemo(() => {
+    const total = tasks.filter(t => t.status !== 'Cancelled').length
+    const done = tasks.filter(t => t.status === 'Done').length
+    return total > 0 ? (done / total) * 100 : 0
+  }, [tasks])
 
   // Group tasks by status
   const groupedTasks = filteredTasks.reduce<Record<string, Task[]>>((acc, task) => {
@@ -301,20 +420,59 @@ export default function TasksPage() {
 
   const statusOrder = ['In Progress', 'Not Started', 'Waiting on Kyle', 'Done', 'Cancelled']
 
+  // Empty state messages
+  const getEmptyStateMessage = () => {
+    switch (quickFilter) {
+      case 'focus':
+        return { emoji: '🎉', title: 'Nothing urgent!', message: 'All high-priority tasks are handled.' }
+      case 'waiting':
+        return { emoji: '🤖', title: 'All clear!', message: 'No tasks waiting on you — Jasper\'s got it handled.' }
+      case 'overdue':
+        return { emoji: '🎉', title: 'Nothing overdue!', message: 'You\'re on top of everything.' }
+      case 'done':
+        return { emoji: '💪', title: 'No completed tasks yet', message: 'Get started and crush some tasks!' }
+      default:
+        return { emoji: '🎉', title: 'All clear!', message: 'No tasks in this view.' }
+    }
+  }
+
   const TaskCard = ({ task }: { task: Task }) => {
     const priColor = PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.Medium
     const overdue = isOverdue(task.dueDate)
     const isExpanded = expandedTask === task.id
     const isUpdating = updating === task.id
 
+    const x = useMotionValue(0)
+    const backgroundColor = useTransform(
+      x,
+      [-150, 0, 150],
+      ['rgb(239, 68, 68)', 'rgb(248, 247, 244)', 'rgb(16, 185, 129)']
+    )
+    const opacity = useTransform(x, [-150, 0, 150], [0.8, 1, 0.8])
+
+    const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      if (info.offset.x > 100) {
+        // Swipe right → Done
+        updateStatus(task.id, 'Done')
+      } else if (info.offset.x < -100) {
+        // Swipe left → Cycle status
+        cycleStatus(task)
+      }
+    }
+
     return (
       <motion.div
         key={task.id}
         layout
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        onDragEnd={handleDragEnd}
+        style={{ x, backgroundColor, opacity }}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: isUpdating ? 0.6 : 1, y: 0 }}
         exit={{ opacity: 0, x: 50, transition: { duration: 0.3 } }}
-        className={`bg-cream rounded-xl border transition-all ${
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className={`rounded-xl border transition-all ${
           overdue ? 'border-red-200' : 'border-midnight/5 hover:border-midnight/10'
         } ${isExpanded ? 'shadow-md' : 'hover:shadow-sm'}`}
       >
@@ -422,7 +580,7 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto pb-24">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -515,32 +673,132 @@ export default function TasksPage() {
         )}
       </motion.div>
 
-      {/* Stats Row */}
+      {/* Stats Row with Progress Bar */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="grid grid-cols-3 gap-3 mb-6"
+        className="mb-6"
       >
-        <div className="bg-cream rounded-xl p-4 border border-midnight/5">
-          <div className="text-2xl font-display font-bold text-midnight">{filteredTasks.length}</div>
-          <div className="text-xs text-midnight/50 mt-0.5">Active Tasks</div>
+        {/* Progress Bar */}
+        <div className="bg-cream rounded-xl p-4 border border-midnight/5 mb-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-midnight/60">Today's Progress</span>
+            <span className="text-sm font-display font-bold text-midnight">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-2 bg-midnight/5 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
+              className="h-full bg-gradient-to-r from-ocean to-cyan rounded-full"
+            />
+          </div>
         </div>
-        <div className={`rounded-xl p-4 border ${urgentCount > 0 ? 'bg-red-50 border-red-100' : 'bg-cream border-midnight/5'}`}>
-          <div className={`text-2xl font-display font-bold ${urgentCount > 0 ? 'text-red-600' : 'text-midnight'}`}>
-            {urgentCount}
+
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-cream rounded-xl p-4 border border-midnight/5">
+            <div className="text-2xl font-display font-bold text-midnight">{filteredTasks.length}</div>
+            <div className="text-xs text-midnight/50 mt-0.5">Active Tasks</div>
           </div>
-          <div className={`text-xs mt-0.5 ${urgentCount > 0 ? 'text-red-500' : 'text-midnight/50'}`}>
-            Urgent / High
+          <div className={`rounded-xl p-4 border ${urgentCount > 0 ? 'bg-red-50 border-red-100' : 'bg-cream border-midnight/5'}`}>
+            <div className={`text-2xl font-display font-bold ${urgentCount > 0 ? 'text-red-600' : 'text-midnight'}`}>
+              {urgentCount}
+            </div>
+            <div className={`text-xs mt-0.5 ${urgentCount > 0 ? 'text-red-500' : 'text-midnight/50'}`}>
+              Urgent / High
+            </div>
+          </div>
+          <div className={`rounded-xl p-4 border ${overdueCount > 0 ? 'bg-amber-50 border-amber-100' : 'bg-cream border-midnight/5'}`}>
+            <div className={`text-2xl font-display font-bold ${overdueCount > 0 ? 'text-amber-600' : 'text-midnight'}`}>
+              {overdueCount}
+            </div>
+            <div className={`text-xs mt-0.5 ${overdueCount > 0 ? 'text-amber-500' : 'text-midnight/50'}`}>
+              Overdue
+            </div>
           </div>
         </div>
-        <div className={`rounded-xl p-4 border ${overdueCount > 0 ? 'bg-amber-50 border-amber-100' : 'bg-cream border-midnight/5'}`}>
-          <div className={`text-2xl font-display font-bold ${overdueCount > 0 ? 'text-amber-600' : 'text-midnight'}`}>
-            {overdueCount}
-          </div>
-          <div className={`text-xs mt-0.5 ${overdueCount > 0 ? 'text-amber-500' : 'text-midnight/50'}`}>
-            Overdue
-          </div>
+      </motion.div>
+
+      {/* Quick Action Buttons */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.12 }}
+        className="mb-6"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setQuickFilter(quickFilter === 'focus' ? 'all' : 'focus')}
+            className={`p-4 rounded-2xl text-left transition-all ${
+              quickFilter === 'focus'
+                ? 'bg-gradient-to-br from-ocean to-cyan text-white shadow-lg ring-2 ring-ocean/20'
+                : 'bg-cream border border-midnight/10 hover:border-ocean hover:shadow-md'
+            }`}
+          >
+            <div className="text-2xl mb-1">⚡</div>
+            <div className={`font-display font-bold text-lg ${quickFilter === 'focus' ? 'text-white' : 'text-midnight'}`}>
+              {quickFilterCounts.focus}
+            </div>
+            <div className={`text-xs ${quickFilter === 'focus' ? 'text-white/80' : 'text-midnight/60'}`}>
+              My Focus
+            </div>
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setQuickFilter(quickFilter === 'waiting' ? 'all' : 'waiting')}
+            className={`p-4 rounded-2xl text-left transition-all ${
+              quickFilter === 'waiting'
+                ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg ring-2 ring-purple-500/20'
+                : 'bg-cream border border-midnight/10 hover:border-purple-500 hover:shadow-md'
+            }`}
+          >
+            <div className="text-2xl mb-1">⏳</div>
+            <div className={`font-display font-bold text-lg ${quickFilter === 'waiting' ? 'text-white' : 'text-midnight'}`}>
+              {quickFilterCounts.waiting}
+            </div>
+            <div className={`text-xs ${quickFilter === 'waiting' ? 'text-white/80' : 'text-midnight/60'}`}>
+              Waiting on Me
+            </div>
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setQuickFilter(quickFilter === 'overdue' ? 'all' : 'overdue')}
+            className={`p-4 rounded-2xl text-left transition-all ${
+              quickFilter === 'overdue'
+                ? 'bg-gradient-to-br from-red-500 to-orange-500 text-white shadow-lg ring-2 ring-red-500/20'
+                : 'bg-cream border border-midnight/10 hover:border-red-500 hover:shadow-md'
+            }`}
+          >
+            <div className="text-2xl mb-1">🔥</div>
+            <div className={`font-display font-bold text-lg ${quickFilter === 'overdue' ? 'text-white' : 'text-midnight'}`}>
+              {quickFilterCounts.overdue}
+            </div>
+            <div className={`text-xs ${quickFilter === 'overdue' ? 'text-white/80' : 'text-midnight/60'}`}>
+              Overdue
+            </div>
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setQuickFilter(quickFilter === 'done' ? 'all' : 'done')}
+            className={`p-4 rounded-2xl text-left transition-all ${
+              quickFilter === 'done'
+                ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg ring-2 ring-emerald-500/20'
+                : 'bg-cream border border-midnight/10 hover:border-emerald-500 hover:shadow-md'
+            }`}
+          >
+            <div className="text-2xl mb-1">✅</div>
+            <div className={`font-display font-bold text-lg ${quickFilter === 'done' ? 'text-white' : 'text-midnight'}`}>
+              {quickFilterCounts.done}
+            </div>
+            <div className={`text-xs ${quickFilter === 'done' ? 'text-white/80' : 'text-midnight/60'}`}>
+              Recently Done
+            </div>
+          </motion.button>
         </div>
       </motion.div>
 
@@ -552,19 +810,29 @@ export default function TasksPage() {
         className="mb-6"
       >
         <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-2 scrollbar-hide">
-          {['all', ...Object.keys(LIFE_AREAS)].map((area) => (
-            <button
-              key={area}
-              onClick={() => setFilter(f => ({ ...f, lifeArea: area }))}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                filter.lifeArea === area
-                  ? 'bg-ocean text-white shadow-md'
-                  : 'bg-cream text-midnight/60 hover:bg-midnight/5'
-              }`}
-            >
-              {area === 'all' ? '🎯 All' : area}
-            </button>
-          ))}
+          {['all', ...Object.keys(LIFE_AREAS)].map((area) => {
+            const count = area === 'all' 
+              ? tasks.filter(t => t.status !== 'Done' && t.status !== 'Cancelled').length
+              : lifeAreaCounts[area] || 0
+            return (
+              <button
+                key={area}
+                onClick={() => setFilter(f => ({ ...f, lifeArea: area }))}
+                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 ${
+                  filter.lifeArea === area
+                    ? 'bg-ocean text-white shadow-md'
+                    : 'bg-cream text-midnight/60 hover:bg-midnight/5'
+                }`}
+              >
+                {area === 'all' ? '🎯 All' : area}
+                <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                  filter.lifeArea === area ? 'bg-white/20' : 'bg-midnight/10'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            )
+          })}
         </div>
 
         {/* Status Filter Chips */}
@@ -628,7 +896,7 @@ export default function TasksPage() {
             <button
               onClick={() => setViewMode('kanban')}
               className={`p-2 rounded-lg transition-colors ${viewMode === 'kanban' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight'}`}
-              title="Kanban view"
+              title="Kanban view (K)"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 4H5a2 2 0 00-2 2v14a2 2 0 002 2h4m0-18v18m0-18l6 0m-6 0v18m6-18h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m0-18v18" />
@@ -644,6 +912,17 @@ export default function TasksPage() {
               </svg>
             </button>
           </div>
+        </div>
+
+        {/* Keyboard Hints */}
+        <div className="hidden md:flex items-center gap-3 mt-3 text-[10px] text-midnight/30">
+          <span>💡 Keyboard shortcuts:</span>
+          <kbd className="px-2 py-1 bg-midnight/5 rounded">N</kbd>
+          <span>New task</span>
+          <kbd className="px-2 py-1 bg-midnight/5 rounded">F</kbd>
+          <span>Focus mode</span>
+          <kbd className="px-2 py-1 bg-midnight/5 rounded">K</kbd>
+          <span>Kanban</span>
         </div>
       </motion.div>
 
@@ -678,15 +957,21 @@ export default function TasksPage() {
       {/* Empty State */}
       {!loading && !error && filteredTasks.length === 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200 }}
           className="bg-cream rounded-2xl p-12 text-center"
         >
-          <div className="w-16 h-16 bg-terracotta/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">🎉</span>
-          </div>
-          <h2 className="font-display text-xl text-midnight mb-2">All clear!</h2>
-          <p className="text-midnight/50 text-sm">No tasks in this view.</p>
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
+            className="w-20 h-20 bg-terracotta/10 rounded-full flex items-center justify-center mx-auto mb-4"
+          >
+            <span className="text-4xl">{getEmptyStateMessage().emoji}</span>
+          </motion.div>
+          <h2 className="font-display text-xl text-midnight mb-2">{getEmptyStateMessage().title}</h2>
+          <p className="text-midnight/50 text-sm">{getEmptyStateMessage().message}</p>
         </motion.div>
       )}
 
@@ -695,7 +980,20 @@ export default function TasksPage() {
         <>
           {viewMode === 'list' ? (
             // List View
-            <div className="space-y-6">
+            <motion.div 
+              className="space-y-6"
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.05
+                  }
+                }
+              }}
+              initial="hidden"
+              animate="show"
+            >
               {statusOrder.map((status) => {
                 const group = groupedTasks[status]
                 if (!group || group.length === 0) return null
@@ -705,9 +1003,10 @@ export default function TasksPage() {
                 return (
                   <motion.div
                     key={status}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      show: { opacity: 1, y: 0 }
+                    }}
                   >
                     <div className="flex items-center gap-2 mb-3">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
@@ -717,17 +1016,30 @@ export default function TasksPage() {
                       <span className="text-xs text-midnight/30">{group.length}</span>
                     </div>
 
-                    <div className="space-y-2">
+                    <motion.div 
+                      className="space-y-2"
+                      variants={{
+                        hidden: { opacity: 0 },
+                        show: {
+                          opacity: 1,
+                          transition: {
+                            staggerChildren: 0.03
+                          }
+                        }
+                      }}
+                      initial="hidden"
+                      animate="show"
+                    >
                       <AnimatePresence mode="popLayout">
                         {group
                           .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4))
                           .map((task) => <TaskCard key={task.id} task={task} />)}
                       </AnimatePresence>
-                    </div>
+                    </motion.div>
                   </motion.div>
                 )
               })}
-            </div>
+            </motion.div>
           ) : (
             // Kanban View
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -763,6 +1075,137 @@ export default function TasksPage() {
           )}
         </>
       )}
+
+      {/* Floating Action Button */}
+      <motion.button
+        initial={{ scale: 0, rotate: -180 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: 'spring', stiffness: 200, delay: 0.5 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setShowAddModal(true)}
+        className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-ocean to-cyan text-white rounded-full shadow-2xl flex items-center justify-center z-50 hover:shadow-ocean/50"
+      >
+        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+      </motion.button>
+
+      {/* Add Task Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAddModal(false)}
+              className="fixed inset-0 bg-midnight/40 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-cream rounded-2xl shadow-2xl z-50 p-6 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-display text-2xl text-midnight">Create New Task</h2>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="text-midnight/40 hover:text-midnight transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-midnight/60 mb-2">
+                    Title <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newTask.title}
+                    onChange={(e) => setNewTask(t => ({ ...t, title: e.target.value }))}
+                    placeholder="What needs to be done?"
+                    className="w-full px-4 py-3 bg-white border border-midnight/10 rounded-xl text-midnight placeholder:text-midnight/30 focus:outline-none focus:border-ocean transition-colors"
+                    autoFocus
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-midnight/60 mb-2">Priority</label>
+                    <select
+                      value={newTask.priority}
+                      onChange={(e) => setNewTask(t => ({ ...t, priority: e.target.value }))}
+                      className="w-full px-4 py-3 bg-white border border-midnight/10 rounded-xl text-midnight focus:outline-none focus:border-ocean transition-colors"
+                    >
+                      <option value="Urgent">Urgent</option>
+                      <option value="High">High</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Low">Low</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-midnight/60 mb-2">Category</label>
+                    <select
+                      value={newTask.category}
+                      onChange={(e) => setNewTask(t => ({ ...t, category: e.target.value }))}
+                      className="w-full px-4 py-3 bg-white border border-midnight/10 rounded-xl text-midnight focus:outline-none focus:border-ocean transition-colors"
+                    >
+                      {Object.keys(CATEGORY_ICONS).map(cat => (
+                        <option key={cat} value={cat}>{CATEGORY_ICONS[cat]} {cat}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-midnight/60 mb-2">Due Date</label>
+                  <input
+                    type="date"
+                    value={newTask.dueDate}
+                    onChange={(e) => setNewTask(t => ({ ...t, dueDate: e.target.value }))}
+                    className="w-full px-4 py-3 bg-white border border-midnight/10 rounded-xl text-midnight focus:outline-none focus:border-ocean transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-midnight/60 mb-2">Notes</label>
+                  <textarea
+                    value={newTask.notes}
+                    onChange={(e) => setNewTask(t => ({ ...t, notes: e.target.value }))}
+                    placeholder="Additional details..."
+                    rows={4}
+                    className="w-full px-4 py-3 bg-white border border-midnight/10 rounded-xl text-midnight placeholder:text-midnight/30 focus:outline-none focus:border-ocean transition-colors resize-none"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setShowAddModal(false)}
+                    className="flex-1 px-6 py-3 bg-midnight/5 text-midnight rounded-xl font-medium hover:bg-midnight/10 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={createTask}
+                    disabled={!newTask.title.trim() || creating}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-ocean to-cyan text-white rounded-xl font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {creating ? 'Creating...' : 'Create Task'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Footer */}
       <motion.div
