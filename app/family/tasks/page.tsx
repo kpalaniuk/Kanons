@@ -181,9 +181,10 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
-  const [filter, setFilter] = useState<{ lifeArea: string; priority: string; showDone: boolean }>({
+  const [filter, setFilter] = useState<{ lifeArea: string; priority: string; status: string; showDone: boolean }>({
     lifeArea: 'all',
     priority: 'all',
+    status: 'all',
     showDone: false,
   })
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
@@ -266,8 +267,13 @@ export default function TasksPage() {
       result = result.filter(t => t.priority === filter.priority)
     }
 
+    // Filter by status
+    if (filter.status !== 'all') {
+      result = result.filter(t => t.status === filter.status)
+    }
+
     return result
-  }, [tasks, filter.lifeArea, filter.priority])
+  }, [tasks, filter.lifeArea, filter.priority, filter.status])
 
   // Group tasks by status
   const groupedTasks = filteredTasks.reduce<Record<string, Task[]>>((acc, task) => {
@@ -559,6 +565,32 @@ export default function TasksPage() {
               {area === 'all' ? '🎯 All' : area}
             </button>
           ))}
+        </div>
+
+        {/* Status Filter Chips */}
+        <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
+          {['all', ...STATUS_FLOW].map((status) => {
+            const style = status === 'all' ? null : STATUS_STYLES[status]
+            const count = status === 'all' 
+              ? tasks.length 
+              : tasks.filter(t => t.status === status).length
+            const isActive = filter.status === status
+            return (
+              <button
+                key={status}
+                onClick={() => setFilter(f => ({ ...f, status }))}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                  isActive
+                    ? style ? `${style.bg} ${style.text} ring-1 ring-current/20` : 'bg-midnight text-cream'
+                    : 'bg-cream text-midnight/40 hover:bg-midnight/5 border border-midnight/5'
+                }`}
+              >
+                {style && <span>{style.icon}</span>}
+                {status === 'all' ? 'All Statuses' : status}
+                <span className={`ml-0.5 ${isActive ? 'opacity-80' : 'opacity-40'}`}>({count})</span>
+              </button>
+            )
+          })}
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
