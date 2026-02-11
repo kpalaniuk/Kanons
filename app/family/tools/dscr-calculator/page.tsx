@@ -148,7 +148,7 @@ export default function DSCRCalculatorPage() {
     const percentage = ((value - min) / (max - min)) * 100
     
     return (
-      <div className="relative">
+      <div className="relative pt-8">
         <input
           type="range"
           min={min}
@@ -162,8 +162,8 @@ export default function DSCRCalculatorPage() {
           }}
         />
         <div 
-          className="absolute -top-8 left-0 bg-midnight text-cream px-2 py-1 rounded text-xs font-medium pointer-events-none"
-          style={{ left: `calc(${percentage}% - 20px)` }}
+          className="absolute -top-8 bg-midnight text-cream px-2 py-1 rounded text-xs font-medium pointer-events-none whitespace-nowrap"
+          style={{ left: `clamp(0px, calc(${percentage}% - 20px), calc(100% - 60px))` }}
         >
           {format(value)}
         </div>
