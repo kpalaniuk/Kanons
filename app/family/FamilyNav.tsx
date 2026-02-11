@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 const familyLinks = [
   { href: '/family', label: 'Home', icon: '🏠' },
   { href: '/family/tasks', label: 'Tasks', icon: '✅' },
+  { href: '/family/pipeline', label: 'Pipeline', icon: '📋' },
   { href: '/family/tools', label: 'Tools', icon: '🛠️' },
 ]
 
