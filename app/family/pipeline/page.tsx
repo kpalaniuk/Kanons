@@ -485,9 +485,9 @@ export default function PipelinePage() {
               return (
                 <button
                   key={priority}
-                  onClick={() => setFilterPriority(priority.toLowerCase())}
+                  onClick={() => setFilterPriority(priority)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                    filterPriority === priority.toLowerCase()
+                    filterPriority === priority
                       ? style ? `${style.bg} ${style.text}` : 'bg-midnight text-cream'
                       : 'bg-cream text-midnight/60 hover:bg-midnight/5 border border-midnight/10'
                   }`}
