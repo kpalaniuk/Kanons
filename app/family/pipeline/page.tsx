@@ -477,9 +477,13 @@ export default function PipelinePage() {
           {/* Priority Filter */}
           <div className="flex items-center gap-2">
             {['all', 'Hot', 'Active', 'Monitoring'].map(priority => {
+              // Calculate count based on status-filtered clients
+              const statusFilteredClients = filterStatus !== 'all' 
+                ? clients.filter(c => c.status === filterStatus)
+                : clients
               const count = priority === 'all' 
-                ? clients.length 
-                : clients.filter(c => c.priority === priority).length
+                ? statusFilteredClients.length 
+                : statusFilteredClients.filter(c => c.priority === priority).length
               const style = priority !== 'all' ? PRIORITY_COLORS[priority] : null
               
               return (

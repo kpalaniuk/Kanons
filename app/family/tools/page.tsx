@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Link from 'next/link'
 
 interface Artifact {
   slug: string
@@ -423,25 +424,27 @@ export default function ToolsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* DSCR Calculator */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.25 }}
-            className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-200 rounded-xl p-6 relative overflow-hidden"
-          >
-            <div className="absolute top-3 right-3">
-              <span className="inline-flex items-center px-2 py-1 bg-emerald-500 text-white rounded-md text-[10px] font-bold uppercase tracking-wider">
-                Coming Soon
-              </span>
-            </div>
-            <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
-              <span className="text-2xl">🧮</span>
-            </div>
-            <h3 className="font-display text-lg font-bold text-midnight mb-2">DSCR Calculator</h3>
-            <p className="text-sm text-midnight/60 leading-relaxed">
-              Calculate Debt Service Coverage Ratio for investment property loans with rental income estimates
-            </p>
-          </motion.div>
+          <Link href="/family/tools/dscr-calculator">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.25 }}
+              className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-200 hover:border-emerald-300 rounded-xl p-6 relative overflow-hidden cursor-pointer group transition-all hover:shadow-lg hover:scale-[1.02]"
+            >
+              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="inline-flex items-center px-2 py-1 bg-emerald-500 text-white rounded-md text-[10px] font-bold uppercase tracking-wider">
+                  Open →
+                </span>
+              </div>
+              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <span className="text-2xl">🧮</span>
+              </div>
+              <h3 className="font-display text-lg font-bold text-midnight mb-2">DSCR Calculator</h3>
+              <p className="text-sm text-midnight/60 leading-relaxed">
+                Calculate Debt Service Coverage Ratio for investment property loans with rental income estimates
+              </p>
+            </motion.div>
+          </Link>
 
           {/* Refi Scenario Builder */}
           <motion.div
