@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import KeepyUppy from '@/components/KeepyUppy'
+import Ambient from '@/components/Ambient'
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -13,6 +14,9 @@ export default function Home() {
 
   return (
     <div className="page-transition">
+      {/* Ambient — living art layer that breathes with the time of day */}
+      <Ambient />
+      
       {/* Hero Section with Keepy Uppy */}
       <section className="min-h-screen flex items-center relative overflow-hidden bg-paper">
         
