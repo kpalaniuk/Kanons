@@ -468,6 +468,19 @@ export default function ToolsPage() {
               <p className="text-sm text-midnight/60 leading-relaxed">Multi-scenario purchase calculator — price points, down payments, PMI, DTI qualification</p>
             </div>
           </Link>
+
+          <Link href="/family/tools/usage">
+            <div className="bg-gradient-to-br from-ocean/10 to-cyan/10 border-2 border-ocean/20 hover:border-ocean/30 rounded-xl p-6 relative overflow-hidden cursor-pointer group transition-all hover:shadow-lg hover:scale-[1.02]">
+              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="inline-flex items-center px-2 py-1 bg-ocean text-white rounded-md text-[10px] font-bold uppercase tracking-wider">Open →</span>
+              </div>
+              <div className="w-12 h-12 bg-ocean/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <span className="text-2xl">📊</span>
+              </div>
+              <h3 className="font-display text-lg font-bold text-midnight mb-2">API Usage Dashboard</h3>
+              <p className="text-sm text-midnight/60 leading-relaxed">Track AI provider usage, costs, and token consumption across Nexos, Anthropic, OpenAI, and Google</p>
+            </div>
+          </Link>
         </div>
       </div>
     </div>

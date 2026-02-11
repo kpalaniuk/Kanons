@@ -8,6 +8,7 @@ const familyLinks = [
   { href: '/family/tasks', label: 'Tasks', icon: '✅' },
   { href: '/family/pipeline', label: 'Pipeline', icon: '📋' },
   { href: '/family/tools', label: 'Tools', icon: '🛠️' },
+  { href: '/family/tools/usage', label: 'Usage', icon: '📊' },
 ]
 
 export default function FamilyNav() {

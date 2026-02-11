@@ -1,0 +1,72 @@
+{
+  "lastUpdated": "2026-02-11T05:45:00.000Z",
+  "period": "Feb 2026",
+  "providers": [
+    {
+      "name": "Nexos (Prepaid)",
+      "model": "Claude Opus 4.6",
+      "status": "active",
+      "calls": 1450,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "estimatedCost": 0,
+      "notes": "Prepaid credits bucket — handles majority of traffic with zero marginal cost. Token counts not reported."
+    },
+    {
+      "name": "Anthropic",
+      "model": "Claude Opus 4.6 / Sonnet 4.5",
+      "status": "active",
+      "calls": 335,
+      "tokensIn": 95000,
+      "tokensOut": 125000,
+      "estimatedCost": 10.8,
+      "notes": "Fallback for main agent + sub-agent tasks. ~325 Opus calls, ~10 Sonnet sub-agent calls."
+    },
+    {
+      "name": "OpenAI",
+      "model": "GPT-4o-mini",
+      "status": "limited",
+      "calls": 12,
+      "tokensIn": 3200,
+      "tokensOut": 1800,
+      "estimatedCost": 0.011,
+      "notes": "Used for task update feature. Minimal usage — consider expanding for cost efficiency."
+    },
+    {
+      "name": "Google",
+      "model": "Gemini 1.5 Pro",
+      "status": "inactive",
+      "calls": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "estimatedCost": 0,
+      "notes": "Available but not actively used yet. Could be cost-effective for certain sub-agent tasks."
+    }
+  ],
+  "daily": [
+    {
+      "date": "2026-02-10",
+      "calls": 892,
+      "tokensIn": 48600,
+      "tokensOut": 63200,
+      "cost": 5.49,
+      "provider": "mixed"
+    },
+    {
+      "date": "2026-02-11",
+      "calls": 905,
+      "tokensIn": 49600,
+      "tokensOut": 63600,
+      "cost": 5.32,
+      "provider": "mixed"
+    }
+  ],
+  "totals": {
+    "totalCalls": 1797,
+    "totalTokensIn": 98200,
+    "totalTokensOut": 126800,
+    "totalCost": 10.81,
+    "avgCallsPerDay": 898.5,
+    "avgTokensPerCall": 1287
+  }
+}
