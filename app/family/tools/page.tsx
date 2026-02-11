@@ -447,46 +447,50 @@ export default function ToolsPage() {
           </Link>
 
           {/* Refi Scenario Builder */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-6 relative overflow-hidden"
-          >
-            <div className="absolute top-3 right-3">
-              <span className="inline-flex items-center px-2 py-1 bg-blue-500 text-white rounded-md text-[10px] font-bold uppercase tracking-wider">
-                Coming Soon
-              </span>
-            </div>
-            <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
-              <span className="text-2xl">🔄</span>
-            </div>
-            <h3 className="font-display text-lg font-bold text-midnight mb-2">Refi Scenario Builder</h3>
-            <p className="text-sm text-midnight/60 leading-relaxed">
-              Compare refinance options side-by-side with break-even analysis and lifetime savings projections
-            </p>
-          </motion.div>
+          <Link href="/family/tools/refi-builder">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 hover:border-blue-300 rounded-xl p-6 relative overflow-hidden cursor-pointer group transition-all hover:shadow-lg hover:scale-[1.02]"
+            >
+              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="inline-flex items-center px-2 py-1 bg-blue-500 text-white rounded-md text-[10px] font-bold uppercase tracking-wider">
+                  Open →
+                </span>
+              </div>
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <span className="text-2xl">🔄</span>
+              </div>
+              <h3 className="font-display text-lg font-bold text-midnight mb-2">Refi Scenario Builder</h3>
+              <p className="text-sm text-midnight/60 leading-relaxed">
+                Compare refinance options side-by-side with break-even analysis and lifetime savings projections
+              </p>
+            </motion.div>
+          </Link>
 
-          {/* Concert Prep Checklist */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.35 }}
-            className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 rounded-xl p-6 relative overflow-hidden"
-          >
-            <div className="absolute top-3 right-3">
-              <span className="inline-flex items-center px-2 py-1 bg-purple-500 text-white rounded-md text-[10px] font-bold uppercase tracking-wider">
-                Coming Soon
-              </span>
-            </div>
-            <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4">
-              <span className="text-2xl">🎸</span>
-            </div>
-            <h3 className="font-display text-lg font-bold text-midnight mb-2">Concert Prep Checklist</h3>
-            <p className="text-sm text-midnight/60 leading-relaxed">
-              Pre-show, soundcheck, and performance checklists for StronGnome gigs with gear inventory tracking
-            </p>
-          </motion.div>
+          {/* Purchase Scenario Builder */}
+          <Link href="/family/tools/purchase-builder">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.35 }}
+              className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 hover:border-purple-300 rounded-xl p-6 relative overflow-hidden cursor-pointer group transition-all hover:shadow-lg hover:scale-[1.02]"
+            >
+              <div className="absolute top-3 right-3">
+                <span className="inline-flex items-center px-2 py-1 bg-purple-500 text-white rounded-md text-[10px] font-bold uppercase tracking-wider">
+                  🔥 NEW
+                </span>
+              </div>
+              <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <span className="text-2xl">🏘️</span>
+              </div>
+              <h3 className="font-display text-lg font-bold text-midnight mb-2">Purchase Scenario Builder</h3>
+              <p className="text-sm text-midnight/60 leading-relaxed">
+                Multi-scenario purchase calculator comparing price points and down payment options — the killer feature for LO client consultations
+              </p>
+            </motion.div>
+          </Link>
         </div>
       </motion.div>
     </div>

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion'
 
 interface Task {
   id: string
@@ -495,39 +494,12 @@ export default function TasksPage() {
     const isExpanded = expandedTask === task.id
     const isUpdating = updating === task.id
 
-    const x = useMotionValue(0)
-    const backgroundColor = useTransform(
-      x,
-      [-150, 0, 150],
-      ['rgb(239, 68, 68)', 'rgb(248, 247, 244)', 'rgb(16, 185, 129)']
-    )
-    const opacity = useTransform(x, [-150, 0, 150], [0.8, 1, 0.8])
-
-    const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-      if (info.offset.x > 100) {
-        // Swipe right → Done
-        updateStatus(task.id, 'Done')
-      } else if (info.offset.x < -100) {
-        // Swipe left → Cycle status
-        cycleStatus(task)
-      }
-    }
-
     return (
-      <motion.div
+      <div
         key={task.id}
-        layout={updateContext?.taskId !== task.id ? true : false}
-        drag={updateContext?.taskId === task.id ? false : "x"}
-        dragConstraints={{ left: 0, right: 0 }}
-        onDragEnd={handleDragEnd}
-        style={{ x, backgroundColor, opacity }}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: isUpdating ? 0.6 : 1, y: 0 }}
-        exit={{ opacity: 0, x: 50, transition: { duration: 0.3 } }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className={`rounded-xl border transition-all ${
           overdue ? 'border-red-200' : 'border-midnight/5 hover:border-midnight/10'
-        } ${isExpanded ? 'shadow-md' : 'hover:shadow-sm'}`}
+        } ${isExpanded ? 'shadow-md' : 'hover:shadow-sm'} ${isUpdating ? 'opacity-60' : 'opacity-100'}`}
       >
         <div className="flex items-start gap-3 p-4">
           <button
@@ -587,17 +559,9 @@ export default function TasksPage() {
           </button>
         </div>
 
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              layout={false}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="px-4 pb-4 pt-0 border-t border-midnight/5">
+        {isExpanded && (
+          <div className="overflow-hidden">
+            <div className="px-4 pb-4 pt-0 border-t border-midnight/5">
                 {task.notes && (
                   <div className="mt-3">
                     <div className="text-[10px] uppercase tracking-wider text-midnight/30 mb-1">Notes</div>
@@ -729,33 +693,22 @@ export default function TasksPage() {
                   )}
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+            </div>
+        )}
+      </div>
     )
   }
 
   return (
     <div className="max-w-4xl mx-auto pb-24">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-6"
-      >
+      <div className="mb-6">
         <h1 className="font-display text-3xl text-midnight mb-1">Daily Planner</h1>
         <p className="text-midnight/50 text-sm">Smart task management for your life</p>
-      </motion.div>
+      </div>
 
       {/* Today's Plan */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.05 }}
-        className="mb-6 bg-gradient-to-br from-ocean to-royal rounded-2xl p-6 text-white shadow-lg"
-      >
+      <div className="mb-6 bg-gradient-to-br from-ocean to-royal rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-center gap-2 mb-4">
           <span className="text-3xl">{todaySchedule.emoji}</span>
           <div className="flex-1">
@@ -798,17 +751,13 @@ export default function TasksPage() {
 
         {/* Tuesday Reminder */}
         {todaySchedule.reminder && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-gradient-to-r from-terracotta to-sunset rounded-xl p-4 text-midnight"
-          >
+          <div className="bg-gradient-to-r from-terracotta to-sunset rounded-xl p-4 text-midnight">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xl">{todaySchedule.reminder.icon}</span>
               <span className="font-display font-bold">{todaySchedule.reminder.title}</span>
             </div>
             <p className="text-sm">{todaySchedule.reminder.message}</p>
-          </motion.div>
+          </div>
         )}
 
         {/* Suggested Tasks */}
@@ -828,15 +777,10 @@ export default function TasksPage() {
             </div>
           </div>
         )}
-      </motion.div>
+      </div>
 
       {/* Stats Row with Progress Bar */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="mb-6"
-      >
+      <div className="mb-6">
         {/* Progress Bar */}
         <div className="bg-cream rounded-xl p-4 border border-midnight/5 mb-3">
           <div className="flex items-center justify-between mb-2">
@@ -844,11 +788,9 @@ export default function TasksPage() {
             <span className="text-sm font-display font-bold text-midnight">{Math.round(progress)}%</span>
           </div>
           <div className="h-2 bg-midnight/5 rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
-              className="h-full bg-gradient-to-r from-ocean to-cyan rounded-full"
+            <div
+              style={{ width: `${progress}%` }}
+              className="h-full bg-gradient-to-r from-ocean to-cyan rounded-full transition-all duration-1000"
             />
           </div>
         </div>
@@ -875,18 +817,12 @@ export default function TasksPage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Quick Action Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.12 }}
-        className="mb-6"
-      >
+      <div className="mb-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={() => setQuickFilter(quickFilter === 'focus' ? 'all' : 'focus')}
             className={`p-4 rounded-2xl text-left transition-all ${
               quickFilter === 'focus'
@@ -901,10 +837,9 @@ export default function TasksPage() {
             <div className={`text-xs ${quickFilter === 'focus' ? 'text-white/80' : 'text-midnight/60'}`}>
               My Focus
             </div>
-          </motion.button>
+          </button>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={() => setQuickFilter(quickFilter === 'waiting' ? 'all' : 'waiting')}
             className={`p-4 rounded-2xl text-left transition-all ${
               quickFilter === 'waiting'
@@ -919,10 +854,9 @@ export default function TasksPage() {
             <div className={`text-xs ${quickFilter === 'waiting' ? 'text-white/80' : 'text-midnight/60'}`}>
               Waiting on Me
             </div>
-          </motion.button>
+          </button>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={() => setQuickFilter(quickFilter === 'overdue' ? 'all' : 'overdue')}
             className={`p-4 rounded-2xl text-left transition-all ${
               quickFilter === 'overdue'
@@ -937,10 +871,9 @@ export default function TasksPage() {
             <div className={`text-xs ${quickFilter === 'overdue' ? 'text-white/80' : 'text-midnight/60'}`}>
               Overdue
             </div>
-          </motion.button>
+          </button>
 
-          <motion.button
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={() => setQuickFilter(quickFilter === 'done' ? 'all' : 'done')}
             className={`p-4 rounded-2xl text-left transition-all ${
               quickFilter === 'done'
@@ -955,17 +888,12 @@ export default function TasksPage() {
             <div className={`text-xs ${quickFilter === 'done' ? 'text-white/80' : 'text-midnight/60'}`}>
               Recently Done
             </div>
-          </motion.button>
+          </button>
         </div>
-      </motion.div>
+      </div>
 
       {/* Life Area Filters */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15 }}
-        className="mb-6"
-      >
+      <div className="mb-6">
         <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-2 scrollbar-hide">
           {['all', ...Object.keys(LIFE_AREAS)].map((area) => {
             const count = area === 'all' 

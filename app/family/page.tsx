@@ -1,7 +1,6 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
-import { motion } from 'framer-motion'
 import Link from 'next/link'
 
 export default function FamilyHub() {
@@ -9,26 +8,16 @@ export default function FamilyHub() {
 
   return (
     <div>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="mb-8"
-      >
+      <div className="mb-8">
         <h1 className="font-display text-3xl md:text-4xl text-midnight mb-2">
           Welcome, {user?.firstName || 'Family'} 👋
         </h1>
         <p className="text-midnight/60">
           Your private family space
         </p>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-        className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Tasks - Jasper's to-do app */}
         <Link
           href="/family/tasks"
@@ -100,7 +89,7 @@ export default function FamilyHub() {
           <h3 className="font-semibold text-midnight mb-2">Tools</h3>
           <p className="text-midnight/60 text-sm">Jasper-built utilities</p>
         </Link>
-      </motion.div>
+      </div>
     </div>
   )
 }
