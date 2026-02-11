@@ -215,7 +215,7 @@ export default function PipelinePage() {
 
     return (
       <motion.div
-        layout
+        layout={updateInput?.clientId !== client.id}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, x: -20 }}
@@ -301,6 +301,7 @@ export default function PipelinePage() {
         <AnimatePresence>
           {isExpanded && (
             <motion.div
+              layout={false}
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -325,7 +326,12 @@ export default function PipelinePage() {
                       <div className="text-[10px] uppercase tracking-wider text-ocean font-medium">Add Update</div>
                       <textarea
                         value={updateInput.text}
-                        onChange={(e) => setUpdateInput({ clientId: client.id, text: e.target.value })}
+                        onChange={(e) => {
+                          e.stopPropagation()
+                          setUpdateInput({ clientId: client.id, text: e.target.value })
+                        }}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
                         placeholder="What's the latest? (e.g., 'Called client, scheduled closing for Friday')"
                         className="w-full bg-white border border-midnight/10 rounded-lg px-3 py-2 text-sm text-midnight placeholder:text-midnight/30 focus:outline-none focus:border-ocean focus:ring-1 focus:ring-ocean resize-none"
                         rows={3}
