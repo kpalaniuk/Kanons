@@ -516,8 +516,8 @@ export default function TasksPage() {
     return (
       <motion.div
         key={task.id}
-        layout
-        drag="x"
+        layout={updateContext?.taskId !== task.id ? true : false}
+        drag={updateContext?.taskId === task.id ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={handleDragEnd}
         style={{ x, backgroundColor, opacity }}
@@ -590,6 +590,7 @@ export default function TasksPage() {
         <AnimatePresence>
           {isExpanded && (
             <motion.div
+              layout={false}
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -633,7 +634,12 @@ export default function TasksPage() {
                       <div className="text-[10px] uppercase tracking-wider text-ocean font-medium">Quick Update</div>
                       <textarea
                         value={updateContext.text}
-                        onChange={(e) => setUpdateContext({ taskId: task.id, text: e.target.value })}
+                        onChange={(e) => {
+                          e.stopPropagation()
+                          setUpdateContext({ taskId: task.id, text: e.target.value })
+                        }}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
                         placeholder="What happened? (e.g. 'Called but got voicemail, need to try again Thursday')"
                         className="w-full bg-white border border-midnight/10 rounded-lg px-3 py-2 text-sm text-midnight placeholder:text-midnight/30 focus:outline-none focus:border-ocean focus:ring-1 focus:ring-ocean resize-none"
                         rows={2}
