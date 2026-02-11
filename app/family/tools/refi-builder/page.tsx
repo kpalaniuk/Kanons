@@ -141,7 +141,8 @@ export default function RefiScenarioBuilderPage() {
           }}
         />
         <div 
-          className="absolute -top-8 bg-midnight text-cream px-2 py-1 rounded text-xs font-medium pointer-events-none whitespace-nowrap"% - 20px), calc(100% - 60px))` }}
+          className="absolute -top-8 bg-midnight text-cream px-2 py-1 rounded text-xs font-medium pointer-events-none whitespace-nowrap"
+          style={{ left: `clamp(0px, calc(${percentage}% - 20px), calc(100% - 60px))` }}
         >
           {format(value)}
         </div>
@@ -161,7 +162,7 @@ export default function RefiScenarioBuilderPage() {
   return (
     <div className="max-w-6xl mx-auto pb-24">
       {/* Header */}
-      <div}}}
+      <div
         className="mb-8"
       >
         <Link 
@@ -184,7 +185,7 @@ export default function RefiScenarioBuilderPage() {
         {/* Left Column: Inputs */}
         <div className="lg:col-span-2 space-y-8">
           {/* Client Info (Optional) */}
-          <section}}}
+          <section
             className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -227,7 +228,7 @@ export default function RefiScenarioBuilderPage() {
           </section>
 
           {/* Current Loan Section */}
-          <section}}}
+          <section
             className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -334,7 +335,7 @@ export default function RefiScenarioBuilderPage() {
           </section>
 
           {/* New Loan Section */}
-          <section}}}
+          <section
             className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -446,7 +447,7 @@ export default function RefiScenarioBuilderPage() {
         {/* Right Column: Results */}
         <div className="lg:col-span-1 space-y-6">
           {/* Recommendation Card - Sticky */}
-          <div}}}
+          <div
             className="sticky top-6"
           >
             <div className={`rounded-2xl border-2 ${recommendation.border} ${recommendation.bg} p-6 shadow-lg`}>
@@ -563,7 +564,7 @@ export default function RefiScenarioBuilderPage() {
       </div>
 
       {/* Info Footer */}
-      <div}}}
+      <div
         className="mt-12 bg-midnight/5 rounded-xl p-6"
       >
         <h3 className="font-display text-lg text-midnight mb-3">💡 When to Refinance</h3>

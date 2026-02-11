@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-
 import Link from 'next/link'
 
 type LoanProgram = 'Conventional' | 'FHA' | 'VA'
@@ -212,7 +211,8 @@ export default function PurchaseScenarioBuilderPage() {
           }}
         />
         <div 
-          className="absolute -top-8 bg-midnight text-cream px-2 py-1 rounded text-xs font-medium pointer-events-none whitespace-nowrap"% - 20px), calc(100% - 60px))` }}
+          className="absolute -top-8 bg-midnight text-cream px-2 py-1 rounded text-xs font-medium pointer-events-none whitespace-nowrap"
+          style={{ left: `clamp(0px, calc(${percentage}% - 20px), calc(100% - 60px))` }}
         >
           {format(value)}
         </div>
@@ -254,7 +254,7 @@ export default function PurchaseScenarioBuilderPage() {
   return (
     <div className="max-w-7xl mx-auto pb-24">
       {/* Header */}
-      <div}}}
+      <div
         className="mb-8"
       >
         <Link 
@@ -276,7 +276,7 @@ export default function PurchaseScenarioBuilderPage() {
       {/* Input Sections */}
       <div className="space-y-8 mb-12">
         {/* Client Info */}
-        <section}}}
+        <section
           className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
         >
           <div className="flex items-center gap-3 mb-6">
@@ -361,7 +361,7 @@ export default function PurchaseScenarioBuilderPage() {
         </section>
 
         {/* Property & Financing */}
-        <section}}}
+        <section
           className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
         >
           <div className="flex items-center gap-3 mb-6">
@@ -595,7 +595,7 @@ export default function PurchaseScenarioBuilderPage() {
       {/* Scenarios Display */}
       {viewMode === 'grid' ? (
         // Grid View
-        <div}}}
+        <div
           className="bg-cream rounded-2xl border-2 border-midnight/5 p-6 overflow-x-auto"
         >
           <table className="w-full text-xs">
@@ -649,7 +649,7 @@ export default function PurchaseScenarioBuilderPage() {
         </div>
       ) : (
         // Card View
-        <div}}}
+        <div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         >
           {scenarios.map((scenario, idx) => {
@@ -657,7 +657,7 @@ export default function PurchaseScenarioBuilderPage() {
             const hasFunds = availableAssets >= scenario.cashRequired
             return (
               <div
-                key={`${scenario.price}-${scenario.downPaymentPercent}`}}}}
+                key={`${scenario.price}-${scenario.downPaymentPercent}`}
                 className={`${style.bg} ${style.border} border-2 rounded-xl p-4`}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -708,7 +708,7 @@ export default function PurchaseScenarioBuilderPage() {
       )}
 
       {/* Info Footer */}
-      <div}}}
+      <div
         className="mt-12 bg-midnight/5 rounded-xl p-6"
       >
         <h3 className="font-display text-lg text-midnight mb-3">📖 Understanding the Scenarios</h3>
@@ -723,7 +723,7 @@ export default function PurchaseScenarioBuilderPage() {
             <strong>Conforming vs Jumbo:</strong> Loans above {formatCurrency(conformingLimit)} are jumbo loans — typically higher rates and stricter requirements.
           </p>
           <p>
-            <strong>PMI/MI:</strong> Required when LTV > 80% for conventional and all FHA loans. VA loans have no MI. Rates vary by credit score and LTV.
+            <strong>PMI/MI:</strong> Required when LTV &gt; 80% for conventional and all FHA loans. VA loans have no MI. Rates vary by credit score and LTV.
           </p>
           <p className="text-xs text-midnight/50">
             ⚠️ This tool provides guidance for client conversations. Final qualification depends on full underwriting, credit review, and lender overlays. Always verify with your pricing engine and underwriting guidelines.

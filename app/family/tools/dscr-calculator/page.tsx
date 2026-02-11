@@ -161,7 +161,8 @@ export default function DSCRCalculatorPage() {
           }}
         />
         <div 
-          className="absolute -top-8 bg-midnight text-cream px-2 py-1 rounded text-xs font-medium pointer-events-none whitespace-nowrap"% - 20px), calc(100% - 60px))` }}
+          className="absolute -top-8 bg-midnight text-cream px-2 py-1 rounded text-xs font-medium pointer-events-none whitespace-nowrap"
+          style={{ left: `clamp(0px, calc(${percentage}% - 20px), calc(100% - 60px))` }}
         >
           {format(value)}
         </div>
@@ -185,7 +186,9 @@ export default function DSCRCalculatorPage() {
   return (
     <div className="max-w-6xl mx-auto pb-24">
       {/* Header */}
-      <div className="mb-8">
+      <div
+        className="mb-8"
+      >
         <Link 
           href="/family/tools"
           className="inline-flex items-center gap-2 text-sm text-midnight/60 hover:text-midnight mb-4 group"
@@ -206,7 +209,7 @@ export default function DSCRCalculatorPage() {
         {/* Left Column: Inputs */}
         <div className="lg:col-span-2 space-y-8">
           {/* Property Section */}
-          <section}}}
+          <section
             className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -329,7 +332,7 @@ export default function DSCRCalculatorPage() {
           </section>
 
           {/* Income & Expenses Section */}
-          <section}}}
+          <section
             className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -386,7 +389,7 @@ export default function DSCRCalculatorPage() {
           </section>
 
           {/* Financing Section */}
-          <section}}}
+          <section
             className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -455,7 +458,7 @@ export default function DSCRCalculatorPage() {
           </section>
 
           {/* Borrower Section */}
-          <section}}}
+          <section
             className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -512,7 +515,7 @@ export default function DSCRCalculatorPage() {
         {/* Right Column: Results */}
         <div className="lg:col-span-1 space-y-6">
           {/* DSCR Result Card - Sticky */}
-          <div}}}
+          <div
             className="sticky top-6"
           >
             <div className={`rounded-2xl border-2 ${qualification.border} ${qualification.bg} p-6 shadow-lg`}>
@@ -521,7 +524,7 @@ export default function DSCRCalculatorPage() {
                   Debt Service Coverage Ratio
                 </div>
                 <div
-                  key={dscr}}}}
+                  key={dscr}
                   className={`font-display text-7xl font-bold ${qualification.color} mb-3`}
                 >
                   {dscr.toFixed(2)}
@@ -534,7 +537,7 @@ export default function DSCRCalculatorPage() {
               {/* Visual Gauge */}
               <div className="mb-6">
                 <div className="h-3 bg-midnight/10 rounded-full overflow-hidden">
-                  <div}%` }}}
+                  <div
                     className={`h-full rounded-full ${
                       dscr >= 1.25 ? 'bg-emerald-500' :
                       dscr >= 1.15 ? 'bg-blue-500' :
@@ -623,7 +626,7 @@ export default function DSCRCalculatorPage() {
             </div>
 
             {/* Calculation Breakdown */}
-            <div}}}
+            <div
               className="mt-6 bg-cream rounded-2xl border-2 border-midnight/5 p-6"
             >
               <div className="text-xs uppercase tracking-wider text-midnight/50 font-medium mb-4">
@@ -671,7 +674,7 @@ export default function DSCRCalculatorPage() {
       </div>
 
       {/* Info Footer */}
-      <div}}}
+      <div
         className="mt-12 bg-midnight/5 rounded-xl p-6"
       >
         <h3 className="font-display text-lg text-midnight mb-3">ℹ️ About DSCR Loans</h3>
