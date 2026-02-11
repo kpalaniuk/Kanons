@@ -33,6 +33,16 @@ export interface Artifact {
 // Hardcoded artifact list
 const ARTIFACTS: Artifact[] = [
   {
+    slug: 'lo-buddy-meeting-prep',
+    title: 'LO Buddy Meeting Prep — Wed 2/11 Brad + Chad',
+    type: 'Briefings',
+    context: 'LO Buddy',
+    description: 'Actionable meeting prep: Build separate + connect via API strategy, what to ask Brad for, agent-to-node architecture, decision framework, and response playbook.',
+    createdAt: '2026-02-11',
+    size: '13KB',
+    tags: ['LO Buddy', 'LO Ninja', 'Meeting Prep', 'Brad Behlow', 'Strategy'],
+  },
+  {
     slug: 'lo-buddy-briefing',
     title: 'LO Buddy — Architecture & Meeting Briefing',
     type: 'Briefings',

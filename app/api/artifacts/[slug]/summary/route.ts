@@ -18,6 +18,7 @@ async function verifyAllowedUser(userId: string): Promise<boolean> {
 }
 
 const ARTIFACT_FILES: Record<string, string> = {
+  'lo-buddy-meeting-prep': '/data/.openclaw/workspace/memory/lo-buddy-meeting-prep-2-11.md',
   'lo-buddy-briefing': '/data/.openclaw/workspace/memory/lo-buddy-briefing.md',
 }
 

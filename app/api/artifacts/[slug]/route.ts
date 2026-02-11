@@ -21,6 +21,7 @@ async function verifyAllowedUser(userId: string): Promise<boolean> {
 
 // Map slugs to file paths
 const ARTIFACT_FILES: Record<string, string> = {
+  'lo-buddy-meeting-prep': '/data/.openclaw/workspace/memory/lo-buddy-meeting-prep-2-11.md',
   'lo-buddy-briefing': '/data/.openclaw/workspace/memory/lo-buddy-briefing.md',
 }
 
