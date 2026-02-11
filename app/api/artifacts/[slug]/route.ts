@@ -3,7 +3,6 @@ import { auth, clerkClient } from '@clerk/nextjs/server'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
-// Allowed email addresses
 const ALLOWED_EMAILS = (process.env.FAMILY_ALLOWED_EMAILS || 'kpalaniuk@gmail.com')
   .split(',')
   .map((e) => e.trim().toLowerCase())
@@ -19,13 +18,12 @@ async function verifyAllowedUser(userId: string): Promise<boolean> {
   }
 }
 
-// Map slugs to file paths
+// Map slugs to files in public/artifacts/ (deployed with the app)
 const ARTIFACT_FILES: Record<string, string> = {
-  'lo-buddy-meeting-prep': '/data/.openclaw/workspace/memory/lo-buddy-meeting-prep-2-11.md',
-  'lo-buddy-briefing': '/data/.openclaw/workspace/memory/lo-buddy-briefing.md',
+  'lo-buddy-meeting-prep': 'lo-buddy-meeting-prep.md',
+  'lo-buddy-briefing': 'lo-buddy-briefing.md',
 }
 
-// GET /api/artifacts/[slug] — returns the raw markdown content of a specific artifact
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -40,13 +38,15 @@ export async function GET(
   }
 
   const { slug } = await params
-  const filePath = ARTIFACT_FILES[slug]
+  const fileName = ARTIFACT_FILES[slug]
 
-  if (!filePath) {
+  if (!fileName) {
     return NextResponse.json({ error: 'Artifact not found' }, { status: 404 })
   }
 
   try {
+    // Read from public/artifacts/ which is bundled with the deployment
+    const filePath = join(process.cwd(), 'public', 'artifacts', fileName)
     const content = readFileSync(filePath, 'utf-8')
     return NextResponse.json({ slug, content })
   } catch (error) {

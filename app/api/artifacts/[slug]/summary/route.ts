@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { readFileSync } from 'fs'
+import { join } from 'path'
 
 const ALLOWED_EMAILS = (process.env.FAMILY_ALLOWED_EMAILS || 'kpalaniuk@gmail.com')
   .split(',')
@@ -18,72 +19,67 @@ async function verifyAllowedUser(userId: string): Promise<boolean> {
 }
 
 const ARTIFACT_FILES: Record<string, string> = {
-  'lo-buddy-meeting-prep': '/data/.openclaw/workspace/memory/lo-buddy-meeting-prep-2-11.md',
-  'lo-buddy-briefing': '/data/.openclaw/workspace/memory/lo-buddy-briefing.md',
+  'lo-buddy-meeting-prep': 'lo-buddy-meeting-prep.md',
+  'lo-buddy-briefing': 'lo-buddy-briefing.md',
 }
 
 function generateLocalSummary(content: string, title: string): string {
   const lines = content.split('\n')
-  const headers: string[] = []
+  const sections: { header: string; level: number; wordCount: number; bullets: string[] }[] = []
   let totalWords = 0
-  const sections: { header: string; wordCount: number; preview: string }[] = []
 
   let currentHeader = 'Introduction'
+  let currentLevel = 1
   let currentWords = 0
-  let currentPreview = ''
+  let currentBullets: string[] = []
 
   for (const line of lines) {
     const headerMatch = line.match(/^(#{1,3})\s+(.+)/)
     if (headerMatch) {
-      if (currentHeader) {
-        sections.push({ header: currentHeader, wordCount: currentWords, preview: currentPreview.trim().slice(0, 150) })
+      if (currentHeader && (currentWords > 10 || currentBullets.length > 0)) {
+        sections.push({ header: currentHeader, level: currentLevel, wordCount: currentWords, bullets: currentBullets })
       }
       currentHeader = headerMatch[2]
-      headers.push(headerMatch[2])
+      currentLevel = headerMatch[1].length
       currentWords = 0
-      currentPreview = ''
+      currentBullets = []
+    } else if (line.match(/^[-*]\s+/)) {
+      const bullet = line.replace(/^[-*]\s+/, '').trim()
+      if (bullet.length > 0 && bullet.length < 200) {
+        currentBullets.push(bullet)
+      }
+      currentWords += bullet.split(/\s+/).filter(Boolean).length
+      totalWords += bullet.split(/\s+/).filter(Boolean).length
     } else {
       const words = line.trim().split(/\s+/).filter(Boolean).length
       currentWords += words
       totalWords += words
-      if (currentPreview.length < 150 && line.trim()) {
-        currentPreview += ' ' + line.trim()
-      }
     }
   }
-  // Push last section
-  if (currentHeader) {
-    sections.push({ header: currentHeader, wordCount: currentWords, preview: currentPreview.trim().slice(0, 150) })
+  if (currentHeader && (currentWords > 10 || currentBullets.length > 0)) {
+    sections.push({ header: currentHeader, level: currentLevel, wordCount: currentWords, bullets: currentBullets })
   }
-
-  const topSections = sections
-    .filter(s => s.wordCount > 20)
-    .sort((a, b) => b.wordCount - a.wordCount)
-    .slice(0, 8)
 
   const readTime = Math.ceil(totalWords / 200)
 
-  let summary = `# 📋 Summary: ${title}\n\n`
-  summary += `**${totalWords.toLocaleString()} words** · **~${readTime} min read** · **${headers.length} sections**\n\n`
+  let summary = `# 📋 ${title}\n\n`
+  summary += `**${totalWords.toLocaleString()} words** · **~${readTime} min read** · **${sections.length} sections**\n\n`
   summary += `---\n\n`
-  summary += `## Key Sections\n\n`
 
-  for (const section of topSections) {
-    summary += `### ${section.header}\n`
-    if (section.preview) {
-      summary += `${section.preview}...\n\n`
-    }
-  }
-
-  // Extract any bullet points that look like key takeaways
-  const keyPoints = lines
-    .filter(l => l.match(/^[-*]\s+\*\*.+\*\*/))
-    .slice(0, 10)
-
-  if (keyPoints.length > 0) {
-    summary += `---\n\n## Key Points\n\n`
-    for (const point of keyPoints) {
-      summary += `${point}\n`
+  // Show top-level sections as table of contents with key bullets
+  for (const section of sections) {
+    if (section.level <= 2) {
+      const prefix = section.level === 1 ? '##' : '###'
+      summary += `${prefix} ${section.header}\n`
+      // Show top 3 bullets per section
+      const topBullets = section.bullets.slice(0, 3)
+      for (const bullet of topBullets) {
+        summary += `- ${bullet}\n`
+      }
+      if (section.bullets.length > 3) {
+        summary += `- *...and ${section.bullets.length - 3} more points*\n`
+      }
+      summary += '\n'
     }
   }
 
@@ -104,18 +100,17 @@ export async function GET(
   }
 
   const { slug } = await params
-  const filePath = ARTIFACT_FILES[slug]
+  const fileName = ARTIFACT_FILES[slug]
 
-  if (!filePath) {
+  if (!fileName) {
     return NextResponse.json({ error: 'Artifact not found' }, { status: 404 })
   }
 
   try {
+    const filePath = join(process.cwd(), 'public', 'artifacts', fileName)
     const content = readFileSync(filePath, 'utf-8')
-    // Get the title from the artifact registry or first heading
     const titleMatch = content.match(/^#\s+(.+)/m)
     const title = titleMatch ? titleMatch[1] : slug.replace(/-/g, ' ')
-
     const summary = generateLocalSummary(content, title)
     return NextResponse.json({ slug, summary })
   } catch (error) {
