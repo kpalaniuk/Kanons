@@ -1,122 +1,39 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 interface Client {
   id: string
   name: string
-  status: 'Lead' | 'Pre-Approved' | 'In Process' | 'Waiting' | 'Closing' | 'Closed' | 'Lost'
-  priority: 'Hot' | 'Active' | 'Monitoring'
-  loanType: 'Purchase' | 'Refinance' | 'DSCR' | 'Other' | null
-  contacts: string[]
-  rate: string | null
+  stage: 'New Lead' | 'Pre-Approved' | 'In Process' | 'Waiting' | 'App Sent' | 'Processing' | 'Closing' | 'Closed' | 'Lost'
+  priority: 'Hot' | 'Active' | 'Warm' | 'Monitoring'
+  loanType: string | null
+  loanAmount: number | null
   nextAction: string
-  lastUpdate: string
+  followUpDate: string | null
+  lastTouched: string | null
   notes: string
+  referralSource: string
 }
 
-const INITIAL_CLIENTS: Client[] = [
-  {
-    id: '1',
-    name: 'Ian Englund',
-    status: 'In Process',
-    priority: 'Hot',
-    loanType: 'Purchase',
-    contacts: [],
-    rate: '6.124% (~$3k cost)',
-    nextAction: 'Monitor credit bureau update',
-    lastUpdate: new Date().toISOString().split('T')[0],
-    notes: 'Locked file. Appraisal ordered. Currently 759 score, 6.124% rate with ~$3k cost. Waiting on credit bureau to update with new authorized user credit card. Once 760+, should flip to rebate.',
-  },
-  {
-    id: '2',
-    name: 'Jay Lin',
-    status: 'Waiting',
-    priority: 'Hot',
-    loanType: 'Refinance',
-    contacts: ['Tax Attorney'],
-    rate: null,
-    nextAction: 'Follow up with tax attorney',
-    lastUpdate: new Date().toISOString().split('T')[0],
-    notes: 'Waiting on tax attorney to confirm deed of trust filed on property. Once filed, refi goes into process.',
-  },
-  {
-    id: '3',
-    name: 'Derek Armenta',
-    status: 'Lead',
-    priority: 'Active',
-    loanType: null,
-    contacts: [],
-    rate: null,
-    nextAction: 'Find out who Derek is and get details',
-    lastUpdate: new Date().toISOString().split('T')[0],
-    notes: 'Need to identify who Derek Armenta is. May be connected to Noah\'s friend (see separate entry). Follow up on applications.',
-  },
-  {
-    id: '4',
-    name: 'Jeffrey & Hannah Domenech',
-    status: 'Pre-Approved',
-    priority: 'Active',
-    loanType: null,
-    contacts: [],
-    rate: null,
-    nextAction: 'Check-in call/text',
-    lastUpdate: new Date().toISOString().split('T')[0],
-    notes: 'Pre-approved. Need to stay in regular contact.',
-  },
-  {
-    id: '5',
-    name: 'David Rossi',
-    status: 'In Process',
-    priority: 'Hot',
-    loanType: 'DSCR',
-    contacts: ['Kevin Christiansen (AMC Rep)'],
-    rate: null,
-    nextAction: 'Follow up with Kevin Christiansen on rent data',
-    lastUpdate: new Date().toISOString().split('T')[0],
-    notes: 'Working with Kevin Christiansen (AMC Rep) on appraisal rent data estimates. Need data to confirm DSCR deal works, then build rate calculator.',
-  },
-  {
-    id: '6',
-    name: 'Nate & Lexie Ayers',
-    status: 'Waiting',
-    priority: 'Monitoring',
-    loanType: 'Purchase',
-    contacts: ['Lexie Ayers (spouse)'],
-    rate: null,
-    nextAction: 'Warm check-in in 3-4 weeks (early March) — empathetic, no pressure',
-    lastUpdate: new Date().toISOString().split('T')[0],
-    notes: 'Looking for down payment assistance program. Hit unexpected financial changes and paused home search. Last message: "Hey Kyle, we\'ve just had some unexpected changes in our current financial circumstances and are going to have to stop our home search for now. Sorry for not getting back to you earlier, things have been hectic. We appreciate your assistance thus far."\n\n--- Strategy ---\nDon\'t push — they\'re dealing with something. Plan:\n1. Wait 3-4 weeks, then send a warm check-in (early March)\n2. Keep it human: "Hey Nate, no rush at all — just wanted to check in and see how things are going"\n3. If they re-engage, explore DPA programs that might help with their new circumstances\n4. If still paused, check in again in 2 months (April)\n5. Keep them on the Tue/Thu pipeline review as Monitoring priority',
-  },
-  {
-    id: '7',
-    name: "Noah's Friend (possibly Derek?)",
-    status: 'Lead',
-    priority: 'Active',
-    loanType: null,
-    contacts: ['Noah'],
-    rate: null,
-    nextAction: 'Confirm identity — may be Derek Armenta',
-    lastUpdate: new Date().toISOString().split('T')[0],
-    notes: 'Referred by Noah. May overlap with Derek Armenta — Kyle to clarify.',
-  },
-]
-
-const STATUS_ORDER = ['Lead', 'Pre-Approved', 'In Process', 'Waiting', 'Closing', 'Closed', 'Lost']
+const STATUS_ORDER: Client['stage'][] = ['New Lead', 'Pre-Approved', 'In Process', 'Waiting', 'App Sent', 'Processing', 'Closing', 'Closed', 'Lost']
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  Lead: { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' },
+  'New Lead': { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' },
   'Pre-Approved': { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
   'In Process': { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
-  Waiting: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
-  Closing: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
-  Closed: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
-  Lost: { bg: 'bg-red-50', text: 'text-red-400', border: 'border-red-200' },
+  'Waiting': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+  'App Sent': { bg: 'bg-cyan-50', text: 'text-cyan-700', border: 'border-cyan-200' },
+  'Processing': { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' },
+  'Closing': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
+  'Closed': { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
+  'Lost': { bg: 'bg-red-50', text: 'text-red-400', border: 'border-red-200' },
 }
 
 const PRIORITY_COLORS: Record<string, { bg: string; text: string; dot: string; ring: string }> = {
   Hot: { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500', ring: 'ring-red-200' },
   Active: { bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-500', ring: 'ring-orange-200' },
+  Warm: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', ring: 'ring-amber-200' },
   Monitoring: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', ring: 'ring-emerald-200' },
 }
 
@@ -127,31 +44,123 @@ const LOAN_TYPE_ICONS: Record<string, string> = {
   Other: '📋',
 }
 
-function getLastChecked(dateStr: string): string {
+function getRelativeTime(dateStr: string | null): string {
+  if (!dateStr) return 'Never'
+  
   const date = new Date(dateStr)
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  date.setHours(0, 0, 0, 0)
+  
   const diff = Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
   
   if (diff === 0) return 'Today'
   if (diff === 1) return 'Yesterday'
+  if (diff === -1) return 'Tomorrow'
+  if (diff < 0) return `In ${Math.abs(diff)}d`
   if (diff < 7) return `${diff}d ago`
+  if (diff < 30) return `${Math.floor(diff / 7)}w ago`
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+function getFollowUpColor(dateStr: string | null): string {
+  if (!dateStr) return 'text-midnight/40'
+  
+  const date = new Date(dateStr)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  date.setHours(0, 0, 0, 0)
+  
+  const diff = Math.floor((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  
+  if (diff < 0) return 'text-red-600 font-semibold' // overdue
+  if (diff === 0) return 'text-amber-600 font-semibold' // today
+  return 'text-emerald-600' // future
+}
+
 export default function PipelinePage() {
-  const [clients, setClients] = useState<Client[]>(INITIAL_CLIENTS)
+  const [clients, setClients] = useState<Client[]>([])
+  const [loading, setLoading] = useState(true)
   const [expandedClient, setExpandedClient] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterPriority, setFilterPriority] = useState<string>('all')
-  const [updateInput, setUpdateInput] = useState<{ clientId: string; text: string } | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
+  const [editingField, setEditingField] = useState<{ clientId: string; field: 'nextAction' | 'notes'; value: string } | null>(null)
+
+  // Fetch clients on mount
+  useEffect(() => {
+    fetchClients()
+  }, [])
+
+  async function fetchClients() {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/pipeline')
+      if (!response.ok) throw new Error('Failed to fetch clients')
+      
+      const data = await response.json()
+      setClients(data.clients)
+    } catch (error) {
+      console.error('Error fetching clients:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function updateClient(id: string, updates: Partial<Client>) {
+    try {
+      const response = await fetch('/api/pipeline', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...updates }),
+      })
+
+      if (!response.ok) throw new Error('Failed to update client')
+
+      // Update local state
+      setClients(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c))
+    } catch (error) {
+      console.error('Error updating client:', error)
+      alert('Failed to update client. Please try again.')
+    }
+  }
+
+  function handleStatusCycle(client: Client) {
+    const currentIndex = STATUS_ORDER.indexOf(client.stage)
+    const nextIndex = (currentIndex + 1) % STATUS_ORDER.length
+    const nextStatus = STATUS_ORDER[nextIndex]
+    
+    updateClient(client.id, { 
+      stage: nextStatus,
+      lastTouched: new Date().toISOString().split('T')[0]
+    })
+  }
+
+  function handleFieldEdit(clientId: string, field: 'nextAction' | 'notes', currentValue: string) {
+    setEditingField({ clientId, field, value: currentValue })
+  }
+
+  function handleFieldSave() {
+    if (!editingField) return
+    
+    const { clientId, field, value } = editingField
+    updateClient(clientId, { 
+      [field]: value,
+      lastTouched: new Date().toISOString().split('T')[0]
+    })
+    setEditingField(null)
+  }
+
+  function handleFieldCancel() {
+    setEditingField(null)
+  }
 
   // Filter clients
   const filteredClients = useMemo(() => {
     let result = clients
 
     if (filterStatus !== 'all') {
-      result = result.filter(c => c.status === filterStatus)
+      result = result.filter(c => c.stage === filterStatus)
     }
 
     if (filterPriority !== 'all') {
@@ -164,56 +173,35 @@ export default function PipelinePage() {
   // Group by status
   const groupedClients = useMemo(() => {
     return filteredClients.reduce<Record<string, Client[]>>((acc, client) => {
-      if (!acc[client.status]) acc[client.status] = []
-      acc[client.status].push(client)
+      if (!acc[client.stage]) acc[client.stage] = []
+      acc[client.stage].push(client)
       return acc
     }, {})
   }, [filteredClients])
 
   // Stats
   const stats = useMemo(() => {
-    const hot = clients.filter(c => c.priority === 'Hot' && c.status !== 'Closed' && c.status !== 'Lost').length
-    const active = clients.filter(c => c.status !== 'Closed' && c.status !== 'Lost').length
-    const waiting = clients.filter(c => c.status === 'Waiting').length
+    const hot = clients.filter(c => c.priority === 'Hot' && c.stage !== 'Closed' && c.stage !== 'Lost').length
+    const active = clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost').length
+    const waiting = clients.filter(c => c.stage === 'Waiting').length
     
     return { hot, active, waiting }
   }, [clients])
 
-  const handleUpdate = (clientId: string) => {
-    if (!updateInput?.text.trim()) return
-
-    const timestamp = new Date().toLocaleString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      hour: 'numeric', 
-      minute: '2-digit' 
-    })
-    
-    setClients(prev => prev.map(c => {
-      if (c.id === clientId) {
-        return {
-          ...c,
-          notes: `${c.notes}\n\n[${timestamp}] ${updateInput.text}`,
-          lastUpdate: new Date().toISOString().split('T')[0],
-        }
-      }
-      return c
-    }))
-
-    setUpdateInput(null)
-  }
-
   const ClientCard = ({ client }: { client: Client }) => {
     const isExpanded = expandedClient === client.id
-    const statusStyle = STATUS_COLORS[client.status]
+    const statusStyle = STATUS_COLORS[client.stage]
     const priorityStyle = PRIORITY_COLORS[client.priority]
-    const daysSinceUpdate = Math.floor(
-      (new Date().getTime() - new Date(client.lastUpdate).getTime()) / (1000 * 60 * 60 * 24)
-    )
+    const daysSinceUpdate = client.lastTouched 
+      ? Math.floor((new Date().getTime() - new Date(client.lastTouched).getTime()) / (1000 * 60 * 60 * 24))
+      : 999
     const isStale = daysSinceUpdate > 7
 
+    const isEditingNextAction = editingField?.clientId === client.id && editingField.field === 'nextAction'
+    const isEditingNotes = editingField?.clientId === client.id && editingField.field === 'notes'
+
     return (
-      <div}}}
+      <div
         className={`bg-cream rounded-xl border-2 ${statusStyle.border} hover:shadow-md transition-all`}
       >
         <div className="p-4">
@@ -230,17 +218,21 @@ export default function PipelinePage() {
               </div>
               
               <div className="flex items-center gap-2 flex-wrap">
-                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
-                  {client.status}
-                </span>
+                <button
+                  onClick={() => handleStatusCycle(client)}
+                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${statusStyle.bg} ${statusStyle.text} hover:opacity-80 transition-opacity cursor-pointer`}
+                  title="Click to cycle status"
+                >
+                  {client.stage}
+                </button>
                 {client.loanType && (
                   <span className="inline-flex items-center gap-1 text-xs text-midnight/60">
-                    {LOAN_TYPE_ICONS[client.loanType]} {client.loanType}
+                    {LOAN_TYPE_ICONS[client.loanType] || '📋'} {client.loanType}
                   </span>
                 )}
-                {client.rate && (
+                {client.loanAmount && (
                   <span className="inline-flex items-center gap-1 text-xs text-midnight/60">
-                    💰 {client.rate}
+                    💰 ${client.loanAmount.toLocaleString()}
                   </span>
                 )}
               </div>
@@ -261,132 +253,113 @@ export default function PipelinePage() {
             </button>
           </div>
 
-          {/* Next Action */}
+          {/* Next Action - Inline Editable */}
           <div className="mb-3">
             <div className="text-[10px] uppercase tracking-wider text-midnight/40 mb-1">Next Action</div>
-            <div className="flex items-start gap-2">
-              <span className="text-ocean mt-0.5">→</span>
-              <span className="text-sm font-medium text-midnight flex-1">{client.nextAction}</span>
-            </div>
+            {isEditingNextAction ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={editingField.value}
+                  onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
+                  onBlur={handleFieldSave}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleFieldSave()
+                    if (e.key === 'Escape') handleFieldCancel()
+                  }}
+                  className="w-full bg-white border border-ocean rounded px-2 py-1 text-sm text-midnight focus:outline-none focus:ring-1 focus:ring-ocean"
+                  autoFocus
+                />
+                <div className="text-[10px] text-midnight/40">Press Enter to save, Esc to cancel</div>
+              </div>
+            ) : (
+              <div 
+                onClick={() => handleFieldEdit(client.id, 'nextAction', client.nextAction)}
+                className="flex items-start gap-2 cursor-text hover:bg-midnight/5 rounded p-1 -m-1 transition-colors"
+              >
+                <span className="text-ocean mt-0.5">→</span>
+                <span className="text-sm font-medium text-midnight flex-1">{client.nextAction || 'Click to add...'}</span>
+              </div>
+            )}
           </div>
 
-          {/* Contacts */}
-          {client.contacts.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap mb-3">
-              <span className="text-[10px] uppercase tracking-wider text-midnight/40">Contacts:</span>
-              {client.contacts.map((contact, idx) => (
-                <span key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 bg-midnight/5 rounded text-xs text-midnight/70">
-                  👤 {contact}
-                </span>
-              ))}
+          {/* Follow Up Date */}
+          {client.followUpDate && (
+            <div className="mb-3">
+              <div className="text-[10px] uppercase tracking-wider text-midnight/40 mb-1">Follow Up</div>
+              <div className={`text-sm font-medium ${getFollowUpColor(client.followUpDate)}`}>
+                📅 {getRelativeTime(client.followUpDate)} 
+                {new Date(client.followUpDate) < new Date() && ' (OVERDUE)'}
+              </div>
             </div>
           )}
 
-          {/* Last Update */}
+          {/* Referral Source */}
+          {client.referralSource && (
+            <div className="mb-3">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-midnight/5 rounded text-xs text-midnight/70">
+                👤 {client.referralSource}
+              </span>
+            </div>
+          )}
+
+          {/* Last Touched */}
           <div className={`flex items-center gap-1.5 text-[11px] ${isStale ? 'text-amber-600' : 'text-midnight/40'}`}>
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Last updated {getLastChecked(client.lastUpdate)}
+            Last touched {getRelativeTime(client.lastTouched)}
             {isStale && ' ⚠️'}
           </div>
         </div>
 
         {/* Expanded Details */}
-        
-          {isExpanded && (
-            <div}}}}
-              className="overflow-hidden border-t-2 border-midnight/5"
-            >
-              <div className="p-4 space-y-4">
-                {/* Notes / Timeline */}
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-midnight/40 mb-2">Notes & Timeline</div>
-                  <div className="bg-midnight/5 rounded-lg p-3">
+        {isExpanded && (
+          <div className="overflow-hidden border-t-2 border-midnight/5">
+            <div className="p-4 space-y-4">
+              {/* Notes - Inline Editable */}
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-midnight/40 mb-2">Notes</div>
+                {isEditingNotes ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={editingField.value}
+                      onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
+                      onBlur={handleFieldSave}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') handleFieldCancel()
+                      }}
+                      className="w-full bg-white border border-ocean rounded-lg px-3 py-2 text-sm text-midnight focus:outline-none focus:ring-1 focus:ring-ocean resize-none"
+                      rows={5}
+                      autoFocus
+                    />
+                    <div className="text-[10px] text-midnight/40">Click outside to save, Esc to cancel</div>
+                  </div>
+                ) : (
+                  <div 
+                    onClick={() => handleFieldEdit(client.id, 'notes', client.notes)}
+                    className="bg-midnight/5 rounded-lg p-3 cursor-text hover:bg-midnight/10 transition-colors"
+                  >
                     <pre className="text-sm text-midnight/80 whitespace-pre-wrap font-body leading-relaxed">
-                      {client.notes}
+                      {client.notes || 'Click to add notes...'}
                     </pre>
                   </div>
-                </div>
-
-                {/* Quick Update */}
-                <div>
-                  {updateInput?.clientId === client.id ? (
-                    <div className="space-y-2">
-                      <div className="text-[10px] uppercase tracking-wider text-ocean font-medium">Add Update</div>
-                      <textarea
-                        value={updateInput.text}
-                        onChange={(e) => {
-                          e.stopPropagation()
-                          setUpdateInput({ clientId: client.id, text: e.target.value })
-                        }}
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        placeholder="What's the latest? (e.g., 'Called client, scheduled closing for Friday')"
-                        className="w-full bg-white border border-midnight/10 rounded-lg px-3 py-2 text-sm text-midnight placeholder:text-midnight/30 focus:outline-none focus:border-ocean focus:ring-1 focus:ring-ocean resize-none"
-                        rows={3}
-                        autoFocus
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleUpdate(client.id)}
-                          disabled={!updateInput.text.trim()}
-                          className="flex-1 px-3 py-2 bg-ocean text-white rounded-lg text-xs font-medium hover:bg-ocean/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          💬 Add Update
-                        </button>
-                        <button
-                          onClick={() => setUpdateInput(null)}
-                          className="px-3 py-2 bg-midnight/5 text-midnight/50 rounded-lg text-xs font-medium hover:bg-midnight/10 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setUpdateInput({ clientId: client.id, text: '' })}
-                      className="w-full px-3 py-2 bg-gradient-to-r from-ocean/5 to-cyan/5 border border-ocean/10 text-ocean rounded-lg text-xs font-medium hover:from-ocean/10 hover:to-cyan/10 transition-all flex items-center justify-center gap-1.5"
-                    >
-                      💬 Quick Update
-                    </button>
-                  )}
-                </div>
-
-                {/* Status Change Buttons */}
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider text-midnight/40 mb-2">Change Status</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {STATUS_ORDER.map(status => {
-                      const style = STATUS_COLORS[status]
-                      const isCurrent = client.status === status
-                      return (
-                        <button
-                          key={status}
-                          onClick={() => {
-                            if (!isCurrent) {
-                              setClients(prev => prev.map(c => 
-                                c.id === client.id ? { ...c, status: status as Client['status'] } : c
-                              ))
-                            }
-                          }}
-                          disabled={isCurrent}
-                          className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
-                            isCurrent
-                              ? `${style.bg} ${style.text} ring-1 ring-current/20`
-                              : 'bg-midnight/5 text-midnight/40 hover:bg-midnight/10 hover:text-midnight/60'
-                          }`}
-                        >
-                          {status}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
-          )}
-        
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto py-12 text-center">
+        <div className="animate-pulse">
+          <div className="w-12 h-12 bg-ocean/20 rounded-full mx-auto mb-4"></div>
+          <p className="text-midnight/50">Loading pipeline...</p>
+        </div>
       </div>
     )
   }
@@ -394,17 +367,13 @@ export default function PipelinePage() {
   return (
     <div className="max-w-6xl mx-auto pb-24">
       {/* Header */}
-      <div}}}
-        className="mb-6"
-      >
+      <div className="mb-6">
         <h1 className="font-display text-3xl text-midnight mb-1">Client Pipeline</h1>
         <p className="text-midnight/50 text-sm">Mortgage client tracker — who needs what, when</p>
       </div>
 
       {/* Stats Cards */}
-      <div}}}
-        className="grid grid-cols-3 gap-4 mb-6"
-      >
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-gradient-to-br from-red-500 to-orange-500 rounded-xl p-4 text-white">
           <div className="text-3xl font-display font-bold">{stats.hot}</div>
           <div className="text-sm text-white/80">🔥 Hot Deals</div>
@@ -420,9 +389,7 @@ export default function PipelinePage() {
       </div>
 
       {/* Filters */}
-      <div}}}
-        className="mb-6"
-      >
+      <div className="mb-6">
         <div className="flex items-center gap-3 flex-wrap mb-3">
           {/* Status Filter */}
           <div className="flex items-center gap-2 overflow-x-auto">
@@ -437,7 +404,7 @@ export default function PipelinePage() {
               All Statuses ({clients.length})
             </button>
             {STATUS_ORDER.map(status => {
-              const count = clients.filter(c => c.status === status).length
+              const count = clients.filter(c => c.stage === status).length
               const style = STATUS_COLORS[status]
               return (
                 <button
@@ -457,15 +424,14 @@ export default function PipelinePage() {
 
           {/* Priority Filter */}
           <div className="flex items-center gap-2">
-            {['all', 'Hot', 'Active', 'Monitoring'].map(priority => {
-              // Calculate count based on status-filtered clients
+            {['all', 'Hot', 'Active', 'Warm', 'Monitoring'].map(priority => {
               const statusFilteredClients = filterStatus !== 'all' 
-                ? clients.filter(c => c.status === filterStatus)
+                ? clients.filter(c => c.stage === filterStatus)
                 : clients
               const count = priority === 'all' 
                 ? statusFilteredClients.length 
                 : statusFilteredClients.filter(c => c.priority === priority).length
-              const style = priority !== 'all' ? PRIORITY_COLORS[priority] : null
+              const style = priority !== 'all' ? PRIORITY_COLORS[priority as keyof typeof PRIORITY_COLORS] : null
               
               return (
                 <button
@@ -515,9 +481,7 @@ export default function PipelinePage() {
       {/* Clients Display */}
       {viewMode === 'list' ? (
         // List View
-        <div}}
-          className="space-y-6"
-        >
+        <div className="space-y-6">
           {STATUS_ORDER.map(status => {
             const group = groupedClients[status]
             if (!group || group.length === 0) return null
@@ -534,11 +498,9 @@ export default function PipelinePage() {
                 </div>
 
                 <div className="space-y-3">
-                  
-                    {group.map(client => (
-                      <ClientCard key={client.id} client={client} />
-                    ))}
-                  
+                  {group.map(client => (
+                    <ClientCard key={client.id} client={client} />
+                  ))}
                 </div>
               </div>
             )
@@ -553,7 +515,7 @@ export default function PipelinePage() {
 
             return (
               <div
-                key={status}}}
+                key={status}
                 className="bg-midnight/5 rounded-xl p-4 min-h-[400px]"
               >
                 <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium mb-4 ${statusStyle.bg} ${statusStyle.text}`}>
@@ -562,11 +524,9 @@ export default function PipelinePage() {
                 </div>
 
                 <div className="space-y-3">
-                  
-                    {group.map(client => (
-                      <ClientCard key={client.id} client={client} />
-                    ))}
-                  
+                  {group.map(client => (
+                    <ClientCard key={client.id} client={client} />
+                  ))}
                 </div>
               </div>
             )
@@ -576,9 +536,7 @@ export default function PipelinePage() {
 
       {/* Empty State */}
       {filteredClients.length === 0 && (
-        <div}}
-          className="bg-cream rounded-2xl p-12 text-center"
-        >
+        <div className="bg-cream rounded-2xl p-12 text-center">
           <div className="w-20 h-20 bg-ocean/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-4xl">📋</span>
           </div>
