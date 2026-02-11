@@ -637,11 +637,7 @@ export default function TasksPage() {
                     </div>
                   ) : updateSuggestion?.taskId === task.id ? (
                     // Suggestion display mode
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-2"
-                    >
+                    <div className="space-y-2">
                       <div className="text-[10px] uppercase tracking-wider text-ocean font-medium flex items-center gap-1">
                         🤖 Jasper&apos;s Suggestion
                       </div>
@@ -681,7 +677,7 @@ export default function TasksPage() {
                           Dismiss
                         </button>
                       </div>
-                    </motion.div>
+                    </div>
                   ) : (
                     // Default: show Update button
                     <button
@@ -1009,15 +1005,11 @@ export default function TasksPage() {
           <kbd className="px-2 py-1 bg-midnight/5 rounded">K</kbd>
           <span>Kanban</span>
         </div>
-      </motion.div>
+      </div>
 
       {/* Loading */}
       {loading && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex items-center justify-center py-16"
-        >
+        <div className="flex items-center justify-center py-16">
           <div className="flex items-center gap-3 text-midnight/40">
             <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -1025,39 +1017,25 @@ export default function TasksPage() {
             </svg>
             Loading tasks...
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Error */}
       {error && !loading && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6"
-        >
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
           <p className="text-red-700 text-sm">{error}</p>
-        </motion.div>
+        </div>
       )}
 
       {/* Empty State */}
       {!loading && !error && filteredTasks.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200 }}
-          className="bg-cream rounded-2xl p-12 text-center"
-        >
-          <motion.div 
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
-            className="w-20 h-20 bg-terracotta/10 rounded-full flex items-center justify-center mx-auto mb-4"
-          >
+        <div className="bg-cream rounded-2xl p-12 text-center">
+          <div className="w-20 h-20 bg-terracotta/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-4xl">{getEmptyStateMessage().emoji}</span>
-          </motion.div>
+          </div>
           <h2 className="font-display text-xl text-midnight mb-2">{getEmptyStateMessage().title}</h2>
           <p className="text-midnight/50 text-sm">{getEmptyStateMessage().message}</p>
-        </motion.div>
+        </div>
       )}
 
       {/* Task Views */}
@@ -1065,20 +1043,7 @@ export default function TasksPage() {
         <>
           {viewMode === 'list' ? (
             // List View
-            <motion.div 
-              className="space-y-6"
-              variants={{
-                hidden: { opacity: 0 },
-                show: {
-                  opacity: 1,
-                  transition: {
-                    staggerChildren: 0.05
-                  }
-                }
-              }}
-              initial="hidden"
-              animate="show"
-            >
+            <div className="space-y-6">
               {statusOrder.map((status) => {
                 const group = groupedTasks[status]
                 if (!group || group.length === 0) return null
@@ -1086,13 +1051,7 @@ export default function TasksPage() {
                 const statusStyle = STATUS_STYLES[status] || STATUS_STYLES['Not Started']
 
                 return (
-                  <motion.div
-                    key={status}
-                    variants={{
-                      hidden: { opacity: 0, y: 20 },
-                      show: { opacity: 1, y: 0 }
-                    }}
-                  >
+                  <div key={status}>
                     <div className="flex items-center gap-2 mb-3">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
                         <span>{statusStyle.icon}</span>
@@ -1101,30 +1060,15 @@ export default function TasksPage() {
                       <span className="text-xs text-midnight/30">{group.length}</span>
                     </div>
 
-                    <motion.div 
-                      className="space-y-2"
-                      variants={{
-                        hidden: { opacity: 0 },
-                        show: {
-                          opacity: 1,
-                          transition: {
-                            staggerChildren: 0.03
-                          }
-                        }
-                      }}
-                      initial="hidden"
-                      animate="show"
-                    >
-                      <AnimatePresence mode="popLayout">
-                        {group
-                          .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4))
-                          .map((task) => <TaskCard key={task.id} task={task} />)}
-                      </AnimatePresence>
-                    </motion.div>
-                  </motion.div>
+                    <div className="space-y-2">
+                      {group
+                        .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4))
+                        .map((task) => <TaskCard key={task.id} task={task} />)}
+                    </div>
+                  </div>
                 )
               })}
-            </motion.div>
+            </div>
           ) : (
             // Kanban View
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -1133,11 +1077,8 @@ export default function TasksPage() {
                 const statusStyle = STATUS_STYLES[status]
 
                 return (
-                  <motion.div
+                  <div
                     key={status}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4 }}
                     className="bg-midnight/5 rounded-xl p-4 min-h-[400px]"
                   >
                     <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium mb-4 ${statusStyle.bg} ${statusStyle.text}`}>
@@ -1147,13 +1088,11 @@ export default function TasksPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <AnimatePresence mode="popLayout">
-                        {group
-                          .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4))
-                          .map((task) => <TaskCard key={task.id} task={task} />)}
-                      </AnimatePresence>
+                      {group
+                        .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4))
+                        .map((task) => <TaskCard key={task.id} task={task} />)}
                     </div>
-                  </motion.div>
+                  </div>
                 )
               })}
             </div>
@@ -1162,38 +1101,25 @@ export default function TasksPage() {
       )}
 
       {/* Floating Action Button */}
-      <motion.button
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: 'spring', stiffness: 200, delay: 0.5 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+      <button
         onClick={() => setShowAddModal(true)}
-        className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-ocean to-cyan text-white rounded-full shadow-2xl flex items-center justify-center z-50 hover:shadow-ocean/50"
+        className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-ocean to-cyan text-white rounded-full shadow-2xl flex items-center justify-center z-50 hover:shadow-ocean/50 hover:scale-110 transition-transform"
       >
         <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
         </svg>
-      </motion.button>
+      </button>
 
       {/* Add Task Modal */}
-      <AnimatePresence>
-        {showAddModal && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowAddModal(false)}
-              className="fixed inset-0 bg-midnight/40 backdrop-blur-sm z-50"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-cream rounded-2xl shadow-2xl z-50 p-6 max-h-[90vh] overflow-y-auto"
-            >
+      {showAddModal && (
+        <>
+          <div
+            onClick={() => setShowAddModal(false)}
+            className="fixed inset-0 bg-midnight/40 backdrop-blur-sm z-50"
+          />
+          <div
+            className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg bg-cream rounded-2xl shadow-2xl z-50 p-6 max-h-[90vh] overflow-y-auto"
+          >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-display text-2xl text-midnight">Create New Task</h2>
                 <button
@@ -1287,22 +1213,16 @@ export default function TasksPage() {
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </>
         )}
-      </AnimatePresence>
 
       {/* Footer */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="text-center mt-8 mb-4"
-      >
+      <div className="text-center mt-8 mb-4">
         <p className="text-[11px] text-midnight/25">
           Built by Jasper · Synced from Notion
         </p>
-      </motion.div>
+      </div>
     </div>
   )
 }

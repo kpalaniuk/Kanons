@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 
 interface Client {
   id: string
@@ -214,11 +213,7 @@ export default function PipelinePage() {
     const isStale = daysSinceUpdate > 7
 
     return (
-      <motion.div
-        layout={updateInput?.clientId !== client.id}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, x: -20 }}
+      <div}}}
         className={`bg-cream rounded-xl border-2 ${statusStyle.border} hover:shadow-md transition-all`}
       >
         <div className="p-4">
@@ -298,14 +293,9 @@ export default function PipelinePage() {
         </div>
 
         {/* Expanded Details */}
-        <AnimatePresence>
+        
           {isExpanded && (
-            <motion.div
-              layout={false}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
+            <div}}}}
               className="overflow-hidden border-t-2 border-midnight/5"
             >
               <div className="p-4 space-y-4">
@@ -394,31 +384,25 @@ export default function PipelinePage() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
-      </motion.div>
+        
+      </div>
     )
   }
 
   return (
     <div className="max-w-6xl mx-auto pb-24">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+      <div}}}
         className="mb-6"
       >
         <h1 className="font-display text-3xl text-midnight mb-1">Client Pipeline</h1>
         <p className="text-midnight/50 text-sm">Mortgage client tracker — who needs what, when</p>
-      </motion.div>
+      </div>
 
       {/* Stats Cards */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.05 }}
+      <div}}}
         className="grid grid-cols-3 gap-4 mb-6"
       >
         <div className="bg-gradient-to-br from-red-500 to-orange-500 rounded-xl p-4 text-white">
@@ -433,13 +417,10 @@ export default function PipelinePage() {
           <div className="text-3xl font-display font-bold">{stats.waiting}</div>
           <div className="text-sm text-white/80">⏳ Waiting</div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Filters */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
+      <div}}}
         className="mb-6"
       >
         <div className="flex items-center gap-3 flex-wrap mb-3">
@@ -529,14 +510,12 @@ export default function PipelinePage() {
             </button>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Clients Display */}
       {viewMode === 'list' ? (
         // List View
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+        <div}}
           className="space-y-6"
         >
           {STATUS_ORDER.map(status => {
@@ -555,16 +534,16 @@ export default function PipelinePage() {
                 </div>
 
                 <div className="space-y-3">
-                  <AnimatePresence mode="popLayout">
+                  
                     {group.map(client => (
                       <ClientCard key={client.id} client={client} />
                     ))}
-                  </AnimatePresence>
+                  
                 </div>
               </div>
             )
           })}
-        </motion.div>
+        </div>
       ) : (
         // Kanban View
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -573,10 +552,8 @@ export default function PipelinePage() {
             const statusStyle = STATUS_COLORS[status]
 
             return (
-              <motion.div
-                key={status}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
+              <div
+                key={status}}}
                 className="bg-midnight/5 rounded-xl p-4 min-h-[400px]"
               >
                 <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium mb-4 ${statusStyle.bg} ${statusStyle.text}`}>
@@ -585,13 +562,13 @@ export default function PipelinePage() {
                 </div>
 
                 <div className="space-y-3">
-                  <AnimatePresence mode="popLayout">
+                  
                     {group.map(client => (
                       <ClientCard key={client.id} client={client} />
                     ))}
-                  </AnimatePresence>
+                  
                 </div>
-              </motion.div>
+              </div>
             )
           })}
         </div>
@@ -599,9 +576,7 @@ export default function PipelinePage() {
 
       {/* Empty State */}
       {filteredClients.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+        <div}}
           className="bg-cream rounded-2xl p-12 text-center"
         >
           <div className="w-20 h-20 bg-ocean/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -609,7 +584,7 @@ export default function PipelinePage() {
           </div>
           <h2 className="font-display text-xl text-midnight mb-2">No clients found</h2>
           <p className="text-midnight/50 text-sm">Try adjusting your filters</p>
-        </motion.div>
+        </div>
       )}
     </div>
   )

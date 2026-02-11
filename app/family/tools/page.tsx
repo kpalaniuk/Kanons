@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 
 interface Artifact {
@@ -145,25 +144,15 @@ export default function ToolsPage() {
   return (
     <div className="max-w-6xl mx-auto pb-24">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="mb-8"
-      >
+      <div className="mb-8">
         <h1 className="font-display text-3xl text-midnight mb-2">Tools & Artifacts</h1>
         <p className="text-midnight/60">
           Documents, calculators, and utilities built by Jasper
         </p>
-      </motion.div>
+      </div>
 
       {/* === SECTION A: ARTIFACTS / FILE FOLDER === */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-        className="mb-12"
-      >
+      <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 bg-ocean/10 rounded-xl flex items-center justify-center">
             <span className="text-2xl">📁</span>
@@ -262,26 +251,18 @@ export default function ToolsPage() {
 
         {/* Empty State */}
         {!loading && !error && filteredArtifacts.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-cream rounded-2xl p-12 text-center"
-          >
+          <div className="bg-cream rounded-2xl p-12 text-center">
             <div className="w-20 h-20 bg-ocean/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-4xl">📂</span>
             </div>
             <h2 className="font-display text-xl text-midnight mb-2">No artifacts found</h2>
             <p className="text-midnight/50 text-sm">Try adjusting your filters or search query</p>
-          </motion.div>
+          </div>
         )}
 
         {/* Artifact Grid */}
         {!loading && !error && filteredArtifacts.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredArtifacts.map((artifact, idx) => {
               const typeColor = TYPE_COLORS[artifact.type]
               const isExpanded = expandedArtifact === artifact.slug
@@ -289,11 +270,8 @@ export default function ToolsPage() {
               const isLoadingPreview = loadingPreview === artifact.slug
 
               return (
-                <motion.div
+                <div
                   key={artifact.slug}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: idx * 0.05 }}
                   className={`bg-cream rounded-xl border-2 border-midnight/5 hover:border-midnight/10 transition-all ${
                     isExpanded ? 'md:col-span-2 lg:col-span-3' : ''
                   }`}
@@ -364,16 +342,9 @@ export default function ToolsPage() {
                   </div>
 
                   {/* Preview */}
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden border-t-2 border-midnight/5"
-                      >
-                        <div className="p-5 bg-midnight/5">
+                  {isExpanded && (
+                    <div className="overflow-hidden border-t-2 border-midnight/5">
+                      <div className="p-5 bg-midnight/5">
                           {isLoadingPreview ? (
                             <div className="flex items-center justify-center py-8">
                               <div className="flex items-center gap-2 text-midnight/40 text-sm">
@@ -396,22 +367,17 @@ export default function ToolsPage() {
                             </div>
                           )}
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
+                      </div>
+                  )}
+                </div>
               )
             })}
-          </motion.div>
+          </div>
         )}
-      </motion.div>
+      </div>
 
       {/* === SECTION B: TOOLS & UTILITIES === */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
+      <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 bg-terracotta/10 rounded-xl flex items-center justify-center">
             <span className="text-2xl">🛠️</span>
@@ -425,12 +391,7 @@ export default function ToolsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* DSCR Calculator */}
           <Link href="/family/tools/dscr-calculator">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.25 }}
-              className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-200 hover:border-emerald-300 rounded-xl p-6 relative overflow-hidden cursor-pointer group transition-all hover:shadow-lg hover:scale-[1.02]"
-            >
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-200 hover:border-emerald-300 rounded-xl p-6 relative overflow-hidden cursor-pointer group transition-all hover:shadow-lg hover:scale-[1.02]">
               <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                 <span className="inline-flex items-center px-2 py-1 bg-emerald-500 text-white rounded-md text-[10px] font-bold uppercase tracking-wider">
                   Open →
@@ -443,17 +404,12 @@ export default function ToolsPage() {
               <p className="text-sm text-midnight/60 leading-relaxed">
                 Calculate Debt Service Coverage Ratio for investment property loans with rental income estimates
               </p>
-            </motion.div>
+            </div>
           </Link>
 
           {/* Refi Scenario Builder */}
           <Link href="/family/tools/refi-builder">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-              className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 hover:border-blue-300 rounded-xl p-6 relative overflow-hidden cursor-pointer group transition-all hover:shadow-lg hover:scale-[1.02]"
-            >
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 hover:border-blue-300 rounded-xl p-6 relative overflow-hidden cursor-pointer group transition-all hover:shadow-lg hover:scale-[1.02]">
               <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                 <span className="inline-flex items-center px-2 py-1 bg-blue-500 text-white rounded-md text-[10px] font-bold uppercase tracking-wider">
                   Open →
@@ -466,17 +422,12 @@ export default function ToolsPage() {
               <p className="text-sm text-midnight/60 leading-relaxed">
                 Compare refinance options side-by-side with break-even analysis and lifetime savings projections
               </p>
-            </motion.div>
+            </div>
           </Link>
 
           {/* Purchase Scenario Builder */}
           <Link href="/family/tools/purchase-builder">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.35 }}
-              className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 hover:border-purple-300 rounded-xl p-6 relative overflow-hidden cursor-pointer group transition-all hover:shadow-lg hover:scale-[1.02]"
-            >
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 hover:border-purple-300 rounded-xl p-6 relative overflow-hidden cursor-pointer group transition-all hover:shadow-lg hover:scale-[1.02]">
               <div className="absolute top-3 right-3">
                 <span className="inline-flex items-center px-2 py-1 bg-purple-500 text-white rounded-md text-[10px] font-bold uppercase tracking-wider">
                   🔥 NEW
@@ -489,10 +440,10 @@ export default function ToolsPage() {
               <p className="text-sm text-midnight/60 leading-relaxed">
                 Multi-scenario purchase calculator comparing price points and down payment options — the killer feature for LO client consultations
               </p>
-            </motion.div>
+            </div>
           </Link>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }

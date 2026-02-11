@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
+
 import Link from 'next/link'
 
 type LoanProgram = 'Conventional' | 'FHA' | 'VA'
@@ -212,8 +212,7 @@ export default function PurchaseScenarioBuilderPage() {
           }}
         />
         <div 
-          className="absolute -top-8 bg-midnight text-cream px-2 py-1 rounded text-xs font-medium pointer-events-none whitespace-nowrap"
-          style={{ left: `clamp(0px, calc(${percentage}% - 20px), calc(100% - 60px))` }}
+          className="absolute -top-8 bg-midnight text-cream px-2 py-1 rounded text-xs font-medium pointer-events-none whitespace-nowrap"% - 20px), calc(100% - 60px))` }}
         >
           {format(value)}
         </div>
@@ -255,10 +254,7 @@ export default function PurchaseScenarioBuilderPage() {
   return (
     <div className="max-w-7xl mx-auto pb-24">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+      <div}}}
         className="mb-8"
       >
         <Link 
@@ -275,15 +271,12 @@ export default function PurchaseScenarioBuilderPage() {
         <p className="text-midnight/60 text-lg">
           Compare purchase price scenarios across different down payment options — your killer feature for client consultations
         </p>
-      </motion.div>
+      </div>
 
       {/* Input Sections */}
       <div className="space-y-8 mb-12">
         {/* Client Info */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+        <section}}}
           className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
         >
           <div className="flex items-center gap-3 mb-6">
@@ -365,13 +358,10 @@ export default function PurchaseScenarioBuilderPage() {
               />
             </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* Property & Financing */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+        <section}}}
           className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
         >
           <div className="flex items-center gap-3 mb-6">
@@ -567,7 +557,7 @@ export default function PurchaseScenarioBuilderPage() {
               </div>
             </div>
           </div>
-        </motion.section>
+        </section>
       </div>
 
       {/* View Toggle */}
@@ -605,10 +595,7 @@ export default function PurchaseScenarioBuilderPage() {
       {/* Scenarios Display */}
       {viewMode === 'grid' ? (
         // Grid View
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+        <div}}}
           className="bg-cream rounded-2xl border-2 border-midnight/5 p-6 overflow-x-auto"
         >
           <table className="w-full text-xs">
@@ -659,24 +646,18 @@ export default function PurchaseScenarioBuilderPage() {
               ))}
             </tbody>
           </table>
-        </motion.div>
+        </div>
       ) : (
         // Card View
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+        <div}}}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         >
           {scenarios.map((scenario, idx) => {
             const style = getQualificationStyle(scenario)
             const hasFunds = availableAssets >= scenario.cashRequired
             return (
-              <motion.div
-                key={`${scenario.price}-${scenario.downPaymentPercent}`}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: idx * 0.02 }}
+              <div
+                key={`${scenario.price}-${scenario.downPaymentPercent}`}}}}
                 className={`${style.bg} ${style.border} border-2 rounded-xl p-4`}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -720,17 +701,14 @@ export default function PurchaseScenarioBuilderPage() {
                     {scenario.isConforming ? '✓ Conforming Loan' : '⚠️ Jumbo Loan'}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )
           })}
-        </motion.div>
+        </div>
       )}
 
       {/* Info Footer */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
+      <div}}}
         className="mt-12 bg-midnight/5 rounded-xl p-6"
       >
         <h3 className="font-display text-lg text-midnight mb-3">📖 Understanding the Scenarios</h3>
@@ -751,7 +729,7 @@ export default function PurchaseScenarioBuilderPage() {
             ⚠️ This tool provides guidance for client conversations. Final qualification depends on full underwriting, credit review, and lender overlays. Always verify with your pricing engine and underwriting guidelines.
           </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }

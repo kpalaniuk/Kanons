@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
 import Link from 'next/link'
 
 export default function DSCRCalculatorPage() {
@@ -162,8 +161,7 @@ export default function DSCRCalculatorPage() {
           }}
         />
         <div 
-          className="absolute -top-8 bg-midnight text-cream px-2 py-1 rounded text-xs font-medium pointer-events-none whitespace-nowrap"
-          style={{ left: `clamp(0px, calc(${percentage}% - 20px), calc(100% - 60px))` }}
+          className="absolute -top-8 bg-midnight text-cream px-2 py-1 rounded text-xs font-medium pointer-events-none whitespace-nowrap"% - 20px), calc(100% - 60px))` }}
         >
           {format(value)}
         </div>
@@ -187,12 +185,7 @@ export default function DSCRCalculatorPage() {
   return (
     <div className="max-w-6xl mx-auto pb-24">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-8"
-      >
+      <div className="mb-8">
         <Link 
           href="/family/tools"
           className="inline-flex items-center gap-2 text-sm text-midnight/60 hover:text-midnight mb-4 group"
@@ -207,16 +200,13 @@ export default function DSCRCalculatorPage() {
         <p className="text-midnight/60 text-lg">
           Calculate Debt Service Coverage Ratio to determine investment property loan qualification
         </p>
-      </motion.div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Inputs */}
         <div className="lg:col-span-2 space-y-8">
           {/* Property Section */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+          <section}}}
             className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -336,13 +326,10 @@ export default function DSCRCalculatorPage() {
                 </div>
               </div>
             </div>
-          </motion.section>
+          </section>
 
           {/* Income & Expenses Section */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+          <section}}}
             className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -396,13 +383,10 @@ export default function DSCRCalculatorPage() {
                 </p>
               </div>
             </div>
-          </motion.section>
+          </section>
 
           {/* Financing Section */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
+          <section}}}
             className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -468,13 +452,10 @@ export default function DSCRCalculatorPage() {
                 </div>
               </div>
             </div>
-          </motion.section>
+          </section>
 
           {/* Borrower Section */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
+          <section}}}
             className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -525,16 +506,13 @@ export default function DSCRCalculatorPage() {
                 />
               </div>
             </div>
-          </motion.section>
+          </section>
         </div>
 
         {/* Right Column: Results */}
         <div className="lg:col-span-1 space-y-6">
           {/* DSCR Result Card - Sticky */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
+          <div}}}
             className="sticky top-6"
           >
             <div className={`rounded-2xl border-2 ${qualification.border} ${qualification.bg} p-6 shadow-lg`}>
@@ -542,15 +520,12 @@ export default function DSCRCalculatorPage() {
                 <div className="text-xs uppercase tracking-wider text-midnight/50 font-medium mb-2">
                   Debt Service Coverage Ratio
                 </div>
-                <motion.div
-                  key={dscr}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.3, type: "spring" }}
+                <div
+                  key={dscr}}}}
                   className={`font-display text-7xl font-bold ${qualification.color} mb-3`}
                 >
                   {dscr.toFixed(2)}
-                </motion.div>
+                </div>
                 <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${qualification.bg} ${qualification.color} ring-2 ${qualification.ring} font-medium text-sm`}>
                   {qualification.label}
                 </div>
@@ -559,10 +534,7 @@ export default function DSCRCalculatorPage() {
               {/* Visual Gauge */}
               <div className="mb-6">
                 <div className="h-3 bg-midnight/10 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min((dscr / 1.5) * 100, 100)}%` }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  <div}%` }}}
                     className={`h-full rounded-full ${
                       dscr >= 1.25 ? 'bg-emerald-500' :
                       dscr >= 1.15 ? 'bg-blue-500' :
@@ -651,10 +623,7 @@ export default function DSCRCalculatorPage() {
             </div>
 
             {/* Calculation Breakdown */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
+            <div}}}
               className="mt-6 bg-cream rounded-2xl border-2 border-midnight/5 p-6"
             >
               <div className="text-xs uppercase tracking-wider text-midnight/50 font-medium mb-4">
@@ -696,16 +665,13 @@ export default function DSCRCalculatorPage() {
                   </div>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Info Footer */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.7 }}
+      <div}}}
         className="mt-12 bg-midnight/5 rounded-xl p-6"
       >
         <h3 className="font-display text-lg text-midnight mb-3">ℹ️ About DSCR Loans</h3>
@@ -720,7 +686,7 @@ export default function DSCRCalculatorPage() {
             ⚠️ This calculator provides estimates for planning purposes only. Actual qualification depends on lender guidelines, credit profile, and property specifics. Contact a loan officer for personalized guidance.
           </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }
