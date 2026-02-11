@@ -214,6 +214,15 @@ export default function TasksPage() {
     notes: '',
   })
   const [creating, setCreating] = useState(false)
+  const [updateContext, setUpdateContext] = useState<{ taskId: string; text: string } | null>(null)
+  const [updateLoading, setUpdateLoading] = useState(false)
+  const [updateSuggestion, setUpdateSuggestion] = useState<{
+    taskId: string
+    nextAction: string
+    subTasks: string[]
+    followUpDate: string | null
+    dateReason: string
+  } | null>(null)
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -317,6 +326,50 @@ export default function TasksPage() {
     } finally {
       setCreating(false)
     }
+  }
+
+  const submitUpdate = async (task: Task) => {
+    if (!updateContext?.text.trim()) return
+
+    setUpdateLoading(true)
+    try {
+      const res = await fetch('/api/tasks/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taskId: task.id,
+          taskTitle: task.title,
+          taskNotes: task.notes,
+          taskCategory: task.category,
+          taskPriority: task.priority,
+          taskDueDate: task.dueDate,
+          context: updateContext.text,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to submit update')
+
+      const data = await res.json()
+      setUpdateSuggestion({
+        taskId: task.id,
+        nextAction: data.suggestion?.nextAction || '',
+        subTasks: data.suggestion?.subTasks || [],
+        followUpDate: data.suggestion?.followUpDate || null,
+        dateReason: data.suggestion?.dateReason || '',
+      })
+      setUpdateContext(null)
+
+      // Refresh tasks to show updated notes + due date
+      fetchTasks()
+    } catch (err) {
+      console.error(err)
+      alert('Failed to submit update')
+    } finally {
+      setUpdateLoading(false)
+    }
+  }
+
+  const dismissSuggestion = () => {
+    setUpdateSuggestion(null)
   }
 
   // Today's context
@@ -570,6 +623,104 @@ export default function TasksPage() {
                       </button>
                     )
                   })}
+                </div>
+
+                {/* Quick Update Section */}
+                <div className="mt-4 pt-3 border-t border-midnight/5">
+                  {updateContext?.taskId === task.id ? (
+                    // Input mode
+                    <div className="space-y-2">
+                      <div className="text-[10px] uppercase tracking-wider text-ocean font-medium">Quick Update</div>
+                      <textarea
+                        value={updateContext.text}
+                        onChange={(e) => setUpdateContext({ taskId: task.id, text: e.target.value })}
+                        placeholder="What happened? (e.g. 'Called but got voicemail, need to try again Thursday')"
+                        className="w-full bg-white border border-midnight/10 rounded-lg px-3 py-2 text-sm text-midnight placeholder:text-midnight/30 focus:outline-none focus:border-ocean focus:ring-1 focus:ring-ocean resize-none"
+                        rows={2}
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => submitUpdate(task)}
+                          disabled={!updateContext.text.trim() || updateLoading}
+                          className="flex-1 px-3 py-2 bg-ocean text-white rounded-lg text-xs font-medium hover:bg-ocean/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                        >
+                          {updateLoading ? (
+                            <>
+                              <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                              </svg>
+                              Analyzing...
+                            </>
+                          ) : (
+                            <>🤖 Get Jasper&apos;s Take</>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => setUpdateContext(null)}
+                          className="px-3 py-2 bg-midnight/5 text-midnight/50 rounded-lg text-xs font-medium hover:bg-midnight/10 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : updateSuggestion?.taskId === task.id ? (
+                    // Suggestion display mode
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-2"
+                    >
+                      <div className="text-[10px] uppercase tracking-wider text-ocean font-medium flex items-center gap-1">
+                        🤖 Jasper&apos;s Suggestion
+                      </div>
+                      <div className="bg-ocean/5 border border-ocean/10 rounded-lg p-3 space-y-2">
+                        <div className="text-sm text-midnight font-medium flex items-start gap-2">
+                          <span className="text-ocean mt-0.5">→</span>
+                          <span>{updateSuggestion.nextAction}</span>
+                        </div>
+                        {updateSuggestion.subTasks.length > 0 && (
+                          <div className="ml-5 space-y-1">
+                            {updateSuggestion.subTasks.map((st, i) => (
+                              <div key={i} className="text-xs text-midnight/60 flex items-start gap-1.5">
+                                <span className="text-ocean/60">•</span>
+                                <span>{st}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {updateSuggestion.followUpDate && (
+                          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-ocean/10">
+                            <span className="text-xs font-medium text-ocean">📅 Follow up: {new Date(updateSuggestion.followUpDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                            <span className="text-[10px] text-midnight/40">— {updateSuggestion.dateReason}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setUpdateContext({ taskId: task.id, text: '' })}
+                          className="px-3 py-1.5 bg-midnight/5 text-midnight/50 rounded-lg text-[11px] font-medium hover:bg-midnight/10 transition-colors"
+                        >
+                          Add Another Update
+                        </button>
+                        <button
+                          onClick={dismissSuggestion}
+                          className="px-3 py-1.5 text-midnight/30 text-[11px] hover:text-midnight/50 transition-colors"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    // Default: show Update button
+                    <button
+                      onClick={() => setUpdateContext({ taskId: task.id, text: '' })}
+                      className="w-full px-3 py-2 bg-gradient-to-r from-ocean/5 to-cyan/5 border border-ocean/10 text-ocean rounded-lg text-xs font-medium hover:from-ocean/10 hover:to-cyan/10 transition-all flex items-center justify-center gap-1.5"
+                    >
+                      💬 Update &amp; Get Next Steps
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>
