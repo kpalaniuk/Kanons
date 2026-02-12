@@ -6,6 +6,19 @@ import Link from 'next/link'
 type LoanProgram = 'Conventional' | 'FHA' | 'VA'
 type PropertyType = 'Single Family' | 'Condo' | '2-Unit' | '3-4 Unit'
 
+interface LoanOfficer {
+  name: string
+  nmls: string
+  phone: string
+  email: string
+}
+
+const LOAN_OFFICERS: LoanOfficer[] = [
+  { name: 'Kyle Palaniuk', nmls: '984138', phone: '425-753-3204', email: 'kyle@planpreparehome.com' },
+  { name: 'Jim Sakrison', nmls: '244905', phone: '619-251-5047', email: 'jim@planpreparehome.com' },
+  { name: 'Anthony Cafiso', nmls: '2104568', phone: '619-843-6053', email: 'anthony@planpreparehome.com' },
+]
+
 interface Scenario {
   price: number
   downPaymentPercent: number
@@ -21,6 +34,10 @@ interface Scenario {
 }
 
 export default function PurchaseScenarioBuilderPage() {
+  // Loan Officer
+  const [selectedLO, setSelectedLO] = useState<number>(0)
+  const lo = LOAN_OFFICERS[selectedLO]
+
   // Client Info
   const [clientName, setClientName] = useState('')
   const [clientPhone, setClientPhone] = useState('')
@@ -275,6 +292,41 @@ export default function PurchaseScenarioBuilderPage() {
 
       {/* Input Sections */}
       <div className="space-y-8 mb-12">
+        {/* Loan Officer Selector */}
+        <section className="bg-cream rounded-2xl border-2 border-midnight/5 p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-ocean/10 rounded-xl flex items-center justify-center">
+              <span className="text-xl">🏢</span>
+            </div>
+            <h2 className="font-display text-2xl text-midnight">Loan Officer</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {LOAN_OFFICERS.map((officer, idx) => (
+              <button
+                key={officer.nmls}
+                onClick={() => setSelectedLO(idx)}
+                className={`p-4 rounded-xl text-left transition-all ${
+                  selectedLO === idx
+                    ? 'bg-ocean text-white ring-2 ring-ocean/20'
+                    : 'bg-white border border-midnight/10 text-midnight hover:border-ocean/30'
+                }`}
+              >
+                <div className="font-bold text-sm">{officer.name}</div>
+                <div className={`text-xs mt-1 ${selectedLO === idx ? 'text-white/80' : 'text-midnight/50'}`}>
+                  NMLS# {officer.nmls}
+                </div>
+                <div className={`text-xs ${selectedLO === idx ? 'text-white/80' : 'text-midnight/50'}`}>
+                  {officer.phone}
+                </div>
+                <div className={`text-xs ${selectedLO === idx ? 'text-white/80' : 'text-midnight/50'}`}>
+                  {officer.email}
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
         {/* Client Info */}
         <section
           className="bg-cream rounded-2xl border-2 border-midnight/5 p-6"
@@ -729,6 +781,13 @@ export default function PurchaseScenarioBuilderPage() {
             ⚠️ This tool provides guidance for client conversations. Final qualification depends on full underwriting, credit review, and lender overlays. Always verify with your pricing engine and underwriting guidelines.
           </p>
         </div>
+      </div>
+
+      {/* LO Footer */}
+      <div className="mt-6 text-center text-xs text-midnight/40 space-y-1">
+        <div className="font-semibold text-midnight/60">C2 Financial Corporation | NMLS# 135622 | CA BRE# 01821025</div>
+        <div>{lo.name} | NMLS# {lo.nmls} | {lo.phone} | {lo.email}</div>
+        <div>planpreparehome.com</div>
       </div>
     </div>
   )
