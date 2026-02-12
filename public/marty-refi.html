@@ -14,6 +14,7 @@
       --accent: #4299e1;
       --green: #48bb78;
       --red: #fc8181;
+      --yellow: #ecc94b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -116,6 +117,15 @@
       font-weight: 600;
       color: #000;
     }
+    .rate-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .rate-normal { background: rgba(72, 187, 120, 0.2); color: var(--green); }
+    .rate-elevated { background: rgba(236, 201, 75, 0.2); color: var(--yellow); }
     footer {
       text-align: center;
       margin-top: 32px;
@@ -146,7 +156,10 @@
     <h1>Refinance Analysis</h1>
     <div class="subtitle">Prepared for</div>
     <div class="property-address">Martin Weinstein<br>3445 Herman Ave, San Diego CA 92104</div>
-    <div class="subtitle" style="margin-top: 12px;">January 28, 2026</div>
+    <div class="subtitle" style="margin-top: 12px;">Updated February 12, 2026</div>
+    <div style="margin-top: 8px; padding: 6px 12px; background: rgba(72, 187, 120, 0.15); border-radius: 6px; display: inline-block; font-size: 0.85rem;">
+      🏠 Appraised Value: <strong style="color: var(--green);">$1,300,000</strong> <span style="color: var(--muted);">(up from $1,140,000 est.)</span>
+    </div>
   </header>
 
   <div class="savings-box">
@@ -158,12 +171,12 @@
   <div class="structure">
     <h2>New Loan Structure</h2>
     <div class="ltv-bar">
-      <div class="ltv-first" style="width: 73.0%;">1st: 73%</div>
-      <div class="ltv-second" style="width: 16.9%;">2nd: 17%</div>
+      <div class="ltv-first" id="ltvFirstBar" style="width: 64.1%;">1st: 64%</div>
+      <div class="ltv-second" id="ltvSecondBar" style="width: 14.9%;">2nd: 15%</div>
     </div>
     <div class="structure-row">
-      <span class="structure-label">Property Value</span>
-      <span class="structure-value">$1,140,000</span>
+      <span class="structure-label">Property Value (Appraised)</span>
+      <span class="structure-value">$1,300,000</span>
     </div>
     <div class="structure-row">
       <span class="structure-label">1st Lien (CONFORMING)</span>
@@ -171,11 +184,46 @@
     </div>
     <div class="structure-row">
       <span class="structure-label">2nd HELOC</span>
-      <span class="structure-value">$193,116 @ 8.75%</span>
+      <span class="structure-value" id="helocDisplay">$193,116 @ 8.75%</span>
     </div>
     <div class="structure-row">
       <span class="structure-label">Combined LTV</span>
-      <span class="structure-value">90.0%</span>
+      <span class="structure-value" id="cltvDisplay">78.9%</span>
+    </div>
+    <div class="structure-row">
+      <span class="structure-label">Max 2nd @ 90% CLTV</span>
+      <span class="structure-value" style="color: var(--muted);">$337,120</span>
+    </div>
+  </div>
+
+  <!-- HELOC Slider -->
+  <div class="structure" style="border: 1px solid var(--accent);">
+    <h2>🔧 Adjust 2nd HELOC Amount</h2>
+    <div style="margin-bottom: 16px;">
+      <label style="font-size: 0.75rem; color: var(--muted);">2nd HELOC Balance</label>
+      <div style="display: flex; gap: 12px; align-items: center; margin-top: 6px;">
+        <input type="range" id="helocSlider" min="193116" max="337120" value="193116" step="1000"
+          style="flex: 1; accent-color: var(--accent);" oninput="updateAll()">
+        <span style="font-family: 'SF Mono', Monaco, monospace; color: var(--accent); min-width: 100px; font-size: 1.1rem; font-weight: 600;">$<span id="helocSliderDisplay">193,116</span></span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-top: 4px;">
+        <span>$193,116 (current)</span>
+        <span>$250,000 (rate step)</span>
+        <span>$337,120 (max)</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
+      <button onclick="setHeloc(193116)" style="padding: 6px 14px; background: var(--border); color: var(--text); border: 1px solid var(--muted); border-radius: 6px; cursor: pointer; font-size: 0.8rem;">$193k (current)</button>
+      <button onclick="setHeloc(225000)" style="padding: 6px 14px; background: var(--border); color: var(--text); border: 1px solid var(--muted); border-radius: 6px; cursor: pointer; font-size: 0.8rem;">$225k</button>
+      <button onclick="setHeloc(250000)" style="padding: 6px 14px; background: var(--border); color: var(--text); border: 1px solid var(--muted); border-radius: 6px; cursor: pointer; font-size: 0.8rem;">$250k (max @ 8.75%)</button>
+      <button onclick="setHeloc(300000)" style="padding: 6px 14px; background: var(--border); color: var(--text); border: 1px solid var(--muted); border-radius: 6px; cursor: pointer; font-size: 0.8rem;">$300k</button>
+      <button onclick="setHeloc(337120)" style="padding: 6px 14px; background: var(--border); color: var(--text); border: 1px solid var(--muted); border-radius: 6px; cursor: pointer; font-size: 0.8rem;">$337k (max)</button>
+    </div>
+    <div id="rateNotice" style="margin-top: 12px; padding: 10px; border-radius: 6px; font-size: 0.85rem; background: rgba(72, 187, 120, 0.1); color: var(--green);">
+      ✅ HELOC rate: 8.75% (under $250k threshold)
+    </div>
+    <div id="extraCash" style="margin-top: 8px; padding: 10px; border-radius: 6px; font-size: 0.85rem; background: rgba(66, 153, 225, 0.1); color: var(--accent);">
+      💰 Additional cash out: $0
     </div>
   </div>
 
@@ -199,12 +247,12 @@
       <h2>New Scenario</h2>
       <table>
         <tr><td>1st Lien @ 6.625%</td><td>$5,330</td></tr>
-        <tr><td>2nd HELOC @ 8.75% (IO)</td><td>$1,409</td></tr>
-        <tr style="color: var(--muted); font-size: 0.85em;"><td>&nbsp;&nbsp;Qualifying @ 10.75%</td><td>$1,731</td></tr>
+        <tr><td>2nd HELOC (<span id="helocRateInline">8.75%</span> IO)</td><td id="helocPaymentCell">$1,409</td></tr>
+        <tr style="color: var(--muted); font-size: 0.85em;"><td>&nbsp;&nbsp;Qualifying @ <span id="qualRateInline">10.75%</span></td><td id="qualPaymentCell">$1,731</td></tr>
         <tr><td>Taxes</td><td>$1,188</td></tr>
         <tr><td>Insurance</td><td>$333</td></tr>
         <tr><td>Mortgage Insurance</td><td style="color: var(--green);">$0</td></tr>
-        <tr><td><strong>Total PITI</strong></td><td><strong>$8,260</strong></td></tr>
+        <tr><td><strong>Total PITI</strong></td><td id="newPITI"><strong>$8,260</strong></td></tr>
         <tr><td>Credit Card Payments</td><td id="newCCPayment" style="color: var(--green);">$0 (paid off)</td></tr>
         <tr class="highlight"><td><strong>Total Monthly</strong></td><td id="newTotalMonthly"><strong>$8,260</strong></td></tr>
       </table>
@@ -226,6 +274,7 @@
       </table>
     </div>
   </div>
+
   <div class="structure" style="margin-top: 24px;">
     <h2>Settlement Calculator</h2>
     
@@ -236,11 +285,11 @@
         <label style="font-size: 0.75rem; color: var(--muted);">Credit Card Debt to Pay Off (Total: $45,000)</label>
         <div style="display: flex; gap: 12px; align-items: center; margin-top: 6px;">
           <input type="range" id="ccPayoff" min="0" max="45000" value="45000" 
-            style="flex: 1; accent-color: var(--accent);" oninput="updateSettlement()">
+            style="flex: 1; accent-color: var(--accent);" oninput="updateAll()">
           <span style="font-family: 'SF Mono', Monaco, monospace; color: var(--accent); min-width: 80px;">$<span id="ccPayoffDisplay">45,000</span></span>
         </div>
         <div style="margin-top: 4px; font-size: 0.7rem; color: var(--muted);">
-          Remaining CC Payment: $<span id="remainingCCPayment">1,075</span>/mo
+          Remaining CC Payment: $<span id="remainingCCPayment">0</span>/mo
         </div>
       </div>
       
@@ -249,11 +298,11 @@
           <label style="font-size: 0.75rem; color: var(--muted);">Skipped Payments (based on close date)</label>
           <div style="display: flex; gap: 16px; margin-top: 6px;">
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="radio" name="skippedPayments" value="1" checked onchange="updateSettlement()" style="accent-color: var(--accent);">
+              <input type="radio" name="skippedPayments" value="1" checked onchange="updateAll()" style="accent-color: var(--accent);">
               <span>1 payment</span>
             </label>
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="radio" name="skippedPayments" value="2" onchange="updateSettlement()" style="accent-color: var(--accent);">
+              <input type="radio" name="skippedPayments" value="2" onchange="updateAll()" style="accent-color: var(--accent);">
               <span>2 payments</span>
             </label>
           </div>
@@ -272,10 +321,10 @@
         <h3 style="font-size: 0.8rem; color: var(--green); margin-bottom: 12px; text-transform: uppercase;">Sources of Funds</h3>
         <table>
           <tr><td>New 1st Lien</td><td>$832,750</td></tr>
-          <tr><td>New 2nd HELOC</td><td>$193,116</td></tr>
+          <tr><td>New 2nd HELOC</td><td id="sourceHeloc">$193,116</td></tr>
           <tr><td>Escrow Refund</td><td>$6,341</td></tr>
           <tr><td>Skipped Payment(s)</td><td id="skippedPaymentAmt">$8,590</td></tr>
-          <tr class="highlight"><td><strong>Total Sources</strong></td><td id="totalSources"><strong>$1,025,866</strong></td></tr>
+          <tr class="highlight"><td><strong>Total Sources</strong></td><td id="totalSources"><strong>$1,040,797</strong></td></tr>
         </table>
       </div>
       <div>
@@ -291,13 +340,22 @@
     </div>
     <div id="netResult" style="margin-top: 20px; padding: 16px; background: var(--border); border-radius: 6px; text-align: center;">
       <div id="netLabel" style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase;">Estimated Cash from Borrower</div>
-      <div id="netAmount" style="font-size: 1.5rem; font-weight: 700; color: var(--red); font-family: 'SF Mono', Monaco, monospace;">$29,645</div>
+      <div id="netAmount" style="font-size: 1.5rem; font-weight: 700; color: var(--red); font-family: 'SF Mono', Monaco, monospace;">$14,714</div>
     </div>
   </div>
   
   <script>
     const CONFIG = {
-      baseSources: 832750 + 193116,
+      propertyValue: 1300000,
+      firstLien: 832750,
+      firstLienRate: 6.625,
+      firstLienPI: 5330,
+      baseHeloc: 193116,
+      maxHeloc: 337120,
+      helocRateLow: 8.75,
+      helocRateHigh: 9.25,
+      helocThreshold: 250000,
+      qualifyingSpread: 2.0,
       escrowRefund: 6341,
       skippedPaymentAmount: 8590,
       payoffMortgage: 996511,
@@ -307,55 +365,119 @@
       ccMonthlyPayment: 1075,
       ccRate: 18,
       currentTotalMonthly: 9670,
-      newPITI: 8260
+      taxes: 1188,
+      insurance: 333,
     };
     
-    function formatCurrency(n) {
-      return n.toLocaleString('en-US');
+    function fmt(n) {
+      return Math.round(n).toLocaleString('en-US');
     }
     
-    function updateSettlement() {
+    function setHeloc(val) {
+      document.getElementById('helocSlider').value = val;
+      updateAll();
+    }
+    
+    function getHelocRate(amount) {
+      return amount > CONFIG.helocThreshold ? CONFIG.helocRateHigh : CONFIG.helocRateLow;
+    }
+    
+    function updateAll() {
+      const helocAmount = parseInt(document.getElementById('helocSlider').value);
       const ccPayoff = parseInt(document.getElementById('ccPayoff').value);
       const skippedPayments = parseInt(document.querySelector('input[name="skippedPayments"]:checked').value);
       
-      document.getElementById('ccPayoffDisplay').textContent = formatCurrency(ccPayoff);
-      document.getElementById('useCC').textContent = '$' + formatCurrency(ccPayoff);
+      // HELOC rate based on threshold
+      const helocRate = getHelocRate(helocAmount);
+      const qualRate = helocRate + CONFIG.qualifyingSpread;
+      const helocPayment = Math.round(helocAmount * (helocRate / 100) / 12);
+      const qualPayment = Math.round(helocAmount * (qualRate / 100) / 12);
       
-      // Skipped payments
-      const skippedAmount = skippedPayments * CONFIG.skippedPaymentAmount;
-      document.getElementById('skippedPaymentAmt').textContent = '$' + formatCurrency(skippedAmount) + ' (' + skippedPayments + ')';
+      // CLTV
+      const cltv = ((CONFIG.firstLien + helocAmount) / CONFIG.propertyValue * 100);
+      const firstLTV = (CONFIG.firstLien / CONFIG.propertyValue * 100);
+      const secondLTV = (helocAmount / CONFIG.propertyValue * 100);
       
-      // Calculate remaining CC payment (rough estimate based on 36mo payoff)
+      // Extra cash from increasing HELOC
+      const extraCash = helocAmount - CONFIG.baseHeloc;
+      
+      // Update HELOC display
+      document.getElementById('helocSliderDisplay').textContent = fmt(helocAmount);
+      document.getElementById('helocDisplay').textContent = '$' + fmt(helocAmount) + ' @ ' + helocRate.toFixed(2) + '%';
+      document.getElementById('cltvDisplay').textContent = cltv.toFixed(1) + '%';
+      
+      // LTV bar
+      document.getElementById('ltvFirstBar').style.width = firstLTV.toFixed(1) + '%';
+      document.getElementById('ltvFirstBar').textContent = '1st: ' + Math.round(firstLTV) + '%';
+      document.getElementById('ltvSecondBar').style.width = secondLTV.toFixed(1) + '%';
+      document.getElementById('ltvSecondBar').textContent = '2nd: ' + Math.round(secondLTV) + '%';
+      
+      // Rate notice
+      const rateNotice = document.getElementById('rateNotice');
+      if (helocAmount > CONFIG.helocThreshold) {
+        rateNotice.style.background = 'rgba(236, 201, 75, 0.1)';
+        rateNotice.style.color = 'var(--yellow)';
+        rateNotice.textContent = '⚠️ HELOC rate: ' + helocRate.toFixed(2) + '% (over $250k threshold — rate increased from 8.75%)';
+      } else {
+        rateNotice.style.background = 'rgba(72, 187, 120, 0.1)';
+        rateNotice.style.color = 'var(--green)';
+        rateNotice.textContent = '✅ HELOC rate: ' + helocRate.toFixed(2) + '% (under $250k threshold)';
+      }
+      
+      // Extra cash display
+      const extraCashEl = document.getElementById('extraCash');
+      if (extraCash > 0) {
+        extraCashEl.textContent = '💰 Additional cash out: $' + fmt(extraCash) + ' (above original $193,116 HELOC)';
+      } else {
+        extraCashEl.textContent = '💰 Additional cash out: $0';
+      }
+      
+      // New scenario card
+      document.getElementById('helocRateInline').textContent = helocRate.toFixed(2) + '%';
+      document.getElementById('qualRateInline').textContent = qualRate.toFixed(2) + '%';
+      document.getElementById('helocPaymentCell').textContent = '$' + fmt(helocPayment);
+      document.getElementById('qualPaymentCell').textContent = '$' + fmt(qualPayment);
+      
+      // CC remaining
       const remainingBalance = CONFIG.ccBalance - ccPayoff;
       const remainingPayment = remainingBalance > 0 ? Math.round((remainingBalance * (CONFIG.ccRate/100/12)) / (1 - Math.pow(1 + CONFIG.ccRate/100/12, -36))) : 0;
-      document.getElementById('remainingCCPayment').textContent = formatCurrency(remainingPayment);
       
-      // Update New Scenario card
+      document.getElementById('ccPayoffDisplay').textContent = fmt(ccPayoff);
+      document.getElementById('remainingCCPayment').textContent = fmt(remainingPayment);
+      
       if (remainingPayment > 0) {
-        document.getElementById('newCCPayment').textContent = '$' + formatCurrency(remainingPayment);
+        document.getElementById('newCCPayment').textContent = '$' + fmt(remainingPayment);
         document.getElementById('newCCPayment').style.color = '#fc8181';
       } else {
         document.getElementById('newCCPayment').textContent = '$0 (paid off)';
         document.getElementById('newCCPayment').style.color = '#48bb78';
       }
       
-      const newTotalMonthly = CONFIG.newPITI + remainingPayment;
-      document.getElementById('newTotalMonthly').innerHTML = '<strong>$' + formatCurrency(newTotalMonthly) + '</strong>';
+      // New PITI
+      const newPITI = CONFIG.firstLienPI + helocPayment + CONFIG.taxes + CONFIG.insurance;
+      document.getElementById('newPITI').innerHTML = '<strong>$' + fmt(newPITI) + '</strong>';
       
-      // Update monthly savings based on CC payoff
+      const newTotalMonthly = newPITI + remainingPayment;
+      document.getElementById('newTotalMonthly').innerHTML = '<strong>$' + fmt(newTotalMonthly) + '</strong>';
+      
+      // Savings
       const monthlySavings = CONFIG.currentTotalMonthly - newTotalMonthly;
       const annualSavings = monthlySavings * 12;
+      document.getElementById('savingsAmount').textContent = '$' + fmt(monthlySavings) + '/mo';
+      document.getElementById('savingsAnnual').textContent = '$' + fmt(annualSavings) + ' per year';
       
-      document.getElementById('savingsAmount').textContent = '$' + formatCurrency(Math.round(monthlySavings)) + '/mo';
-      document.getElementById('savingsAnnual').textContent = '$' + formatCurrency(Math.round(annualSavings)) + ' per year';
+      // Settlement
+      const skippedAmount = skippedPayments * CONFIG.skippedPaymentAmount;
+      document.getElementById('skippedPaymentAmt').textContent = '$' + fmt(skippedAmount) + ' (' + skippedPayments + ')';
       
-      // Total sources = loans + escrow refund + skipped payments
-      const totalSources = CONFIG.baseSources + CONFIG.escrowRefund + skippedAmount;
-      document.getElementById('totalSources').innerHTML = '<strong>$' + formatCurrency(totalSources) + '</strong>';
+      document.getElementById('sourceHeloc').textContent = '$' + fmt(helocAmount);
+      document.getElementById('useCC').textContent = '$' + fmt(ccPayoff);
       
-      // Total uses
+      const totalSources = CONFIG.firstLien + helocAmount + CONFIG.escrowRefund + skippedAmount;
       const totalUses = CONFIG.payoffMortgage + ccPayoff + CONFIG.closingCosts + CONFIG.prepaids;
-      document.getElementById('totalUses').innerHTML = '<strong>$' + formatCurrency(totalUses) + '</strong>';
+      
+      document.getElementById('totalSources').innerHTML = '<strong>$' + fmt(totalSources) + '</strong>';
+      document.getElementById('totalUses').innerHTML = '<strong>$' + fmt(totalUses) + '</strong>';
       
       const net = totalSources - totalUses;
       const netLabel = document.getElementById('netLabel');
@@ -364,16 +486,16 @@
       if (net >= 0) {
         netLabel.textContent = 'Estimated Cash to Borrower';
         netAmount.style.color = '#48bb78';
-        netAmount.textContent = '$' + formatCurrency(net);
+        netAmount.textContent = '$' + fmt(net);
       } else {
         netLabel.textContent = 'Estimated Cash from Borrower';
         netAmount.style.color = '#fc8181';
-        netAmount.textContent = '$' + formatCurrency(Math.abs(net));
+        netAmount.textContent = '$' + fmt(Math.abs(net));
       }
     }
     
     // Initialize
-    updateSettlement();
+    updateAll();
   </script>
   <footer>
     <div style="font-weight: 600;">C2 Financial Corporation</div>
