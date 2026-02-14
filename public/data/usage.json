@@ -1,72 +1,176 @@
 {
-  "lastUpdated": "2026-02-11T05:45:00.000Z",
-  "period": "Feb 2026",
+  "lastUpdated": "2026-02-14T21:40:16.544Z",
+  "period": "2026-02-10 to 2026-02-14",
   "providers": [
     {
-      "name": "Nexos (Prepaid)",
-      "model": "Claude Opus 4.6",
+      "name": "anthropic",
+      "model": "claude-opus-4-6",
       "status": "active",
-      "calls": 1450,
+      "calls": 1590,
+      "tokensIn": 3244,
+      "tokensOut": 387340,
+      "estimatedCost": 232.8861640999997,
+      "notes": "Primary reasoning model. Claude Sonnet 4.5 for most tasks, Opus 4 for complex thinking."
+    },
+    {
+      "name": "google",
+      "model": "gemini-2.5-pro",
+      "status": "active",
+      "calls": 350,
+      "tokensIn": 33197279,
+      "tokensOut": 86853,
+      "estimatedCost": 66.25987766999997,
+      "notes": "Gemini models for cost-effective fallback and high-throughput tasks."
+    },
+    {
+      "name": "nexos",
+      "model": "741e0a7a-fd77-4851-ab6d-0a8ffd345a7f",
+      "status": "active",
+      "calls": 211,
       "tokensIn": 0,
       "tokensOut": 0,
       "estimatedCost": 0,
-      "notes": "Prepaid credits bucket — handles majority of traffic with zero marginal cost. Token counts not reported."
+      "notes": "Prepaid credits with zero marginal cost. Covers ~80% of traffic."
     },
     {
-      "name": "Anthropic",
-      "model": "Claude Opus 4.6 / Sonnet 4.5",
+      "name": "openclaw",
+      "model": "delivery-mirror",
       "status": "active",
-      "calls": 335,
-      "tokensIn": 95000,
-      "tokensOut": 125000,
-      "estimatedCost": 10.8,
-      "notes": "Fallback for main agent + sub-agent tasks. ~325 Opus calls, ~10 Sonnet sub-agent calls."
-    },
-    {
-      "name": "OpenAI",
-      "model": "GPT-4o-mini",
-      "status": "limited",
-      "calls": 12,
-      "tokensIn": 3200,
-      "tokensOut": 1800,
-      "estimatedCost": 0.011,
-      "notes": "Used for task update feature. Minimal usage — consider expanding for cost efficiency."
-    },
-    {
-      "name": "Google",
-      "model": "Gemini 1.5 Pro",
-      "status": "inactive",
-      "calls": 0,
+      "calls": 53,
       "tokensIn": 0,
       "tokensOut": 0,
       "estimatedCost": 0,
-      "notes": "Available but not actively used yet. Could be cost-effective for certain sub-agent tasks."
+      "notes": "Model: delivery-mirror"
     }
   ],
   "daily": [
     {
       "date": "2026-02-10",
-      "calls": 892,
-      "tokensIn": 48600,
-      "tokensOut": 63200,
-      "cost": 5.49,
-      "provider": "mixed"
+      "provider": "anthropic",
+      "calls": 108,
+      "tokensIn": 150,
+      "tokensOut": 33526,
+      "cost": 9.43993
+    },
+    {
+      "date": "2026-02-10",
+      "provider": "nexos",
+      "calls": 8,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "cost": 0
     },
     {
       "date": "2026-02-11",
-      "calls": 905,
-      "tokensIn": 49600,
-      "tokensOut": 63600,
-      "cost": 5.32,
-      "provider": "mixed"
+      "provider": "openclaw",
+      "calls": 10,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "cost": 0
+    },
+    {
+      "date": "2026-02-11",
+      "provider": "nexos",
+      "calls": 79,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "cost": 0
+    },
+    {
+      "date": "2026-02-11",
+      "provider": "anthropic",
+      "calls": 615,
+      "tokensIn": 955,
+      "tokensOut": 159688,
+      "cost": 119.15050825000003
+    },
+    {
+      "date": "2026-02-12",
+      "provider": "openclaw",
+      "calls": 12,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "cost": 0
+    },
+    {
+      "date": "2026-02-12",
+      "provider": "nexos",
+      "calls": 72,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "cost": 0
+    },
+    {
+      "date": "2026-02-12",
+      "provider": "anthropic",
+      "calls": 288,
+      "tokensIn": 501,
+      "tokensOut": 53920,
+      "cost": 47.80407950000002
+    },
+    {
+      "date": "2026-02-13",
+      "provider": "google",
+      "calls": 72,
+      "tokensIn": 11279824,
+      "tokensOut": 39989,
+      "cost": 18.936270869999998
+    },
+    {
+      "date": "2026-02-13",
+      "provider": "openclaw",
+      "calls": 11,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "cost": 0
+    },
+    {
+      "date": "2026-02-13",
+      "provider": "anthropic",
+      "calls": 180,
+      "tokensIn": 322,
+      "tokensOut": 43287,
+      "cost": 32.10825675000001
+    },
+    {
+      "date": "2026-02-13",
+      "provider": "nexos",
+      "calls": 52,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "cost": 0
+    },
+    {
+      "date": "2026-02-14",
+      "provider": "openclaw",
+      "calls": 20,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "cost": 0
+    },
+    {
+      "date": "2026-02-14",
+      "provider": "google",
+      "calls": 278,
+      "tokensIn": 21917455,
+      "tokensOut": 46864,
+      "cost": 47.32360679999996
+    },
+    {
+      "date": "2026-02-14",
+      "provider": "anthropic",
+      "calls": 399,
+      "tokensIn": 1316,
+      "tokensOut": 96919,
+      "cost": 24.383389600000022
     }
   ],
   "totals": {
-    "totalCalls": 1797,
-    "totalTokensIn": 98200,
-    "totalTokensOut": 126800,
-    "totalCost": 10.81,
-    "avgCallsPerDay": 898.5,
-    "avgTokensPerCall": 1287
+    "totalCalls": 2204,
+    "totalTokensIn": 33200523,
+    "totalTokensOut": 474193,
+    "totalCost": 299.14604176999967,
+    "avgCallsPerDay": 441,
+    "avgTokensPerCall": 15279
   }
 }
