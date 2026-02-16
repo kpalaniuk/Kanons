@@ -82,6 +82,16 @@ export default function MikeyEspositoScenarioPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 pb-24">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 style={{ fontFamily: "'Space Grotesk', sans-serif" }} className="text-3xl md:text-4xl font-bold text-[#0a0a0a]">
+          Purchase Scenarios
+        </h1>
+        <p className="text-[#0a0a0a]/60 text-lg mt-2">
+          Prepared for <strong className="text-[#0a0a0a]">{clientName}</strong>
+        </p>
+      </div>
+
       {/* Sliders */}
       <div className="bg-[#f8f7f4] rounded-2xl border-2 border-[#0a0a0a]/5 p-6 mb-6 space-y-8">
         {/* Purchase Price Slider */}
