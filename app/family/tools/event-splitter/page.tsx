@@ -58,7 +58,8 @@ export default function EventSplitterPage() {
       name: 'Granada House',
       revenue: [
         { id: '5', description: 'Toast Tab bar', amount: 657 },
-        { id: '6', description: 'Venmo tickets/beer/popcorn', amount: 955 }
+        { id: '6', description: 'Venmo tickets/beer/popcorn', amount: 955 },
+        { id: '10', description: 'Eventbrite pad', amount: 150 }
       ],
       expenses: [
         { id: '7', description: 'Amanda', amount: 150 },
@@ -597,6 +598,62 @@ export default function EventSplitterPage() {
                 <span className="text-midnight font-medium">{formatCurrency(totalTips)}</span>
               </div>
             )}
+          </section>
+
+          {/* Income & Expenses Breakdown */}
+          <section className="bg-cream rounded-2xl border-2 border-midnight/5 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-midnight/5 rounded-xl flex items-center justify-center">
+                <span className="text-xl">📋</span>
+              </div>
+              <h2 className="font-display text-2xl text-midnight">Income & Expenses</h2>
+            </div>
+
+            {/* Income */}
+            <div className="mb-6">
+              <h3 className="text-sm uppercase tracking-wider text-emerald-600 font-medium mb-3">Income</h3>
+              <div className="space-y-2">
+                {parties.flatMap(party =>
+                  party.revenue.map(item => (
+                    <div key={item.id} className="flex justify-between text-sm">
+                      <span className="text-midnight/70">{item.description} <span className="text-midnight/40">({party.name})</span></span>
+                      <span className="text-midnight font-medium">{formatCurrency(item.amount)}</span>
+                    </div>
+                  ))
+                )}
+                <div className="flex justify-between pt-2 border-t border-midnight/10 font-bold">
+                  <span className="text-midnight">Total Income</span>
+                  <span className="text-emerald-600">{formatCurrency(totalRevenue)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Expenses */}
+            <div className="mb-6">
+              <h3 className="text-sm uppercase tracking-wider text-red-600 font-medium mb-3">Expenses</h3>
+              <div className="space-y-2">
+                {parties.flatMap(party =>
+                  party.expenses.map(item => (
+                    <div key={item.id} className="flex justify-between text-sm">
+                      <span className="text-midnight/70">{item.description} <span className="text-midnight/40">({party.name})</span></span>
+                      <span className="text-midnight font-medium">{formatCurrency(item.amount)}</span>
+                    </div>
+                  ))
+                )}
+                <div className="flex justify-between pt-2 border-t border-midnight/10 font-bold">
+                  <span className="text-midnight">Total Expenses</span>
+                  <span className="text-red-600">{formatCurrency(totalExpenses)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Net */}
+            <div className="bg-midnight/5 rounded-xl p-4 flex justify-between items-center">
+              <span className="font-display text-lg text-midnight font-bold">Net Profit</span>
+              <span className={`font-display text-2xl font-bold ${netProceeds >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                {formatCurrency(netProceeds)}
+              </span>
+            </div>
           </section>
 
           {/* Split Configuration */}
