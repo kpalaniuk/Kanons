@@ -86,6 +86,15 @@ export default function PipelinePage() {
   const [filterPriority, setFilterPriority] = useState<string>('all')
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
   const [editingField, setEditingField] = useState<{ clientId: string; field: 'nextAction' | 'notes'; value: string } | null>(null)
+  const [cashNet, setCashNet] = useState<string>('')
+  const [editingCashNet, setEditingCashNet] = useState(false)
+  const [cashNetDraft, setCashNetDraft] = useState('')
+
+  // Load cash net from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('pipeline-cash-net')
+    if (saved) setCashNet(saved)
+  }, [])
 
   // Fetch clients on mount
   useEffect(() => {
@@ -373,7 +382,7 @@ export default function PipelinePage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-gradient-to-br from-red-500 to-orange-500 rounded-xl p-4 text-white">
           <div className="text-3xl font-display font-bold">{stats.hot}</div>
           <div className="text-sm text-white/80">🔥 Hot Deals</div>
@@ -385,6 +394,41 @@ export default function PipelinePage() {
         <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white">
           <div className="text-3xl font-display font-bold">{stats.waiting}</div>
           <div className="text-sm text-white/80">⏳ Waiting</div>
+        </div>
+        <div
+          className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-4 text-white cursor-pointer"
+          onClick={() => { setEditingCashNet(true); setCashNetDraft(cashNet) }}
+        >
+          {editingCashNet ? (
+            <input
+              autoFocus
+              type="text"
+              inputMode="decimal"
+              value={cashNetDraft}
+              onChange={e => setCashNetDraft(e.target.value)}
+              onBlur={() => {
+                setCashNet(cashNetDraft)
+                localStorage.setItem('pipeline-cash-net', cashNetDraft)
+                setEditingCashNet(false)
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  setCashNet(cashNetDraft)
+                  localStorage.setItem('pipeline-cash-net', cashNetDraft)
+                  setEditingCashNet(false)
+                }
+                if (e.key === 'Escape') setEditingCashNet(false)
+              }}
+              className="w-full bg-white/20 text-white text-3xl font-display font-bold rounded-md px-1 outline-none placeholder-white/50"
+              placeholder="$0"
+              onClick={e => e.stopPropagation()}
+            />
+          ) : (
+            <div className="text-3xl font-display font-bold">
+              {cashNet ? (cashNet.startsWith('$') ? cashNet : `$${cashNet}`) : '—'}
+            </div>
+          )}
+          <div className="text-sm text-white/80">💵 Cash Net</div>
         </div>
       </div>
 
