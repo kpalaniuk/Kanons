@@ -9,6 +9,7 @@ const familyLinks = [
   { href: '/family/pipeline', label: 'Pipeline', icon: '📋' },
   { href: '/family/tools', label: 'Tools', icon: '🛠️' },
   { href: '/family/tools/usage', label: 'Usage', icon: '📊' },
+  { href: '/family/tools/event-splitter', label: 'Event Splitter', icon: '💰' },
 ]
 
 export default function FamilyNav() {
