@@ -1,19 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
-
-interface Scenario {
-  price: number
-  downPayment: number
-  downPaymentPercent: number
-  loanAmount: number
-  monthlyPI: number
-  pmi: number
-  monthlyPITIA: number
-  cashRequired: number
-  isConforming: boolean
-  ltv: number
-}
+import { useState, useMemo } from 'react'
 
 export default function MikeyEspositoScenarioPage() {
   const lo = {
@@ -24,200 +11,274 @@ export default function MikeyEspositoScenarioPage() {
   }
 
   const clientName = 'Mikey Esposito'
-  const downPayment = 600000
   const interestRate = 6.0
   const amortization = 30
   const propertyTaxRate = 1.22
-  const insuranceRate = 0.0015 // 0.15% of purchase price
-  const conformingLimit = 1149825 // San Diego high-cost area
+  const insuranceRate = 0.0015
+  const conformingLimit = 1149825
+  const maxCash = 650000
+  const maxLTV = 75
 
-  const calculateMonthlyPayment = (loanAmount: number, rate: number, years: number): number => {
-    const monthlyRate = rate / 100 / 12
+  const [purchasePrice, setPurchasePrice] = useState(2000000)
+  const [downPayment, setDownPayment] = useState(600000)
+
+  // Enforce constraints
+  const minDown = purchasePrice * (1 - maxLTV / 100)
+  const effectiveDown = Math.max(downPayment, minDown)
+  const effectiveDownClamped = Math.min(effectiveDown, maxCash)
+
+  const loanAmount = purchasePrice - effectiveDownClamped
+  const ltv = (loanAmount / purchasePrice) * 100
+  const downPercent = (effectiveDownClamped / purchasePrice) * 100
+
+  const calculateMonthlyPayment = (loan: number, rate: number, years: number): number => {
+    const mr = rate / 100 / 12
     const months = years * 12
-    if (monthlyRate === 0) return loanAmount / months
-    return loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, months)) /
-      (Math.pow(1 + monthlyRate, months) - 1)
+    if (mr === 0) return loan / months
+    return loan * (mr * Math.pow(1 + mr, months)) / (Math.pow(1 + mr, months) - 1)
   }
 
-  const scenarios = useMemo(() => {
-    const results: Scenario[] = []
-    const prices = []
-    for (let p = 1750000; p <= 2500000; p += 50000) {
-      prices.push(p)
+  const scenario = useMemo(() => {
+    const monthlyPI = calculateMonthlyPayment(loanAmount, interestRate, amortization)
+    const monthlyTax = (purchasePrice * propertyTaxRate / 100) / 12
+    const monthlyInsurance = (purchasePrice * insuranceRate) / 12
+    const monthlyPITIA = monthlyPI + monthlyTax + monthlyInsurance
+    const closingCosts = loanAmount * 0.02
+    const prepaids = 5000
+    const cashRequired = effectiveDownClamped + closingCosts + prepaids
+    const isConforming = loanAmount <= conformingLimit
+
+    return {
+      monthlyPI,
+      monthlyTax,
+      monthlyInsurance,
+      monthlyPITIA,
+      cashRequired,
+      closingCosts,
+      isConforming,
     }
+  }, [purchasePrice, effectiveDownClamped, loanAmount])
 
-    for (const price of prices) {
-      const loanAmount = price - downPayment
-      const ltv = (loanAmount / price) * 100
-      const dpPercent = (downPayment / price) * 100
+  const formatCurrency = (v: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v)
 
-      const monthlyPI = calculateMonthlyPayment(loanAmount, interestRate, amortization)
+  const formatCurrencyFull = (v: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v)
 
-      // PMI - unlikely at these LTVs but calculate anyway
-      const pmi = ltv > 80 ? (loanAmount * 0.003) / 12 : 0
+  const sliderTrack = (pct: number) =>
+    `linear-gradient(to right, #0066FF 0%, #0066FF ${pct}%, rgb(10 10 10 / 0.1) ${pct}%, rgb(10 10 10 / 0.1) 100%)`
 
-      const monthlyTax = (price * propertyTaxRate / 100) / 12
-      const monthlyInsurance = (price * insuranceRate) / 12
-      const monthlyPITIA = monthlyPI + pmi + monthlyTax + monthlyInsurance
+  const pricePct = ((purchasePrice - 1750000) / (2500000 - 1750000)) * 100
+  const downPct = ((downPayment - 300000) / (maxCash - 300000)) * 100
 
-      const closingCosts = loanAmount * 0.02
-      const prepaids = 5000
-      const cashRequired = downPayment + closingCosts + prepaids
+  // PITIA breakdown for pie chart
+  const piPct = (scenario.monthlyPI / scenario.monthlyPITIA) * 100
+  const taxPct = (scenario.monthlyTax / scenario.monthlyPITIA) * 100
+  const insPct = (scenario.monthlyInsurance / scenario.monthlyPITIA) * 100
 
-      const isConforming = loanAmount <= conformingLimit
-
-      results.push({
-        price,
-        downPayment,
-        downPaymentPercent: dpPercent,
-        loanAmount,
-        monthlyPI,
-        pmi,
-        monthlyPITIA,
-        cashRequired,
-        isConforming,
-        ltv,
-      })
-    }
-    return results
-  }, [])
-
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-
-  const formatCurrencyFull = (value: number) =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value)
+  // Warning if down payment got clamped
+  const downClamped = downPayment < minDown
+  const overCash = effectiveDown > maxCash
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12 pb-24">
+    <div className="max-w-3xl mx-auto px-4 py-10 pb-24">
       {/* Header */}
-      <div className="mb-10">
+      <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 bg-[#0066FF]/10 rounded-xl flex items-center justify-center">
             <span className="text-xl">🏡</span>
           </div>
-          <h1 className="font-display text-3xl md:text-4xl text-[#0a0a0a]">Purchase Scenarios</h1>
+          <h1 style={{ fontFamily: "'Space Grotesk', sans-serif" }} className="text-3xl md:text-4xl font-bold text-[#0a0a0a]">
+            Purchase Scenarios
+          </h1>
         </div>
         <p className="text-[#0a0a0a]/60 text-lg mt-2">
           Prepared for <strong className="text-[#0a0a0a]">{clientName}</strong>
         </p>
       </div>
 
-      {/* Summary Card */}
-      <div className="bg-[#f8f7f4] rounded-2xl border-2 border-[#0a0a0a]/5 p-6 mb-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div>
-            <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">Down Payment</div>
-            <div className="text-xl font-bold text-[#0a0a0a]">{formatCurrency(downPayment)}</div>
+      {/* Sliders */}
+      <div className="bg-[#f8f7f4] rounded-2xl border-2 border-[#0a0a0a]/5 p-6 mb-6 space-y-8">
+        {/* Purchase Price Slider */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium text-[#0a0a0a]">Purchase Price</label>
+            <span className="text-xl font-bold text-[#0a0a0a]">{formatCurrency(purchasePrice)}</span>
           </div>
-          <div>
-            <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">Interest Rate</div>
-            <div className="text-xl font-bold text-[#0a0a0a]">{interestRate.toFixed(3)}%</div>
-          </div>
-          <div>
-            <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">Term</div>
-            <div className="text-xl font-bold text-[#0a0a0a]">{amortization}-Year Fixed</div>
-          </div>
-          <div>
-            <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">Price Range</div>
-            <div className="text-xl font-bold text-[#0a0a0a]">$1.75M – $2.5M</div>
+          <input
+            type="range"
+            min={1750000}
+            max={2500000}
+            step={25000}
+            value={purchasePrice}
+            onChange={(e) => setPurchasePrice(Number(e.target.value))}
+            className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+            style={{ background: sliderTrack(pricePct) }}
+          />
+          <div className="flex justify-between text-xs text-[#0a0a0a]/40 mt-1">
+            <span>$1,750,000</span>
+            <span>$2,500,000</span>
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-4 pt-4 border-t border-[#0a0a0a]/10">
-          <div>
-            <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">Property Tax</div>
-            <div className="text-sm font-medium text-[#0a0a0a]">{propertyTaxRate}% of purchase price</div>
+
+        {/* Down Payment Slider */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium text-[#0a0a0a]">Down Payment</label>
+            <span className="text-xl font-bold text-[#0a0a0a]">{formatCurrency(effectiveDownClamped)}</span>
           </div>
-          <div>
-            <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">Insurance</div>
-            <div className="text-sm font-medium text-[#0a0a0a]">0.15% of purchase price</div>
+          <input
+            type="range"
+            min={300000}
+            max={maxCash}
+            step={10000}
+            value={downPayment}
+            onChange={(e) => setDownPayment(Number(e.target.value))}
+            className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+            style={{ background: sliderTrack(downPct) }}
+          />
+          <div className="flex justify-between text-xs text-[#0a0a0a]/40 mt-1">
+            <span>$300,000</span>
+            <span>{formatCurrency(maxCash)}</span>
           </div>
-          <div>
-            <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">Loan Program</div>
-            <div className="text-sm font-medium text-[#0a0a0a]">Conventional</div>
-          </div>
-          <div>
-            <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">Conforming Limit</div>
-            <div className="text-sm font-medium text-[#0a0a0a]">{formatCurrency(conformingLimit)} (High-Cost)</div>
+          {downClamped && (
+            <div className="mt-2 text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+              ⚠️ Minimum down payment of {formatCurrency(Math.ceil(minDown))} required to stay at {maxLTV}% LTV. Adjusted automatically.
+            </div>
+          )}
+          {overCash && (
+            <div className="mt-2 text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+              ⚠️ Capped at {formatCurrency(maxCash)} max available cash.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div className="bg-[#f8f7f4] rounded-xl border border-[#0a0a0a]/5 p-4 text-center">
+          <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">Loan Amount</div>
+          <div className="text-lg font-bold text-[#0a0a0a]">{formatCurrency(loanAmount)}</div>
+        </div>
+        <div className="bg-[#f8f7f4] rounded-xl border border-[#0a0a0a]/5 p-4 text-center">
+          <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">LTV</div>
+          <div className="text-lg font-bold text-[#0a0a0a]">{ltv.toFixed(1)}%</div>
+        </div>
+        <div className="bg-[#f8f7f4] rounded-xl border border-[#0a0a0a]/5 p-4 text-center">
+          <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">Down %</div>
+          <div className="text-lg font-bold text-[#0a0a0a]">{downPercent.toFixed(1)}%</div>
+        </div>
+        <div className="bg-[#f8f7f4] rounded-xl border border-[#0a0a0a]/5 p-4 text-center">
+          <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">Type</div>
+          <div className={`text-lg font-bold ${scenario.isConforming ? 'text-emerald-600' : 'text-amber-600'}`}>
+            {scenario.isConforming ? 'Conforming' : 'Jumbo'}
           </div>
         </div>
       </div>
 
-      {/* Scenarios Table */}
-      <div className="bg-[#f8f7f4] rounded-2xl border-2 border-[#0a0a0a]/5 p-6 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b-2 border-[#0a0a0a]/10">
-              <th className="text-left py-3 px-3 text-[#0a0a0a] font-bold">Purchase Price</th>
-              <th className="text-right py-3 px-3 text-[#0a0a0a] font-bold">Loan Amount</th>
-              <th className="text-right py-3 px-3 text-[#0a0a0a] font-bold">LTV</th>
-              <th className="text-right py-3 px-3 text-[#0a0a0a] font-bold">Down %</th>
-              <th className="text-right py-3 px-3 text-[#0a0a0a] font-bold">P&I</th>
-              <th className="text-right py-3 px-3 text-[#0a0a0a] font-bold">Total PITIA</th>
-              <th className="text-right py-3 px-3 text-[#0a0a0a] font-bold">Cash Needed</th>
-              <th className="text-center py-3 px-3 text-[#0a0a0a] font-bold">Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            {scenarios.map((s) => {
-              const isJumbo = !s.isConforming
-              const hasPMI = s.pmi > 0
-              return (
-                <tr
-                  key={s.price}
-                  className={`border-b border-[#0a0a0a]/5 hover:bg-[#0a0a0a]/[0.03] transition-colors ${
-                    isJumbo ? '' : ''
-                  }`}
-                >
-                  <td className="py-3 px-3 font-bold text-[#0a0a0a]">{formatCurrency(s.price)}</td>
-                  <td className="py-3 px-3 text-right text-[#0a0a0a]">{formatCurrency(s.loanAmount)}</td>
-                  <td className="py-3 px-3 text-right text-[#0a0a0a]">{s.ltv.toFixed(1)}%</td>
-                  <td className="py-3 px-3 text-right text-[#0a0a0a]">{s.downPaymentPercent.toFixed(1)}%</td>
-                  <td className="py-3 px-3 text-right text-[#0a0a0a]">{formatCurrencyFull(s.monthlyPI)}</td>
-                  <td className="py-3 px-3 text-right font-bold text-[#0a0a0a]">
-                    {formatCurrencyFull(s.monthlyPITIA)}
-                    {hasPMI && (
-                      <div className="text-[10px] text-amber-600 font-normal">
-                        incl. {formatCurrency(s.pmi)} PMI
-                      </div>
-                    )}
-                  </td>
-                  <td className="py-3 px-3 text-right text-[#0a0a0a]/70 text-xs">{formatCurrency(s.cashRequired)}</td>
-                  <td className="py-3 px-3 text-center">
-                    {s.isConforming ? (
-                      <span className="inline-block px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
-                        Conforming
-                      </span>
-                    ) : (
-                      <span className="inline-block px-2 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">
-                        Jumbo
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+      {/* Monthly Payment Breakdown */}
+      <div className="bg-[#f8f7f4] rounded-2xl border-2 border-[#0a0a0a]/5 p-6 mb-6">
+        <div className="text-center mb-6">
+          <div className="text-xs text-[#0a0a0a]/50 uppercase tracking-wide mb-1">Estimated Monthly Payment</div>
+          <div className="text-4xl font-bold text-[#0a0a0a]">{formatCurrencyFull(scenario.monthlyPITIA)}</div>
+          <div className="text-sm text-[#0a0a0a]/50 mt-1">PITIA — Principal, Interest, Taxes & Insurance</div>
+        </div>
+
+        {/* Visual Breakdown Bar */}
+        <div className="h-6 rounded-full overflow-hidden flex mb-6">
+          <div
+            className="h-full bg-[#0066FF] transition-all duration-300"
+            style={{ width: `${piPct}%` }}
+            title={`P&I: ${formatCurrencyFull(scenario.monthlyPI)}`}
+          />
+          <div
+            className="h-full bg-[#FFBA00] transition-all duration-300"
+            style={{ width: `${taxPct}%` }}
+            title={`Tax: ${formatCurrencyFull(scenario.monthlyTax)}`}
+          />
+          <div
+            className="h-full bg-[#22E8E8] transition-all duration-300"
+            style={{ width: `${insPct}%` }}
+            title={`Insurance: ${formatCurrencyFull(scenario.monthlyInsurance)}`}
+          />
+        </div>
+
+        {/* Breakdown Items */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 rounded-full bg-[#0066FF]" />
+              <span className="text-sm text-[#0a0a0a]">Principal & Interest</span>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-bold text-[#0a0a0a]">{formatCurrencyFull(scenario.monthlyPI)}</span>
+              <span className="text-xs text-[#0a0a0a]/40 ml-2">{piPct.toFixed(0)}%</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 rounded-full bg-[#FFBA00]" />
+              <span className="text-sm text-[#0a0a0a]">Property Taxes</span>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-bold text-[#0a0a0a]">{formatCurrencyFull(scenario.monthlyTax)}</span>
+              <span className="text-xs text-[#0a0a0a]/40 ml-2">{taxPct.toFixed(0)}%</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 rounded-full bg-[#22E8E8]" />
+              <span className="text-sm text-[#0a0a0a]">Homeowners Insurance</span>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-bold text-[#0a0a0a]">{formatCurrencyFull(scenario.monthlyInsurance)}</span>
+              <span className="text-xs text-[#0a0a0a]/40 ml-2">{insPct.toFixed(0)}%</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Notes */}
-      <div className="mt-8 bg-[#0a0a0a]/[0.03] rounded-xl p-6 text-sm text-[#0a0a0a]/60 space-y-2">
-        <p><strong>PITIA</strong> = Principal + Interest + Property Taxes + Insurance. HOA not included — add if applicable.</p>
-        <p><strong>Cash Needed</strong> = Down payment + estimated closing costs (2%) + $5,000 prepaids.</p>
-        <p><strong>Conforming</strong> loans are under the {formatCurrency(conformingLimit)} high-cost area limit. <strong>Jumbo</strong> loans may carry different rate and reserve requirements.</p>
-        <p className="text-xs text-[#0a0a0a]/40 pt-2">
-          ⚠️ These are estimates for discussion purposes only. Final terms subject to full underwriting, credit review, appraisal, and lender guidelines.
+      {/* Cash to Close */}
+      <div className="bg-[#f8f7f4] rounded-2xl border-2 border-[#0a0a0a]/5 p-6 mb-6">
+        <h3 className="text-sm font-bold text-[#0a0a0a] mb-4 uppercase tracking-wide">Estimated Cash to Close</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-[#0a0a0a]/60">Down Payment</span>
+            <span className="font-medium text-[#0a0a0a]">{formatCurrency(effectiveDownClamped)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-[#0a0a0a]/60">Closing Costs (est. 2%)</span>
+            <span className="font-medium text-[#0a0a0a]">{formatCurrency(scenario.closingCosts)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-[#0a0a0a]/60">Prepaids & Escrow</span>
+            <span className="font-medium text-[#0a0a0a]">$5,000</span>
+          </div>
+          <div className="flex justify-between text-sm pt-3 border-t border-[#0a0a0a]/10">
+            <span className="font-bold text-[#0a0a0a]">Total Cash Needed</span>
+            <span className={`font-bold text-lg ${scenario.cashRequired <= maxCash ? 'text-emerald-600' : 'text-red-600'}`}>
+              {formatCurrency(scenario.cashRequired)}
+            </span>
+          </div>
+          <div className="flex justify-between text-xs">
+            <span className="text-[#0a0a0a]/40">Available Funds</span>
+            <span className="text-[#0a0a0a]/40">{formatCurrency(maxCash)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Loan Details */}
+      <div className="bg-[#0a0a0a]/[0.03] rounded-xl p-6 text-sm text-[#0a0a0a]/60 space-y-1 mb-6">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+          <span>Rate: {interestRate.toFixed(3)}% fixed</span>
+          <span>Term: {amortization} years</span>
+          <span>Tax Rate: {propertyTaxRate}%</span>
+          <span>Insurance: 0.15% annually</span>
+          <span>Program: Conventional</span>
+          <span>Max LTV: {maxLTV}%</span>
+        </div>
+        <p className="text-xs text-[#0a0a0a]/40 pt-3">
+          ⚠️ Estimates for discussion purposes only. Final terms subject to full underwriting, credit review, appraisal, and lender guidelines.
         </p>
       </div>
 
