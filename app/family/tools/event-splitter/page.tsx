@@ -73,9 +73,8 @@ export default function EventSplitterPage() {
   ])
 
   const [tips, setTips] = useState<TipItem[]>([
-    { id: '1', recipient: 'Nico', amount: 56, via: 'GH' },
-    { id: '2', recipient: 'Amanda', amount: 135, via: 'GH' },
-    { id: '3', recipient: 'Seton (tips collected)', amount: 56, via: 'Seton' }
+    { id: '1', recipient: 'Nico', amount: 56, via: 'Collected by Seton (Square), paid by GH' },
+    { id: '2', recipient: 'Amanda', amount: 135, via: 'GH' }
   ])
 
   const [showAddRevenue, setShowAddRevenue] = useState(false)
