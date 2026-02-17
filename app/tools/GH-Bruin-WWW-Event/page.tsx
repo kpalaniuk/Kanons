@@ -838,8 +838,8 @@ export default function EventSplitterPage() {
                         )}
                         <div className="flex justify-between pt-1 border-t border-midnight/5 font-medium">
                           <span className="text-midnight">Balance</span>
-                          <span className={balance > 0 ? 'text-red-600' : balance < 0 ? 'text-emerald-600' : 'text-midnight'}>
-                            {balance > 0 ? `owes ${formatCurrency(Math.abs(balance))}` : balance < 0 ? `gets ${formatCurrency(Math.abs(balance))}` : 'even'}
+                          <span className={balance > 0 ? 'text-emerald-600' : balance < 0 ? 'text-red-600' : 'text-midnight'}>
+                            {balance > 0 ? `gets ${formatCurrency(Math.abs(balance))}` : balance < 0 ? `owes ${formatCurrency(Math.abs(balance))}` : 'even'}
                           </span>
                         </div>
                       </div>
