@@ -27,15 +27,14 @@ export default function EventSplitterPage() {
   const [eventName, setEventName] = useState('GH Concert')
   const [eventDate, setEventDate] = useState('Feb 14, 2026')
   
-  // Initialize with pre-loaded GH Concert data
   const [parties, setParties] = useState<Party[]>([
     {
       name: 'Dom',
       revenue: [],
       expenses: [
-        { id: '1', description: 'Expenses', amount: 56 }
+        { id: '1', description: 'Event expenses', amount: 56 }
       ],
-      splitPercent: 25
+      splitPercent: 33.33
     },
     {
       name: 'Seton',
@@ -43,36 +42,40 @@ export default function EventSplitterPage() {
         { id: '2', description: 'Square reader', amount: 328 }
       ],
       expenses: [
-        { id: '3', description: 'Jimmy', amount: 150 },
-        { id: '4', description: 'Smart & Final', amount: 88 }
+        { id: '3', description: 'Jimmy payout', amount: 150 },
+        { id: '4', description: 'Smart & Final', amount: 88 },
+        { id: '11', description: 'Two bottles of Jameson', amount: 60 }
       ],
-      splitPercent: 25
+      splitPercent: 33.33
     },
     {
       name: 'Kyle',
       revenue: [],
-      expenses: [],
-      splitPercent: 25
+      expenses: [
+        { id: '12', description: 'Fog machine juice', amount: 36 }
+      ],
+      splitPercent: 33.34
     },
     {
       name: 'Granada House',
       revenue: [
-        { id: '5', description: 'Toast Tab bar', amount: 657 },
-        { id: '6', description: 'Venmo tickets/beer/popcorn', amount: 955 },
-        { id: '10', description: 'Eventbrite pad', amount: 150 }
+        { id: '5', description: 'Toast bar', amount: 794 },
+        { id: '6', description: 'Venmo proceeds', amount: 864.79 },
+        { id: '13', description: 'Cash (beer/popcorn)', amount: 200 }
       ],
       expenses: [
-        { id: '7', description: 'Amanda', amount: 150 },
-        { id: '8', description: 'Nico', amount: 100 },
-        { id: '9', description: 'other', amount: 37 }
+        { id: '7', description: 'Amanda tips', amount: 135 },
+        { id: '8', description: 'Nico tips', amount: 56 },
+        { id: '14', description: 'Anthony sound help', amount: 150 }
       ],
-      splitPercent: 25
+      splitPercent: 0
     }
   ])
 
   const [tips, setTips] = useState<TipItem[]>([
-    { id: '1', recipient: 'Nico', amount: 56, via: 'Seton' },
-    { id: '2', recipient: 'Amanda', amount: 137, via: 'Granada House' }
+    { id: '1', recipient: 'Nico', amount: 56, via: 'GH' },
+    { id: '2', recipient: 'Amanda', amount: 135, via: 'GH' },
+    { id: '3', recipient: 'Seton (tips collected)', amount: 56, via: 'Seton' }
   ])
 
   const [showAddRevenue, setShowAddRevenue] = useState(false)
@@ -106,17 +109,15 @@ export default function EventSplitterPage() {
   const settlement = useMemo(() => {
     const balances: Record<string, number> = {}
     
-    // Calculate net position for each party
     parties.forEach(party => {
       const partyRevenue = party.revenue.reduce((sum, item) => sum + item.amount, 0)
       const partyExpenses = party.expenses.reduce((sum, item) => sum + item.amount, 0)
       const partyShare = netProceeds * (party.splitPercent / 100)
       
-      // What they should receive minus what they've already received (revenue - expenses)
+      // Balance = what they're owed (share + expenses reimbursement) minus what they collected
       balances[party.name] = partyShare - (partyRevenue - partyExpenses)
     })
 
-    // Create settlement transactions
     const settlements: { from: string; to: string; amount: number }[] = []
     const debtors = Object.entries(balances).filter(([_, amount]) => amount < 0).sort((a, b) => a[1] - b[1])
     const creditors = Object.entries(balances).filter(([_, amount]) => amount > 0).sort((a, b) => b[1] - a[1])
@@ -141,8 +142,8 @@ export default function EventSplitterPage() {
       debtors[i] = [debtor, debtAmount + settleAmount]
       creditors[j] = [creditor, creditAmount - settleAmount]
       
-      if (Math.abs(debtors[i][1]) < 0.01) i++
-      if (Math.abs(creditors[j][1]) < 0.01) j++
+      if (Math.abs(debtors[i][1] as number) < 0.01) i++
+      if (Math.abs(creditors[j][1] as number) < 0.01) j++
     }
 
     return settlements
@@ -153,7 +154,7 @@ export default function EventSplitterPage() {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      maximumFractionDigits: 2,
     }).format(amount)
   }
 
@@ -205,8 +206,12 @@ export default function EventSplitterPage() {
   }
 
   const resetToEqual = () => {
-    const equalSplit = 100 / parties.length
-    setParties(prev => prev.map(party => ({ ...party, splitPercent: equalSplit })))
+    const splitParties = parties.filter(p => p.splitPercent > 0)
+    const equalSplit = 100 / splitParties.length
+    setParties(prev => prev.map(party => ({
+      ...party,
+      splitPercent: party.splitPercent > 0 ? equalSplit : 0
+    })))
   }
 
   const removeLineItem = (partyName: string, type: 'revenue' | 'expenses', itemId: string) => {
@@ -254,7 +259,7 @@ export default function EventSplitterPage() {
           />
         </div>
         <p className="text-midnight/60 text-lg">
-          Split event expenses across multiple parties
+          Split event proceeds between Seton, Kyle & Dom — GH is the house
         </p>
       </div>
 
@@ -673,11 +678,16 @@ export default function EventSplitterPage() {
               </button>
             </div>
 
+            <p className="text-sm text-midnight/50 mb-4">GH is the house — collects revenue and pays expenses but doesn&apos;t take a share. Net proceeds split between Seton, Kyle &amp; Dom.</p>
+
             <div className="space-y-4">
               {parties.map(party => (
                 <div key={party.name}>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-midnight">{party.name}</label>
+                    <label className="text-sm font-medium text-midnight">
+                      {party.name}
+                      {party.splitPercent === 0 && <span className="text-midnight/40 ml-2">(house)</span>}
+                    </label>
                     <span className="text-sm text-midnight/60">{party.splitPercent.toFixed(1)}%</span>
                   </div>
                   <input
@@ -699,7 +709,7 @@ export default function EventSplitterPage() {
             <div className="mt-4 pt-4 border-t border-midnight/10">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-midnight/60">Total Split</span>
-                <span className={`font-medium ${Math.abs(parties.reduce((sum, p) => sum + p.splitPercent, 0) - 100) < 0.1 ? 'text-emerald-600' : 'text-red-600'}`}>
+                <span className={`font-medium ${Math.abs(parties.reduce((sum, p) => sum + p.splitPercent, 0) - 100) < 0.5 ? 'text-emerald-600' : 'text-red-600'}`}>
                   {parties.reduce((sum, p) => sum + p.splitPercent, 0).toFixed(1)}%
                 </span>
               </div>
@@ -782,7 +792,10 @@ export default function EventSplitterPage() {
                   
                   return (
                     <div key={party.name} className="border-b border-midnight/10 pb-3 last:border-b-0 last:pb-0">
-                      <div className="font-medium text-midnight mb-2">{party.name}</div>
+                      <div className="font-medium text-midnight mb-2">
+                        {party.name}
+                        {party.splitPercent === 0 && <span className="text-midnight/40 text-sm ml-2">(house)</span>}
+                      </div>
                       <div className="space-y-1 text-xs">
                         <div className="flex justify-between text-midnight/60">
                           <span>Revenue collected</span>
@@ -792,10 +805,12 @@ export default function EventSplitterPage() {
                           <span>Expenses paid</span>
                           <span className="text-red-600">{formatCurrency(partyExpenses)}</span>
                         </div>
-                        <div className="flex justify-between text-midnight/60">
-                          <span>Split ({party.splitPercent.toFixed(1)}%)</span>
-                          <span className="text-midnight font-medium">{formatCurrency(partyShare)}</span>
-                        </div>
+                        {party.splitPercent > 0 && (
+                          <div className="flex justify-between text-midnight/60">
+                            <span>Split ({party.splitPercent.toFixed(1)}%)</span>
+                            <span className="text-midnight font-medium">{formatCurrency(partyShare)}</span>
+                          </div>
+                        )}
                         <div className="flex justify-between pt-1 border-t border-midnight/5 font-medium">
                           <span className="text-midnight">Balance</span>
                           <span className={balance > 0 ? 'text-red-600' : balance < 0 ? 'text-emerald-600' : 'text-midnight'}>
