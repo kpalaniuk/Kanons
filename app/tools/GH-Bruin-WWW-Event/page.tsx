@@ -73,7 +73,8 @@ export default function EventSplitterPage() {
     {
       name: 'Seton',
       revenue: [
-        { id: '2', description: 'Square reader', amount: 328 }
+        { id: '2', description: 'Square reader', amount: 328 },
+        { id: '15', description: 'Square tips collected', amount: 56 }
       ],
       expenses: [
         { id: '3', description: 'Jimmy payout', amount: 150 },
