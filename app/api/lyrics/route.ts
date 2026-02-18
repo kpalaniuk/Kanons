@@ -5,34 +5,46 @@ const notion = new Client({
   auth: process.env.NOTION_API_KEY,
 })
 
-// These are pages (not databases) — use blocks.children.list
 const LYRICS_PAGE_IDS = [
   '925f7b39e66042c7ac8e5a5a37716778', // Lyrics & Songs
   '7558f0d737694d20bf9a587cbe5bf23f', // Kyle's Lyrics
   'ce6c6396e72f4ec199df3ddbf76a3388', // Tu Lengua
 ]
 
+function blockToText(block: any): string {
+  const type = block.type
+  const content = block[type]
+  if (!content) return ''
+  if (content.rich_text) {
+    const text = content.rich_text.map((t: any) => t.plain_text).join('')
+    if (type === 'heading_1') return `# ${text}`
+    if (type === 'heading_2') return `## ${text}`
+    if (type === 'heading_3') return `### ${text}`
+    if (type === 'bulleted_list_item') return `• ${text}`
+    if (type === 'numbered_list_item') return `1. ${text}`
+    if (type === 'quote') return `> ${text}`
+    return text
+  }
+  if (type === 'divider') return '---'
+  return ''
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const pageId = searchParams.get('id')
 
-    // If pageId is provided, fetch specific page content
+    // Fetch content for a specific song
     if (pageId) {
       const blocks = await notion.blocks.children.list({
         block_id: pageId,
         page_size: 100,
       })
-
-      const page = await notion.pages.retrieve({ page_id: pageId })
-
-      return NextResponse.json({
-        page,
-        blocks: blocks.results,
-      })
+      const lines = blocks.results.map(blockToText).filter(Boolean)
+      return NextResponse.json({ content: lines.join('\n') })
     }
 
-    // Otherwise, list child pages from all lyrics sources
+    // List all songs from all lyrics sources
     const allPages: any[] = []
 
     for (const parentId of LYRICS_PAGE_IDS) {
@@ -42,13 +54,11 @@ export async function GET(request: NextRequest) {
           page_size: 100,
         })
 
-        // Get the parent page title
         const parentPage = await notion.pages.retrieve({ page_id: parentId })
         const parentTitle = (parentPage as any).properties?.title?.title?.[0]?.plain_text
           || (parentPage as any).properties?.Name?.title?.[0]?.plain_text
           || 'Untitled'
 
-        // Filter for child_page blocks
         const childPages = response.results
           .filter((block: any) => block.type === 'child_page')
           .map((block: any) => ({
@@ -56,7 +66,6 @@ export async function GET(request: NextRequest) {
             title: block.child_page?.title || 'Untitled',
             source: parentTitle,
             sourceId: parentId,
-            createdTime: block.created_time,
           }))
 
         allPages.push(...childPages)
@@ -65,9 +74,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Sort alphabetically
     allPages.sort((a, b) => a.title.localeCompare(b.title))
-
     return NextResponse.json({ results: allPages })
   } catch (error: any) {
     console.error('Notion API error:', error)
