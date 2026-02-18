@@ -20,8 +20,22 @@ export default function TransactionList({ transactions, settings, onAdd, onUpdat
   const [editingId, setEditingId] = useState<number | null>(null)
   const [formData, setFormData] = useState<Partial<Transaction>>({})
 
+  // Sort chronologically to calculate running balance, then reverse for display
+  const chronological = [...transactions]
+    .filter(t => t.type === 'Income' || t.type === 'Expense' || t.type === 'Management Fee' || 
+                  t.type === 'Cleaning' || t.type === 'Capital Improvement' || t.type === 'Owner Payout')
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.id - b.id)
+  
+  const balanceMap = new Map<number, number>()
+  let runningBalance = 0
+  chronological.forEach(t => {
+    if (t.type === 'Income') runningBalance += t.amountIn
+    else runningBalance -= t.amountOut
+    balanceMap.set(t.id, runningBalance)
+  })
+
   const sortedTransactions = [...transactions].sort((a, b) => 
-    new Date(b.date).getTime() - new Date(a.date).getTime()
+    new Date(b.date).getTime() - new Date(a.date).getTime() || b.id - a.id
   )
 
   const startAdd = () => {
@@ -279,6 +293,14 @@ export default function TransactionList({ transactions, settings, onAdd, onUpdat
                     <div className="text-sm text-midnight/60">Out</div>
                     <div className="font-semibold text-terracotta">
                       {formatCurrency(transaction.amountOut)}
+                    </div>
+                  </div>
+                )}
+                {balanceMap.has(transaction.id) && (
+                  <div className="text-right min-w-[90px] border-l border-midnight/10 pl-4">
+                    <div className="text-xs text-midnight/40">Balance</div>
+                    <div className={`font-semibold text-sm ${(balanceMap.get(transaction.id) || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                      {formatCurrency(balanceMap.get(transaction.id) || 0)}
                     </div>
                   </div>
                 )}
