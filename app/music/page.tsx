@@ -3,21 +3,53 @@
 import { motion } from 'framer-motion'
 import AnimatedSection from '@/components/AnimatedSection'
 
-// Placeholder for upcoming shows - you'll update this
+const bands = [
+  {
+    name: 'StronGnome',
+    description: 'Collaboration with Seth Eming. Jazz-funk originals. First release "Vast" in progress.',
+    members: ['Kyle Palaniuk (trumpet, vocals)', 'Seth Eming'],
+    status: 'Active - Recording',
+    color: 'terracotta'
+  },
+  {
+    name: 'Well Well Well',
+    description: 'Active band. Plays shows at Granada House and around San Diego.',
+    members: [],
+    status: 'Active - Performing',
+    color: 'ocean'
+  },
+  {
+    name: 'Tu Lengua',
+    description: 'Cross-border international band. Kyle plays trumpet/horn sections + solos.',
+    members: [],
+    setList: ['Hello', 'Feeling Fine', 'Vibe', 'Morocco', 'Rolling High', 'Alchemie', 'Julio 22', 'Almarea', 'Soft Plans', 'Rebel Rebel Cumbia', 'Saturday', 'Real', 'Survive'],
+    status: 'Active',
+    color: 'terracotta'
+  },
+  {
+    name: 'Neo Somatic',
+    description: 'Jazz-funk-prose direction. Working name, evolving from "Granada House Sessions." Writing a whole new set.',
+    members: ['Kyle', 'Seth', 'Anthony'],
+    status: 'In Development',
+    color: 'ocean'
+  },
+  {
+    name: 'Swinging Gypsies',
+    description: 'New Orleans jazz band Kyle played with.',
+    members: [],
+    status: 'Past Project',
+    color: 'sand'
+  },
+]
+
+// Placeholder for upcoming shows
 const upcomingShows = [
   {
-    date: 'Jan 15, 2025',
-    venue: "Humphrey's Backstage",
-    location: 'San Diego, CA',
-    time: '8:00 PM',
-  },
-  {
-    date: 'Feb 8, 2025',
+    date: 'TBA',
     venue: 'Granada House',
     location: 'San Diego, CA',
-    time: '7:30 PM',
+    time: 'TBA',
   },
-  // Add more shows as needed
 ]
 
 export default function Music() {
@@ -48,7 +80,7 @@ export default function Music() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="font-display text-6xl md:text-8xl mb-6"
           >
-            StronGnome
+            Kyle Palaniuk
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -56,7 +88,7 @@ export default function Music() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-xl text-cream/60 max-w-xl"
           >
-            Trumpet, vocals, and original compositions blending jazz, funk, and soul.
+            Trumpet, composition, and performance across jazz, funk, Latin, and soul.
           </motion.p>
         </div>
       </section>
@@ -71,15 +103,13 @@ export default function Music() {
               </h2>
               <div className="text-midnight/70 space-y-4">
                 <p>
-                  StronGnome brings together jazz improvisation with funk grooves 
-                  and soulful melodies. The project started as a collaboration 
-                  between friends who wanted to make music that moves people — 
-                  both physically and emotionally.
+                  From jazz improvisation to funk grooves, Latin rhythms to soulful melodies,
+                  Kyle's trumpet work spans multiple genres and contexts.
                 </p>
                 <p>
-                  Working with Seth Imming, we've been crafting an album that
-                  captures the energy of our live shows while exploring new sonic
-                  territory in the studio.
+                  Whether performing original compositions, collaborating with international
+                  ensembles, or exploring the intersection of music and spoken word, the focus
+                  is always on creating music that moves people — both physically and emotionally.
                 </p>
               </div>
             </div>
@@ -95,14 +125,73 @@ export default function Music() {
         </div>
       </AnimatedSection>
 
-      {/* Listen Section */}
+      {/* Bands & Projects */}
       <AnimatedSection className="py-20 bg-sand">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="font-display text-3xl md:text-4xl text-midnight mb-12 text-center">
+            Bands & Projects
+          </h2>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            {bands.map((band, index) => (
+              <motion.div
+                key={band.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-cream rounded-xl p-6 border border-midnight/5 hover:border-terracotta/30 transition-all"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="font-display text-2xl text-midnight">{band.name}</h3>
+                  <span className={`text-xs px-3 py-1 rounded-full bg-${band.color}/10 text-${band.color} font-medium`}>
+                    {band.status}
+                  </span>
+                </div>
+                
+                <p className="text-midnight/70 mb-4">{band.description}</p>
+                
+                {band.members && band.members.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-sm font-semibold text-midnight/60 mb-1">Members:</p>
+                    <ul className="text-sm text-midnight/70 space-y-1">
+                      {band.members.map((member, i) => (
+                        <li key={i}>• {member}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {band.setList && (
+                  <div className="mb-4">
+                    <p className="text-sm font-semibold text-midnight/60 mb-2">Set List:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {band.setList.map((song, i) => (
+                        <span key={i} className="text-xs px-2 py-1 bg-sand rounded text-midnight/70">
+                          {song}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="pt-4 border-t border-midnight/5">
+                  <p className="text-sm text-midnight/40">Music links coming soon</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </AnimatedSection>
+
+      {/* Listen Section */}
+      <AnimatedSection className="py-20">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="font-display text-3xl md:text-4xl text-midnight mb-8">
             Listen
           </h2>
           <p className="text-midnight/60 mb-12">
-            Find StronGnome on your favorite platform
+            Find Kyle's music on your favorite platform
           </p>
           
           <div className="flex flex-wrap justify-center gap-4">
@@ -143,7 +232,7 @@ export default function Music() {
       </AnimatedSection>
 
       {/* Upcoming Shows */}
-      <AnimatedSection className="py-20 md:py-32">
+      <AnimatedSection className="py-20 md:py-32 bg-sand">
         <div className="max-w-4xl mx-auto px-6">
           <h2 className="font-display text-3xl md:text-4xl text-midnight mb-12 text-center">
             Upcoming Shows
@@ -157,7 +246,7 @@ export default function Music() {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-sand rounded-xl hover:bg-terracotta/10 transition-colors"
+                  className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-cream rounded-xl hover:bg-terracotta/10 transition-colors"
                 >
                   <div className="mb-4 md:mb-0">
                     <p className="text-terracotta font-semibold">{show.date}</p>
@@ -166,9 +255,6 @@ export default function Music() {
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-midnight/60">{show.time}</span>
-                    <button className="px-4 py-2 border border-midnight text-midnight rounded-full text-sm hover:bg-midnight hover:text-cream transition-colors">
-                      Details
-                    </button>
                   </div>
                 </motion.div>
               ))}
@@ -178,28 +264,6 @@ export default function Music() {
               No upcoming shows scheduled. Check back soon!
             </p>
           )}
-        </div>
-      </AnimatedSection>
-
-      {/* Band Members */}
-      <AnimatedSection className="py-20 bg-midnight text-cream">
-        <div className="max-w-7xl mx-auto px-6">
-          <h2 className="font-display text-3xl md:text-4xl mb-12 text-center">
-            The Band
-          </h2>
-          
-          <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
-            <div className="text-center">
-              <div className="w-32 h-32 bg-cream/10 rounded-full mx-auto mb-4" />
-              <h3 className="font-semibold text-lg">Kyle Palaniuk</h3>
-              <p className="text-cream/60">Trumpet & Vocals</p>
-            </div>
-            <div className="text-center">
-              <div className="w-32 h-32 bg-cream/10 rounded-full mx-auto mb-4" />
-              <h3 className="font-semibold text-lg">Seth Imming</h3>
-              <p className="text-cream/60">Instrument</p>
-            </div>
-          </div>
         </div>
       </AnimatedSection>
     </div>

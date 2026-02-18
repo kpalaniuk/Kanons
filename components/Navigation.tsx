@@ -76,15 +76,15 @@ export default function Navigation() {
                 href="/sign-in"
                 className="text-sm font-medium text-ocean hover:text-terracotta transition-colors"
               >
-                Family Login
+                Sign In
               </Link>
             </SignedOut>
             <SignedIn>
               <Link
-                href="/family"
+                href="/workshop"
                 className="text-sm font-medium text-ocean hover:text-terracotta transition-colors"
               >
-                Family Hub
+                Workshop
               </Link>
               <UserButton afterSignOutUrl="/" />
             </SignedIn>
@@ -153,16 +153,16 @@ export default function Navigation() {
                     href="/sign-in"
                     className="font-display text-2xl text-ocean"
                   >
-                    Family Login
+                    Sign In
                   </Link>
                 </SignedOut>
                 <SignedIn>
                   <div className="flex flex-col items-center gap-4">
                     <Link
-                      href="/family"
+                      href="/workshop"
                       className="font-display text-2xl text-ocean"
                     >
-                      Family Hub
+                      Workshop
                     </Link>
                     <UserButton afterSignOutUrl="/" />
                   </div>
