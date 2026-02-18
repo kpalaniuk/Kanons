@@ -84,8 +84,9 @@ export default function KeepyUppy() {
       mousePos.current = { x: -1000, y: -1000 }
     }
 
-    container.addEventListener('mousemove', handleMouseMove)
-    container.addEventListener('touchmove', handleTouchMove, { passive: true })
+    // Listen on window so mouse events aren't blocked by z-10 content overlay
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('touchmove', handleTouchMove, { passive: true })
     container.addEventListener('mouseleave', handleMouseLeave)
 
     // Physics loop
@@ -157,8 +158,8 @@ export default function KeepyUppy() {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
-      container.removeEventListener('mousemove', handleMouseMove)
-      container.removeEventListener('touchmove', handleTouchMove)
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('touchmove', handleTouchMove)
       container.removeEventListener('mouseleave', handleMouseLeave)
     }
   }, [])
@@ -166,8 +167,7 @@ export default function KeepyUppy() {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 overflow-hidden"
-      style={{ cursor: 'pointer' }}
+      className="absolute inset-0 overflow-hidden z-20 pointer-events-none"
     >
       {iconsRef.current.map((icon) => (
         <div
