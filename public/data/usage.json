@@ -1,15 +1,15 @@
 {
-  "lastUpdated": "2026-02-17T23:00:24.482Z",
-  "period": "2026-02-10 to 2026-02-17",
+  "lastUpdated": "2026-02-18T05:00:18.723Z",
+  "period": "2026-02-10 to 2026-02-18",
   "providers": [
     {
       "name": "anthropic",
       "model": "claude-opus-4-6",
       "status": "active",
-      "calls": 1861,
-      "tokensIn": 3250,
-      "tokensOut": 380940,
-      "estimatedCost": 379.2488674999998,
+      "calls": 2151,
+      "tokensIn": 3686,
+      "tokensOut": 448240,
+      "estimatedCost": 419.9364077499999,
       "notes": "Primary reasoning model. Claude Sonnet 4.5 for most tasks, Opus 4 for complex thinking."
     },
     {
@@ -36,7 +36,7 @@
       "name": "openclaw",
       "model": "delivery-mirror",
       "status": "active",
-      "calls": 60,
+      "calls": 79,
       "tokensIn": 0,
       "tokensOut": 0,
       "estimatedCost": 0,
@@ -215,18 +215,34 @@
     {
       "date": "2026-02-17",
       "provider": "anthropic",
-      "calls": 133,
-      "tokensIn": 298,
-      "tokensOut": 21884,
-      "cost": 20.849707500000005
+      "calls": 138,
+      "tokensIn": 309,
+      "tokensOut": 22081,
+      "cost": 21.385782250000005
+    },
+    {
+      "date": "2026-02-18",
+      "provider": "openclaw",
+      "calls": 19,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "cost": 0
+    },
+    {
+      "date": "2026-02-18",
+      "provider": "anthropic",
+      "calls": 285,
+      "tokensIn": 425,
+      "tokensOut": 67103,
+      "cost": 40.15146549999998
     }
   ],
   "totals": {
-    "totalCalls": 2484,
-    "totalTokensIn": 33263305,
-    "totalTokensOut": 468140,
-    "totalCost": 445.63846116999974,
-    "avgCallsPerDay": 311,
-    "avgTokensPerCall": 13579
+    "totalCalls": 2793,
+    "totalTokensIn": 33263741,
+    "totalTokensOut": 535440,
+    "totalCost": 486.32600141999984,
+    "avgCallsPerDay": 310,
+    "avgTokensPerCall": 12101
   }
 }
