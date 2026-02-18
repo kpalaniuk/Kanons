@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH /api/tasks — update a task's status in Notion
+// PATCH /api/tasks — update a task's properties in Notion (status, dueDate, etc.)
 export async function PATCH(request: NextRequest) {
   const { userId } = await auth()
   if (!userId) {
@@ -254,15 +254,49 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { taskId, status } = body
+    const { taskId, status, priority, dueDate } = body
 
-    if (!taskId || !status) {
-      return NextResponse.json({ error: 'taskId and status are required' }, { status: 400 })
+    if (!taskId) {
+      return NextResponse.json({ error: 'taskId is required' }, { status: 400 })
     }
 
-    const validStatuses = ['Not Started', 'In Progress', 'Waiting on Kyle', 'Done', 'Cancelled']
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+    const properties: Record<string, unknown> = {}
+
+    // Update status if provided
+    if (status !== undefined) {
+      const validStatuses = ['Not Started', 'In Progress', 'Waiting on Kyle', 'Done', 'Cancelled']
+      if (!validStatuses.includes(status)) {
+        return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+      }
+      properties.Status = {
+        select: { name: status },
+      }
+    }
+
+    // Update priority if provided
+    if (priority !== undefined) {
+      const validPriorities = ['Urgent', 'High', 'Medium', 'Low']
+      if (!validPriorities.includes(priority)) {
+        return NextResponse.json({ error: 'Invalid priority' }, { status: 400 })
+      }
+      properties.Priority = {
+        select: { name: priority },
+      }
+    }
+
+    // Update due date if provided
+    if (dueDate !== undefined) {
+      if (dueDate === null || dueDate === '') {
+        properties['Due Date'] = { date: null }
+      } else {
+        properties['Due Date'] = {
+          date: { start: dueDate },
+        }
+      }
+    }
+
+    if (Object.keys(properties).length === 0) {
+      return NextResponse.json({ error: 'No properties to update' }, { status: 400 })
     }
 
     const response = await fetch(`https://api.notion.com/v1/pages/${taskId}`, {
@@ -272,13 +306,7 @@ export async function PATCH(request: NextRequest) {
         'Notion-Version': '2022-06-28',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        properties: {
-          Status: {
-            select: { name: status },
-          },
-        },
-      }),
+      body: JSON.stringify({ properties }),
     })
 
     if (!response.ok) {

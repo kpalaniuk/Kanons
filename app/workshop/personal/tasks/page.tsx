@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import DailyPlanner from './components/DailyPlanner'
+import WeeklyPlanner from './components/WeeklyPlanner'
 
 interface Task {
   id: string
@@ -202,7 +204,7 @@ export default function TasksPage() {
     showDone: false,
   })
   const [quickFilter, setQuickFilter] = useState<QuickFilterType>('all')
-  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'daily' | 'weekly'>('list')
   const [expandedTask, setExpandedTask] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [newTask, setNewTask] = useState({
@@ -225,8 +227,9 @@ export default function TasksPage() {
 
   const fetchTasks = useCallback(async () => {
     try {
+      // Always fetch all tasks including done for accurate counts
       const params = new URLSearchParams()
-      if (filter.showDone || quickFilter === 'done') params.set('showDone', 'true')
+      params.set('showDone', 'true')
 
       const res = await fetch(`/api/tasks?${params.toString()}`)
       if (!res.ok) throw new Error('Failed to fetch tasks')
@@ -239,7 +242,7 @@ export default function TasksPage() {
     } finally {
       setLoading(false)
     }
-  }, [filter.showDone, quickFilter])
+  }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -260,7 +263,10 @@ export default function TasksPage() {
         setQuickFilter(quickFilter === 'focus' ? 'all' : 'focus')
       } else if (e.key === 'k' || e.key === 'K') {
         e.preventDefault()
-        setViewMode(viewMode === 'kanban' ? 'list' : 'kanban')
+        const modes: Array<'list' | 'kanban' | 'daily' | 'weekly'> = ['list', 'kanban', 'daily', 'weekly']
+        const currentIndex = modes.indexOf(viewMode)
+        const nextIndex = (currentIndex + 1) % modes.length
+        setViewMode(modes[nextIndex])
       } else if (e.key === 'Escape') {
         setShowAddModal(false)
         setExpandedTask(null)
@@ -324,6 +330,55 @@ export default function TasksPage() {
       alert('Failed to create task')
     } finally {
       setCreating(false)
+    }
+  }
+
+  const createTaskFromPlanner = async (taskData: { title: string; priority: string; category: string; dueDate: string; notes: string }) => {
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(taskData),
+      })
+      if (!res.ok) throw new Error('Failed to create task')
+      fetchTasks()
+    } catch (err) {
+      console.error(err)
+      alert('Failed to create task')
+      throw err
+    }
+  }
+
+  const updateTaskField = async (taskId: string, updates: Partial<Task>) => {
+    try {
+      // For now, we only support updating dueDate via drag/drop
+      // The PATCH endpoint only supports status updates, so we need to use the Notion API directly
+      // For simplicity, we'll use the existing PATCH for status and add a custom handler for dueDate
+      
+      if (updates.dueDate !== undefined) {
+        // We need to make a call to update the due date
+        // Since the existing PATCH only handles status, we'll need to extend it or make a direct call
+        // For now, let's just update the status endpoint to handle dueDate as well
+        const res = await fetch('/api/tasks', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ taskId, ...updates }),
+        })
+        if (!res.ok) throw new Error('Failed to update task')
+      }
+
+      // Optimistically update the local state
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
+      )
+
+      // Refresh to get the latest from Notion
+      setTimeout(() => fetchTasks(), 500)
+    } catch (err) {
+      console.error(err)
+      alert('Failed to update task')
+      fetchTasks() // Revert on error
+      throw err
     }
   }
 
@@ -399,6 +454,11 @@ export default function TasksPage() {
   // Filter tasks by life area and priority
   const filteredTasks = useMemo(() => {
     let result = applyQuickFilter(tasks)
+
+    // Hide Done/Cancelled by default unless specifically filtered
+    if (quickFilter === 'all' && filter.status === 'all') {
+      result = result.filter(t => t.status !== 'Done' && t.status !== 'Cancelled')
+    }
 
     // Filter by life area
     if (filter.lifeArea !== 'all') {
@@ -534,10 +594,25 @@ export default function TasksPage() {
             </div>
 
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${priColor.bg} ${priColor.text}`}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const priorities = ['Low', 'Medium', 'High', 'Urgent']
+                  const currentIdx = priorities.indexOf(task.priority)
+                  const nextPriority = priorities[(currentIdx + 1) % priorities.length]
+                  setTasks(prev => prev.map(t => t.id === task.id ? { ...t, priority: nextPriority } : t))
+                  fetch('/api/tasks', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ taskId: task.id, priority: nextPriority })
+                  })
+                }}
+                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${priColor.bg} ${priColor.text} hover:ring-1 hover:ring-current/30 transition-all cursor-pointer`}
+                title="Click to change priority"
+              >
                 <span className={`w-1.5 h-1.5 rounded-full ${priColor.dot}`} />
                 {task.priority}
-              </span>
+              </button>
               <span className="text-[10px] text-midnight/40">
                 {CATEGORY_ICONS[task.category] || '📌'} {task.category}
               </span>
@@ -967,21 +1042,31 @@ export default function TasksPage() {
           <div className="ml-auto flex items-center gap-2">
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight'}`}
+              className={`px-3 py-2 rounded-lg transition-colors text-xs font-medium ${viewMode === 'list' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight hover:bg-midnight/5'}`}
               title="List view"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              📋 List
+            </button>
+            <button
+              onClick={() => setViewMode('daily')}
+              className={`px-3 py-2 rounded-lg transition-colors text-xs font-medium ${viewMode === 'daily' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight hover:bg-midnight/5'}`}
+              title="Daily planner"
+            >
+              📅 Daily
+            </button>
+            <button
+              onClick={() => setViewMode('weekly')}
+              className={`px-3 py-2 rounded-lg transition-colors text-xs font-medium ${viewMode === 'weekly' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight hover:bg-midnight/5'}`}
+              title="Weekly planner"
+            >
+              🗓️ Weekly
             </button>
             <button
               onClick={() => setViewMode('kanban')}
-              className={`p-2 rounded-lg transition-colors ${viewMode === 'kanban' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight'}`}
+              className={`px-3 py-2 rounded-lg transition-colors text-xs font-medium ${viewMode === 'kanban' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight hover:bg-midnight/5'}`}
               title="Kanban view (K)"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 4H5a2 2 0 00-2 2v14a2 2 0 002 2h4m0-18v18m0-18l6 0m-6 0v18m6-18h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m0-18v18" />
-              </svg>
+              📊 Kanban
             </button>
             <button
               onClick={() => { setLoading(true); fetchTasks() }}
@@ -1003,7 +1088,7 @@ export default function TasksPage() {
           <kbd className="px-2 py-1 bg-midnight/5 rounded">F</kbd>
           <span>Focus mode</span>
           <kbd className="px-2 py-1 bg-midnight/5 rounded">K</kbd>
-          <span>Kanban</span>
+          <span>Cycle views</span>
         </div>
       </div>
 
@@ -1027,8 +1112,8 @@ export default function TasksPage() {
         </div>
       )}
 
-      {/* Empty State */}
-      {!loading && !error && filteredTasks.length === 0 && (
+      {/* Empty State (only for list/kanban views) */}
+      {!loading && !error && filteredTasks.length === 0 && viewMode !== 'daily' && viewMode !== 'weekly' && (
         <div className="bg-cream rounded-2xl p-12 text-center">
           <div className="w-20 h-20 bg-terracotta/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-4xl">{getEmptyStateMessage().emoji}</span>
@@ -1039,64 +1124,86 @@ export default function TasksPage() {
       )}
 
       {/* Task Views */}
-      {!loading && !error && filteredTasks.length > 0 && (
+      {!loading && !error && (
         <>
-          {viewMode === 'list' ? (
-            // List View
-            <div className="space-y-6">
-              {statusOrder.map((status) => {
-                const group = groupedTasks[status]
-                if (!group || group.length === 0) return null
+          {viewMode === 'daily' ? (
+            // Daily Planner View
+            <DailyPlanner
+              tasks={tasks}
+              onAddTask={createTaskFromPlanner}
+              onUpdateTask={updateTaskField}
+              onExpandTask={setExpandedTask}
+              expandedTask={expandedTask}
+              TaskCard={TaskCard}
+            />
+          ) : viewMode === 'weekly' ? (
+            // Weekly Planner View
+            <WeeklyPlanner
+              tasks={tasks}
+              onUpdateTask={updateTaskField}
+              onExpandTask={setExpandedTask}
+              expandedTask={expandedTask}
+            />
+          ) : filteredTasks.length > 0 ? (
+            <>
+              {viewMode === 'list' ? (
+                // List View
+                <div className="space-y-6">
+                  {statusOrder.map((status) => {
+                    const group = groupedTasks[status]
+                    if (!group || group.length === 0) return null
 
-                const statusStyle = STATUS_STYLES[status] || STATUS_STYLES['Not Started']
+                    const statusStyle = STATUS_STYLES[status] || STATUS_STYLES['Not Started']
 
-                return (
-                  <div key={status}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
-                        <span>{statusStyle.icon}</span>
-                        {status}
-                      </span>
-                      <span className="text-xs text-midnight/30">{group.length}</span>
-                    </div>
+                    return (
+                      <div key={status}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
+                            <span>{statusStyle.icon}</span>
+                            {status}
+                          </span>
+                          <span className="text-xs text-midnight/30">{group.length}</span>
+                        </div>
 
-                    <div className="space-y-2">
-                      {group
-                        .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4))
-                        .map((task) => <TaskCard key={task.id} task={task} />)}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            // Kanban View
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {['Not Started', 'In Progress', 'Waiting on Kyle', 'Done'].map((status) => {
-                const group = groupedTasks[status] || []
-                const statusStyle = STATUS_STYLES[status]
+                        <div className="space-y-2">
+                          {group
+                            .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4))
+                            .map((task) => <TaskCard key={task.id} task={task} />)}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                // Kanban View
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {['Not Started', 'In Progress', 'Waiting on Kyle', 'Done'].map((status) => {
+                    const group = groupedTasks[status] || []
+                    const statusStyle = STATUS_STYLES[status]
 
-                return (
-                  <div
-                    key={status}
-                    className="bg-midnight/5 rounded-xl p-4 min-h-[400px]"
-                  >
-                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium mb-4 ${statusStyle.bg} ${statusStyle.text}`}>
-                      <span>{statusStyle.icon}</span>
-                      {status}
-                      <span className="ml-1 opacity-60">({group.length})</span>
-                    </div>
+                    return (
+                      <div
+                        key={status}
+                        className="bg-midnight/5 rounded-xl p-4 min-h-[400px]"
+                      >
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium mb-4 ${statusStyle.bg} ${statusStyle.text}`}>
+                          <span>{statusStyle.icon}</span>
+                          {status}
+                          <span className="ml-1 opacity-60">({group.length})</span>
+                        </div>
 
-                    <div className="space-y-2">
-                      {group
-                        .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4))
-                        .map((task) => <TaskCard key={task.id} task={task} />)}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
+                        <div className="space-y-2">
+                          {group
+                            .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4))
+                            .map((task) => <TaskCard key={task.id} task={task} />)}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </>
+          ) : null}
         </>
       )}
 
