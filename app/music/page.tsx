@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import AnimatedSection from '@/components/AnimatedSection'
-import { Music, Mic, Guitar, Users, ExternalLink, Instagram, Youtube, Globe, Disc3, Radio } from 'lucide-react'
+import { Music as MusicIcon, Mic, Guitar, Users, ExternalLink, Instagram, Youtube, Globe, Disc3, Radio } from 'lucide-react'
 
 type BandLink = {
   type: 'instagram' | 'youtube' | 'spotify' | 'soundcloud' | 'bandcamp' | 'website'
@@ -95,7 +95,7 @@ const bands: Band[] = [
     description: 'New Orleans jazz band Kyle played with.',
     members: [],
     status: 'Past Project',
-    icon: <Music className="w-6 h-6" />,
+    icon: <MusicIcon className="w-6 h-6" />,
     gradient: 'from-midnight/10 to-midnight/5',
     links: [],
   },
@@ -134,7 +134,7 @@ export default function Music() {
             transition={{ duration: 0.6 }}
             className="flex items-center gap-3 mb-4"
           >
-            <Music className="w-5 h-5 text-terracotta" />
+            <MusicIcon className="w-5 h-5 text-terracotta" />
             <p className="text-terracotta font-medium tracking-wider uppercase text-sm">
               Music
             </p>
@@ -193,7 +193,7 @@ export default function Music() {
                 </motion.div>
               </div>
               <div className="text-center p-8 relative z-10">
-                <Music className="w-8 h-8 text-ocean/40 mx-auto mb-3" />
+                <MusicIcon className="w-8 h-8 text-ocean/40 mx-auto mb-3" />
                 <p className="text-midnight/40 text-sm font-medium">Music player coming soon</p>
               </div>
             </div>
@@ -257,7 +257,7 @@ export default function Music() {
                 {band.setList && (
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Music className="w-3.5 h-3.5 text-midnight/40" />
+                      <MusicIcon className="w-3.5 h-3.5 text-midnight/40" />
                       <p className="text-sm font-semibold text-midnight/60">Set List</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -329,7 +329,7 @@ export default function Music() {
           </div>
 
           <div className="text-center py-12 bg-cream/50 rounded-2xl border border-midnight/5">
-            <Music className="w-8 h-8 text-midnight/20 mx-auto mb-4" />
+            <MusicIcon className="w-8 h-8 text-midnight/20 mx-auto mb-4" />
             <p className="text-midnight/50 font-medium">No upcoming shows — check back soon!</p>
             <p className="text-midnight/30 text-sm mt-2">Follow on Instagram for announcements</p>
           </div>
