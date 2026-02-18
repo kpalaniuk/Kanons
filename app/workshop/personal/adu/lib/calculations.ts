@@ -14,7 +14,9 @@ export const calculateFinancials = (
       t.type === "Expense" || 
       t.type === "Management Fee" || 
       t.type === "Capital Improvement" ||
-      t.type === "Owner Payout"
+      t.type === "Owner Payout" ||
+      t.type === "Cleaning" ||
+      t.type === "Deposit Refund"
     )
     .reduce((sum, t) => sum + t.amountOut, 0);
   
