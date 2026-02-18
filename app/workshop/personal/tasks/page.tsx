@@ -597,10 +597,10 @@ export default function TasksPage() {
                     <div className="space-y-2">
                       <div className="text-[10px] uppercase tracking-wider text-ocean font-medium">Quick Update</div>
                       <textarea
-                        value={updateContext.text}
+                        ref={(el) => { if (el && !el.dataset.init) { el.dataset.init = '1'; el.value = updateContext.text } }}
                         onChange={(e) => {
                           e.stopPropagation()
-                          setUpdateContext({ taskId: task.id, text: e.target.value })
+                          updateContext.text = e.target.value
                         }}
                         onPointerDown={(e) => e.stopPropagation()}
                         onTouchStart={(e) => e.stopPropagation()}
