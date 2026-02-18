@@ -6,7 +6,7 @@ const SETTINGS_KEY = "adu_settings";
 const INITIALIZED_KEY = "adu_initialized";
 
 export const DEFAULT_SETTINGS: Settings = {
-  bufferAmount: 2000,
+  bufferAmount: 1000,
   managementFeePercentage: 30,
   ownerName: "Mike"
 };

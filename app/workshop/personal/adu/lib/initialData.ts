@@ -261,14 +261,64 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
   },
   {
     id: 1021,
-    date: "2025-11-04",
+    date: "2025-11-05",
     type: "Owner Payout",
     description: "Owner Payout",
     amountIn: 0,
-    amountOut: 1437.26,
+    amountOut: 2180,
     tenant: "",
-    notes: "Sent ACH",
+    notes: "Sent to Mike",
     category: "Owner Payout",
     monthYear: "2025-11"
+  },
+  {
+    id: 1022,
+    date: "2026-01-01",
+    type: "Income",
+    description: "Tia Jan Rent Balance",
+    amountIn: 2650,
+    amountOut: 0,
+    tenant: "Tia",
+    notes: "Received via Venmo",
+    category: "Rent",
+    monthYear: "2026-01",
+    managementFeePercentage: 30
+  },
+  {
+    id: 1023,
+    date: "2026-01-01",
+    type: "Management Fee",
+    description: "Management Fee - January",
+    amountIn: 0,
+    amountOut: 795,
+    tenant: "Tia",
+    notes: "30% of $2,650 (balance after $500 partial + $150 fee in Nov)",
+    category: "Management",
+    monthYear: "2026-01"
+  },
+  {
+    id: 1024,
+    date: "2026-01-31",
+    type: "Income",
+    description: "Tia Feb Rent",
+    amountIn: 3150,
+    amountOut: 0,
+    tenant: "Tia",
+    notes: "Received via Venmo",
+    category: "Rent",
+    monthYear: "2026-02",
+    managementFeePercentage: 30
+  },
+  {
+    id: 1025,
+    date: "2026-01-31",
+    type: "Management Fee",
+    description: "Management Fee - February",
+    amountIn: 0,
+    amountOut: 945,
+    tenant: "Tia",
+    notes: "30% of $3,150",
+    category: "Management",
+    monthYear: "2026-02"
   }
 ];
