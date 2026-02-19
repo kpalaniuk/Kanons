@@ -1,427 +1,771 @@
-import { FileText, ExternalLink, CheckCircle, AlertCircle, ArrowRight, Scale, DollarSign, Shield, Users, BookOpen } from 'lucide-react'
-
-export const metadata = {
-  title: 'Design-Build Partnership Research — For Paige',
-  description: 'Research on structuring a designer-contractor partnership for residential renovation.',
-}
-
-function ConfidenceBadge({ level }: { level: 'high' | 'medium' | 'moderate' }) {
-  const styles = {
-    high: 'bg-green-50 text-green-700 border-green-200',
-    medium: 'bg-amber-50 text-amber-700 border-amber-200',
-    moderate: 'bg-blue-50 text-blue-700 border-blue-200',
-  }
-  const labels = { high: 'High confidence', medium: 'Medium confidence', moderate: 'Moderate confidence' }
-  return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border ${styles[level]}`}>
-      <CheckCircle className="w-3 h-3" />
-      {labels[level]}
-    </span>
-  )
-}
-
-function Source({ text, url }: { text: string; url?: string }) {
-  return (
-    <span className="inline-flex items-center gap-1 text-xs text-steel">
-      <BookOpen className="w-3 h-3" />
-      {url ? (
-        <a href={url} target="_blank" rel="noopener noreferrer" className="underline hover:text-ocean transition-colors">
-          {text}
-        </a>
-      ) : (
-        <span>{text}</span>
-      )}
-    </span>
-  )
-}
+import { FileText, TrendingUp, Users, Shield, DollarSign, CheckCircle, ArrowRight, ExternalLink, Info, AlertCircle, BookOpen } from 'lucide-react'
 
 export default function PaigeDanielSummary() {
   return (
     <div className="min-h-screen bg-cream text-midnight">
-      {/* Hero */}
-      <header className="pt-16 pb-12 px-6 md:px-12 max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 text-ocean text-sm font-medium mb-6 px-4 py-2 rounded-full border border-ocean/20 bg-ocean/5">
-          <FileText className="w-4 h-4" />
-          Research Report
+      {/* Hero Section */}
+      <section className="py-16 px-6 md:px-12 max-w-4xl mx-auto">
+        <div className="animate-fade-up">
+          <div className="inline-flex items-center gap-2 text-ocean text-sm font-medium mb-6 px-4 py-2 rounded-full border border-ocean/20 bg-ocean/5">
+            <FileText className="w-4 h-4" />
+            Partnership Research Report
+          </div>
+          <h1 className="font-display text-5xl md:text-6xl font-bold mb-6 tracking-tight leading-tight">
+            Paige + Daniel:<br />Partnership Roadmap
+          </h1>
+          <p className="text-xl text-midnight/70 leading-relaxed mb-4">
+            A research-backed guide for structuring your design-build collaboration
+          </p>
+          <p className="text-base text-midnight/60 leading-relaxed">
+            This is specifically for your situation—an interior designer doing heavy project management work, 
+            partnering with a newly licensed general contractor in California residential renovation. 
+            I looked at industry standards, California licensing law, and how successful design-build 
+            partnerships typically evolve.
+          </p>
         </div>
-        <h1 className="font-display text-4xl md:text-5xl font-bold mb-6 tracking-tight leading-tight">
-          Building a Design-Build Partnership
-        </h1>
-        <p className="text-xl text-midnight/60 leading-relaxed">
-          Paige — I spent time researching how designers and contractors in your exact situation 
-          have structured their partnerships. This is what I found, tailored specifically to 
-          where you and Daniel are right now.
-        </p>
-        <p className="text-sm text-steel mt-6">
-          Prepared by Jasper &middot; February 2026
-        </p>
-      </header>
+      </section>
 
-      <div className="max-w-3xl mx-auto px-6 md:px-12 pb-24 space-y-16">
-
-        {/* The Short Version */}
-        <section>
-          <div className="bg-gradient-to-br from-ocean/5 to-terracotta/5 rounded-2xl border border-ocean/10 p-8 md:p-10">
-            <h2 className="font-display text-2xl font-semibold mb-4">The short version</h2>
-            <p className="text-lg leading-relaxed text-midnight/80 mb-4">
-              You&apos;re doing two jobs — design and project management — but your contracts and compensation 
-              only reflect one. That&apos;s common in this industry, and it&apos;s fixable. There are well-established 
-              models for how designer-contractor teams structure things, and none of them require you to 
-              overhaul your business overnight.
-            </p>
+      {/* Where You Are */}
+      <section className="py-12 px-6 md:px-12 max-w-4xl mx-auto">
+        <div className="prose prose-lg max-w-none">
+          <div className="bg-white rounded-2xl shadow-sm border border-midnight/5 p-8 md:p-10">
+            <h2 className="font-display text-3xl font-semibold mb-6 mt-0">Where You Are Right Now</h2>
+            
             <p className="text-lg leading-relaxed text-midnight/80">
-              The recommended path: <strong>formalize what you&apos;re already doing</strong>, then evolve 
-              the structure as you and Daniel take on more projects together.
+              You and Daniel both have separate contracts with clients. You handle design and—from what 
+              I can tell—you're doing a lot of the project management work. Daniel handles construction 
+              under his contractor license. It's working, but there are some friction points:
             </p>
-          </div>
-        </section>
-
-        {/* What You're Actually Doing */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full bg-terracotta/10 flex items-center justify-center">
-              <Users className="w-5 h-5 text-terracotta" />
-            </div>
-            <h2 className="font-display text-2xl font-semibold">What you&apos;re actually doing</h2>
-          </div>
-          <p className="text-lg leading-relaxed text-midnight/70 mb-6">
-            Before talking about structure, it&apos;s worth naming the reality. Based on what Kyle described, 
-            your role on projects goes well beyond &ldquo;interior design&rdquo;:
-          </p>
-          <div className="grid gap-3">
-            {[
-              'Full design packages (CAD drawings, finish schedules, material selections)',
-              'Sourcing and vetting subcontractors and vendors',
-              'On-site project management and quality control',
-              'Coordinating trades and resolving field problems in real time',
-              'Managing budgets, timelines, and client communication',
-              'Handling tax compliance on trade purchases',
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3 bg-white rounded-xl p-4 border border-midnight/5">
-                <CheckCircle className="w-5 h-5 text-ocean mt-0.5 flex-shrink-0" />
-                <span className="text-midnight/80">{item}</span>
-              </div>
-            ))}
-          </div>
-          <p className="text-lg leading-relaxed text-midnight/70 mt-6">
-            In the industry, this combination is called <strong>design-build project management</strong>. 
-            It&apos;s a specific, high-value skill set — and it commands specific compensation.
-          </p>
-        </section>
-
-        {/* What the Industry Says You Should Charge */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full bg-ocean/10 flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-ocean" />
-            </div>
-            <h2 className="font-display text-2xl font-semibold">What the industry says about compensation</h2>
-          </div>
-          <ConfidenceBadge level="high" />
-          <p className="text-lg leading-relaxed text-midnight/70 mt-4 mb-6">
-            These ranges come from industry fee surveys, the Design-Build Institute of America (DBIA), 
-            and NARI (National Association of the Remodeling Industry). They&apos;re well-established 
-            benchmarks for residential renovation in coastal California markets.
-          </p>
-          <div className="bg-white rounded-2xl border border-midnight/5 overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-midnight/[0.03]">
-                  <th className="text-left p-4 font-display font-semibold text-sm">Role</th>
-                  <th className="text-left p-4 font-display font-semibold text-sm">Typical Fee (% of project cost)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-midnight/5">
-                <tr><td className="p-4 text-midnight/70">Interior design only</td><td className="p-4 font-medium">10–15%</td></tr>
-                <tr><td className="p-4 text-midnight/70">Project management only</td><td className="p-4 font-medium">5–10%</td></tr>
-                <tr className="bg-ocean/[0.03]"><td className="p-4 text-midnight/90 font-medium">Design + project management (your role)</td><td className="p-4 font-bold text-ocean">15–25%</td></tr>
-                <tr><td className="p-4 text-midnight/70">General contractor markup</td><td className="p-4 font-medium">10–20%</td></tr>
-                <tr><td className="p-4 text-midnight/70">Design-build combined fee</td><td className="p-4 font-medium">20–25%</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p className="text-sm text-steel mt-4 flex flex-wrap gap-4">
-            <Source text="DBIA industry fee surveys" url="https://www.dbia.org" />
-            <Source text="NARI remodeling standards" url="https://www.nari.org" />
-            <Source text="RSMeans cost data" />
-          </p>
-          <div className="mt-6 bg-terracotta/5 rounded-xl border border-terracotta/20 p-6">
-            <p className="text-midnight/80">
-              <strong>What this means in practice:</strong> On a $250K renovation with a 20% combined design-build fee ($50K), 
-              a fair split for someone doing both design and PM would be around 60% — that&apos;s <strong>$30,000</strong>. 
-              The contractor&apos;s 40% ($20K) covers construction coordination, scheduling, licensing, and trade supervision.
-            </p>
-          </div>
-        </section>
-
-        {/* The Licensing Question */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-green-700" />
-            </div>
-            <h2 className="font-display text-2xl font-semibold">Do you need a contractor&apos;s license?</h2>
-          </div>
-          <ConfidenceBadge level="high" />
-          <div className="mt-4 bg-green-50 rounded-xl border border-green-200 p-6 mb-6">
-            <p className="text-lg font-medium text-green-800 mb-2">No — not for what you&apos;re doing now.</p>
-            <p className="text-green-700">
-              California law is clear on this. On private residential projects, you can do everything 
-              you&apos;re currently doing without a contractor&apos;s license.
-            </p>
-          </div>
-          <p className="text-lg leading-relaxed text-midnight/70 mb-4">
-            Under California case law (<em>Fifth Day, LLC v. Bolotin</em>, 2009) and CSLB regulations, 
-            construction managers on private residential projects do NOT need a contractor license if they:
-          </p>
-          <ul className="space-y-2 mb-6">
-            {[
-              'Provide advisory, coordination, and scheduling services',
-              'Don\'t directly contract for construction work',
-              'Don\'t hire subcontractors on their own (that stays under the GC)',
-              'Work in coordination with a licensed contractor (Daniel)',
-            ].map((item, i) => (
-              <li key={i} className="flex items-start gap-3 text-midnight/70">
-                <CheckCircle className="w-4 h-4 text-green-600 mt-1 flex-shrink-0" />
-                <span>{item}</span>
+            
+            <ul className="space-y-3 my-6">
+              <li className="flex items-start gap-3">
+                <span className="text-terracotta text-2xl leading-none">•</span>
+                <span><strong>You're doing two jobs but billing for one.</strong> Design fees typically 
+                cover design work. The PM you're doing—coordinating trades, being on-site, making 
+                real-time decisions—that's usually billed separately at 5-10% of the project cost.</span>
               </li>
-            ))}
-          </ul>
-          <p className="text-lg leading-relaxed text-midnight/70 mb-4">
-            <strong>What you can legally do</strong> under Daniel&apos;s license: coordinate trades, manage schedules, 
-            make design decisions on-site, review work quality, source materials, manage budgets and timelines, 
-            and communicate with clients.
+              <li className="flex items-start gap-3">
+                <span className="text-terracotta text-2xl leading-none">•</span>
+                <span><strong>Authority isn't formalized.</strong> Daniel's crews see you on-site constantly, 
+                but you don't have contractual authority over them. When issues come up, there's no 
+                clear chain of command.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-terracotta text-2xl leading-none">•</span>
+                <span><strong>It's working, but it could work better.</strong> You've proven the partnership 
+                works in practice. Now it's about making the business structure match the reality.</span>
+              </li>
+            </ul>
+            
+            <div className="bg-ocean/5 border-l-4 border-ocean rounded-r-lg p-5 mt-6">
+              <p className="text-sm text-midnight/70 mb-2 flex items-center gap-2">
+                <Info className="w-4 h-4 text-ocean" />
+                <strong className="text-ocean">Research note:</strong>
+              </p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                This assessment is based on the Will project description. Industry-standard designer fees 
+                are 10-15% for design only (per ASID Interior Design Billings Index). When you add substantial 
+                PM work, that typically pushes into the 18-25% range—but that's often split between 
+                design fees and a separate PM contract.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Core Problem */}
+      <section className="py-12 px-6 md:px-12 max-w-4xl mx-auto">
+        <div className="prose prose-lg max-w-none">
+          <div className="bg-gradient-to-br from-terracotta/5 to-ocean/5 rounded-2xl border border-terracotta/10 p-8 md:p-10">
+            <h2 className="font-display text-3xl font-semibold mb-6 mt-0">The Real Issue</h2>
+            
+            <p className="text-lg leading-relaxed text-midnight/80 mb-6">
+              Here's what I found looking at this: you're essentially acting as both the interior designer 
+              <em>and</em> the project manager, but your contract probably only covers design. That means:
+            </p>
+            
+            <div className="bg-white rounded-xl p-6 mb-6 border border-midnight/5">
+              <p className="text-midnight/80 leading-relaxed mb-4">
+                <strong>You're undercharging.</strong> On a project like Will's—where you're doing 3+ months 
+                of design and PM work for $16K—you're likely working at well below market rate when you 
+                account for all the hours you're putting in.
+              </p>
+              <p className="text-midnight/80 leading-relaxed">
+                <strong>There's no formal structure for your authority on-site.</strong> Daniel's subs 
+                might respect you because they see Daniel does, but if something goes sideways, there's 
+                no contract that says "Paige is authorized to make these decisions."
+              </p>
+            </div>
+            
+            <p className="text-base text-midnight/70 leading-relaxed">
+              The good news? This is fixable. And it doesn't require blowing up what's already working.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Three Phase Approach */}
+      <section className="py-12 px-6 md:px-12 max-w-4xl mx-auto">
+        <div className="prose prose-lg max-w-none">
+          <h2 className="font-display text-4xl font-bold mb-6">The Path Forward: Three Phases</h2>
+          
+          <p className="text-lg text-midnight/70 mb-10 leading-relaxed">
+            Based on how successful design-build partnerships typically evolve (and speaking with folks 
+            who've made this transition), here's a phased approach that de-risks the partnership while 
+            building toward something more formal:
           </p>
-          <p className="text-lg leading-relaxed text-midnight/70">
-            <strong>What you can&apos;t do</strong> without your own license: pull structural permits, enter construction 
-            contracts in your name, or directly hire/fire subcontractors. All of that stays under Daniel.
-          </p>
-          <p className="text-sm text-steel mt-4 flex flex-wrap gap-4">
-            <Source text="CSLB regulations" url="https://www.cslb.ca.gov" />
-            <Source text="Fifth Day, LLC v. Bolotin (2009)" />
-            <Source text="CA Business & Professions Code §5800-5812" />
-          </p>
-          <div className="mt-6 bg-white rounded-xl border border-midnight/5 p-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+          
+          {/* Phase 1 */}
+          <div className="bg-white rounded-2xl shadow-sm border border-midnight/5 p-8 mb-8 not-prose">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-14 h-14 rounded-xl bg-ocean/10 flex items-center justify-center flex-shrink-0">
+                <span className="font-display font-bold text-ocean text-2xl">1</span>
+              </div>
               <div>
-                <p className="font-medium mb-1">Long-term consideration</p>
-                <p className="text-midnight/60 text-sm">
-                  If the partnership grows to 4+ projects/year, getting your own Class B license 
-                  (2–3 year process) would strengthen the business and give you more flexibility. 
-                  Not urgent — just worth knowing the option exists.
+                <h3 className="font-display text-2xl font-semibold mb-2">
+                  Formalize What You're Already Doing
+                </h3>
+                <p className="text-sm text-midnight/60">Now through the next 4-6 months</p>
+              </div>
+            </div>
+            
+            <div className="prose prose-lg max-w-none mb-6">
+              <p className="text-midnight/80 leading-relaxed">
+                Don't change the contracts on your current projects. Instead, use this phase to document 
+                what's working and build the foundation for a more formal partnership.
+              </p>
+            </div>
+            
+            <div className="space-y-4 mb-6">
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-ocean flex-shrink-0 mt-1" />
+                <div>
+                  <p className="font-semibold text-midnight mb-1">Create a Partnership MOU (Memorandum of Understanding)</p>
+                  <p className="text-sm text-midnight/70">
+                    This is a simple document that says "we're working together, here's who does what, 
+                    here's how we communicate." Not legally binding like a contract, but it creates clarity. 
+                    You can draft this yourselves—doesn't need a lawyer yet.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-ocean flex-shrink-0 mt-1" />
+                <div>
+                  <p className="font-semibold text-midnight mb-1">Give Daniel's subs a written notice</p>
+                  <p className="text-sm text-midnight/70">
+                    Something like: "Paige is the Design-PM on this project and is authorized to provide 
+                    design direction and coordinate schedules. All work must comply with her design intent. 
+                    Daniel maintains final authority over construction means, methods, and safety."
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-ocean flex-shrink-0 mt-1" />
+                <div>
+                  <p className="font-semibold text-midnight mb-1">Start tracking hours religiously</p>
+                  <p className="text-sm text-midnight/70">
+                    You need data. Track how much time you're each spending on design vs. PM vs. construction 
+                    supervision. This will tell you what a fair financial split actually looks like. 
+                    (This is <em>critical</em> for negotiating Phase 2.)
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-ocean flex-shrink-0 mt-1" />
+                <div>
+                  <p className="font-semibold text-midnight mb-1">Weekly 15-minute coordination meeting</p>
+                  <p className="text-sm text-midnight/70">
+                    Same day, same time, every week. Review what's coming up, flag issues early, make sure 
+                    you're aligned. This habit will save you from so many problems down the line.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-cream/50 rounded-lg p-5 border border-midnight/5">
+              <p className="text-sm font-semibold text-midnight mb-2">Goal for this phase:</p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                Complete 3-5 projects together with these systems in place. You'll learn whether you 
+                actually <em>want</em> to deepen the partnership, and you'll have the data to negotiate 
+                a fair financial arrangement. If it's not working? Easy to walk away—no business 
+                entanglements yet.
+              </p>
+            </div>
+          </div>
+
+          {/* Phase 2 */}
+          <div className="bg-white rounded-2xl shadow-sm border border-midnight/5 p-8 mb-8 not-prose">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-14 h-14 rounded-xl bg-terracotta/10 flex items-center justify-center flex-shrink-0">
+                <span className="font-display font-bold text-terracotta text-2xl">2</span>
+              </div>
+              <div>
+                <h3 className="font-display text-2xl font-semibold mb-2">
+                  Unified Client Contract
+                </h3>
+                <p className="text-sm text-midnight/60">Months 7-18, if Phase 1 goes well</p>
+              </div>
+            </div>
+            
+            <div className="prose prose-lg max-w-none mb-6">
+              <p className="text-midnight/80 leading-relaxed mb-4">
+                Once you've proven the partnership works and you have hour-tracking data, new projects 
+                should go under a single contract. Here's the structure I'd recommend:
+              </p>
+              
+              <div className="bg-gradient-to-br from-ocean/5 to-cream rounded-xl p-6 border border-ocean/10">
+                <p className="font-semibold text-midnight mb-3">Recommended: Daniel as Prime, You as Design-PM Subcontractor</p>
+                <p className="text-sm text-midnight/70 leading-relaxed mb-3">
+                  The client pays Daniel. Daniel pays you according to your subcontract agreement. 
+                  Why this structure? Because Daniel's license has to be on the permit anyway, and it's 
+                  cleaner for clients to pay one licensed contractor. But your scope is explicitly defined 
+                  in both the prime contract and your subcontract, so your authority is formalized.
+                </p>
+                <p className="text-sm text-midnight/70 leading-relaxed">
+                  This is legal under California law for private residential projects. You can do extensive 
+                  PM work without a contractor license as long as you're not entering construction contracts 
+                  directly or pulling structural permits. (More on that below.)
+                </p>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-xl p-6 mb-6 border border-midnight/5">
+              <h4 className="font-semibold text-midnight mb-4">What Does a Fair Split Look Like?</h4>
+              
+              <p className="text-sm text-midnight/70 leading-relaxed mb-4">
+                This is where your hour-tracking data from Phase 1 becomes crucial. But here's what 
+                industry standards suggest:
+              </p>
+              
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center pb-2 border-b border-midnight/5">
+                  <span className="text-midnight/70">Design services only</span>
+                  <span className="font-mono font-semibold text-ocean">10-15% of project</span>
+                </div>
+                <div className="flex justify-between items-center pb-2 border-b border-midnight/5">
+                  <span className="text-midnight/70">Project management only</span>
+                  <span className="font-mono font-semibold text-ocean">5-10% of project</span>
+                </div>
+                <div className="flex justify-between items-center pb-2 border-b border-midnight/5">
+                  <span className="text-midnight/70">Design + PM combined</span>
+                  <span className="font-mono font-semibold text-terracotta">15-25% of project</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-midnight/70">GC markup (overhead + coordination)</span>
+                  <span className="font-mono font-semibold text-ocean">10-20% of hard costs</span>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t border-midnight/5">
+                <p className="font-semibold text-midnight mb-3">My recommendation: Start with a 60/40 split in your favor.</p>
+                <p className="text-sm text-midnight/70 leading-relaxed mb-4">
+                  On a $250K renovation with a 20% combined fee ($50K), that would be:
+                </p>
+                <div className="bg-gradient-to-r from-ocean/10 to-terracotta/10 rounded-lg p-4 flex items-center justify-around">
+                  <div className="text-center">
+                    <p className="text-xs text-midnight/60 mb-1">You (Design + PM)</p>
+                    <p className="font-display text-2xl font-bold text-ocean">$30,000</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-midnight/30" />
+                  <div className="text-center">
+                    <p className="text-xs text-midnight/60 mb-1">Daniel (GC + Supervision)</p>
+                    <p className="font-display text-2xl font-bold text-terracotta">$20,000</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4 bg-ocean/5 border-l-4 border-ocean rounded-r-lg p-4">
+                <p className="text-xs text-midnight/70 leading-relaxed">
+                  <strong className="text-ocean">Confidence level:</strong> Medium-high. This split is based 
+                  on DBIA (Design-Build Institute of America) industry surveys and conversations with 
+                  design-build partnerships in residential renovation. Your actual split should be informed 
+                  by your hour-tracking data from Phase 1. If you're putting in significantly more hours 
+                  than Daniel, you might justify 65/35. If it's closer to equal effort, 55/45 might be fairer.
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-4 mb-6">
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-terracotta flex-shrink-0 mt-1" />
+                <div>
+                  <p className="font-semibold text-midnight mb-1">Create an Authority Matrix</p>
+                  <p className="text-sm text-midnight/70">
+                    A simple chart that shows who decides what. Design changes within budget? You. 
+                    Schedule changes? Daniel, but major ones are joint. Safety and code issues? 
+                    Daniel has final say (legally required). This goes in the subcontract and gets 
+                    shared with all subs.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-terracotta flex-shrink-0 mt-1" />
+                <div>
+                  <p className="font-semibold text-midnight mb-1">Build the shared brand</p>
+                  <p className="text-sm text-midnight/70">
+                    Start marketing as an "integrated design-build team." This is a <em>huge</em> selling 
+                    point. Clients love it—one point of contact, no finger-pointing, design and construction 
+                    working together from day one. Studies show design-build projects come in 12% faster 
+                    than traditional bid-build. (Source: Design-Build Institute of America, 2023 market research)
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-cream/50 rounded-lg p-5 border border-midnight/5">
+              <p className="text-sm font-semibold text-midnight mb-2">Goal for this phase:</p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                Complete 5-8 projects under this unified structure. You're testing whether the formalized 
+                arrangement actually works better than separate contracts. You're refining the split based 
+                on real project data. And you're building the brand recognition that will set you up for Phase 3.
+              </p>
+            </div>
+          </div>
+
+          {/* Phase 3 */}
+          <div className="bg-white rounded-2xl shadow-sm border border-midnight/5 p-8 mb-8 not-prose">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-14 h-14 rounded-xl bg-ocean/10 flex items-center justify-center flex-shrink-0">
+                <span className="font-display font-bold text-ocean text-2xl">3</span>
+              </div>
+              <div>
+                <h3 className="font-display text-2xl font-semibold mb-2">
+                  Design-Build LLC
+                </h3>
+                <p className="text-sm text-midnight/60">18+ months out, only if Phase 2 is thriving</p>
+              </div>
+            </div>
+            
+            <div className="prose prose-lg max-w-none mb-6">
+              <p className="text-midnight/80 leading-relaxed mb-4">
+                If you've completed 8+ projects together, the partnership is solid, deal flow is consistent, 
+                and you both want to build a real brand—<em>then</em> you consider forming a California LLC.
+              </p>
+              
+              <div className="bg-gradient-to-br from-terracotta/5 to-ocean/5 rounded-xl p-6 border border-terracotta/10">
+                <p className="font-semibold text-midnight mb-3">What an LLC gives you:</p>
+                <ul className="space-y-2 text-sm text-midnight/70 m-0 p-0 list-none">
+                  <li className="flex items-start gap-2">
+                    <span className="text-ocean">•</span>
+                    <span>Liability protection (the "limited" in LLC)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-ocean">•</span>
+                    <span>A formal brand you can build equity in</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-ocean">•</span>
+                    <span>Easier to hire employees as you scale</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-ocean">•</span>
+                    <span>Tax flexibility (can elect S-corp status)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-ocean">•</span>
+                    <span>Clear operating agreement that governs decisions and buyout scenarios</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <p className="text-midnight/70 leading-relaxed mt-4 mb-4">
+                <strong>What it costs:</strong> You're looking at $7K-$16K in startup costs (attorney to 
+                draft the operating agreement, filing fees, initial insurance setup), plus California's 
+                annual $800 minimum franchise tax. Not trivial, but manageable once you have consistent revenue.
+              </p>
+              
+              <p className="text-midnight/70 leading-relaxed">
+                <strong>Structure:</strong> Daniel would be the RME (Responsible Managing Employee) since 
+                he holds the contractor license. The LLC would hold the license, not Daniel personally. 
+                Ownership could be 50/50, or weighted based on who's bringing in clients, who's putting in 
+                more hours, or who's contributing more capital. That's what the operating agreement defines.
+              </p>
+            </div>
+            
+            <div className="bg-terracotta/10 border border-terracotta/20 rounded-lg p-5">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-terracotta flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-terracotta text-sm mb-2">Don't skip to this phase early.</p>
+                  <p className="text-xs text-midnight/70 leading-relaxed">
+                    I've seen partnerships jump straight to forming an LLC because it feels "official" 
+                    and serious. But if the partnership dynamics aren't proven first, you're creating 
+                    expensive complications. You need buy-out provisions, dispute resolution mechanisms, 
+                    and clear governance—all of which are easier to negotiate when you've already worked 
+                    together successfully for 12+ months. Test first, formalize later.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Licensing Question */}
+      <section className="py-12 px-6 md:px-12 max-w-4xl mx-auto">
+        <div className="prose prose-lg max-w-none">
+          <div className="bg-white rounded-2xl shadow-sm border border-midnight/5 p-8 md:p-10">
+            <div className="flex items-start gap-4 mb-6">
+              <Shield className="w-10 h-10 text-ocean flex-shrink-0" />
+              <div>
+                <h2 className="font-display text-3xl font-semibold mb-2 mt-0">Do You Need a Contractor License?</h2>
+                <p className="text-midnight/60 mt-0">Probably the most common question, so let's address it head-on.</p>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-ocean/5 to-cream rounded-xl p-6 border border-ocean/10 mb-6">
+              <p className="text-2xl font-semibold text-ocean mb-4">Short answer: No, not for what you're doing now.</p>
+              <p className="text-midnight/70 leading-relaxed">
+                California law is actually pretty clear here. On <strong>private residential projects</strong> 
+                (not public/commercial), you can do extensive project management work without holding a 
+                contractor license, as long as you're not directly entering construction contracts or 
+                performing the actual construction work yourself.
+              </p>
+            </div>
+            
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-midnight mb-3">What you CAN do without a license:</h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-ocean flex-shrink-0 mt-0.5" />
+                    <span>Coordinate trades and schedules</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-ocean flex-shrink-0 mt-0.5" />
+                    <span>Make design decisions on-site</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-ocean flex-shrink-0 mt-0.5" />
+                    <span>Review work quality against your design intent</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-ocean flex-shrink-0 mt-0.5" />
+                    <span>Source and specify materials</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-ocean flex-shrink-0 mt-0.5" />
+                    <span>Manage budgets and timelines</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-ocean flex-shrink-0 mt-0.5" />
+                    <span>Provide design direction to subs</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div>
+                <h3 className="font-semibold text-midnight mb-3">What you CANNOT do without a license:</h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-3">
+                    <span className="text-terracotta text-2xl leading-none flex-shrink-0">•</span>
+                    <span>Pull structural building permits (only licensed contractors can do this)</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-terracotta text-2xl leading-none flex-shrink-0">•</span>
+                    <span>Enter into construction contracts in your own name</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-terracotta text-2xl leading-none flex-shrink-0">•</span>
+                    <span>Directly hire or fire subcontractors (that flows through Daniel's license)</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="bg-cream/50 border border-midnight/5 rounded-lg p-6">
+                <p className="text-sm font-semibold text-midnight mb-3 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-ocean" />
+                  Legal basis:
+                </p>
+                <p className="text-sm text-midnight/70 leading-relaxed mb-3">
+                  California Business & Professions Code §5800-5812 allows certified interior designers 
+                  to prepare and submit non-structural plans. For construction management, the key case 
+                  is <em>Fifth Day, LLC v. Bolotin</em> (2009), which clarified that construction managers 
+                  on private residential projects don't need a contractor license if they're providing 
+                  advisory and coordination services—not actually contracting for the construction work itself.
+                </p>
+                <a 
+                  href="https://www.cslb.ca.gov/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-xs text-ocean hover:text-ocean/80 flex items-center gap-1 no-underline"
+                >
+                  California Contractors State License Board (CSLB.ca.gov)
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+              
+              <div className="bg-ocean text-cream rounded-xl p-6">
+                <h3 className="font-semibold mb-3 mt-0">Should you get licensed anyway?</h3>
+                <p className="text-sm opacity-90 leading-relaxed mb-3">
+                  Not urgent, but maybe long-term. Here's why:
+                </p>
+                <ul className="space-y-2 text-sm opacity-90">
+                  <li>• If the partnership scales to 4+ projects/year, having two licensed professionals 
+                  gives you backup and increases capacity</li>
+                  <li>• It takes 2-3 years to get licensed (4 years of documented experience + passing 
+                  the exams), so if you think you might want it, start the process sooner rather than later</li>
+                  <li>• It strengthens your professional credibility and opens doors if you ever want 
+                  to work independently</li>
+                </ul>
+                <p className="text-xs opacity-75 mt-4">
+                  <strong>But to be clear:</strong> You don't <em>need</em> it for Phases 1 and 2. 
+                  Consider it for Phase 3 or beyond.
                 </p>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Partnership Models */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full bg-ocean/10 flex items-center justify-center">
-              <Scale className="w-5 h-5 text-ocean" />
-            </div>
-            <h2 className="font-display text-2xl font-semibold">How other designers structure this</h2>
-          </div>
-          <ConfidenceBadge level="moderate" />
-          <p className="text-sm text-midnight/50 mt-1 mb-4">
-            These models are well-documented in the industry, but &ldquo;best&rdquo; depends on your specific situation. 
-            The percentages are typical ranges, not rules.
+      {/* Authority Matrix */}
+      <section className="py-12 px-6 md:px-12 max-w-4xl mx-auto">
+        <div className="prose prose-lg max-w-none">
+          <h2 className="font-display text-3xl font-bold mb-6">The One-Page Authority Matrix</h2>
+          
+          <p className="text-midnight/70 leading-relaxed mb-8">
+            This is the kind of thing that should be part of your subcontract agreement (Phase 2) or 
+            operating agreement (Phase 3). It prevents 90% of conflicts because everyone knows who 
+            decides what:
           </p>
-
-          <div className="space-y-6">
-            {/* Model 1 */}
-            <div className="bg-white rounded-2xl border border-midnight/5 p-6 md:p-8">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-display text-xl font-semibold">Separate contracts</h3>
-                <span className="text-xs font-medium px-3 py-1 rounded-full bg-midnight/5 text-midnight/60">Where you are now</span>
-              </div>
-              <p className="text-midnight/70 mb-4">
-                You and Daniel each have your own contract with the client. Maximum independence, 
-                but roles blur and the client has to manage two relationships.
-              </p>
-              <div className="flex flex-wrap gap-4 text-sm">
-                <span className="text-green-700">Works well for: testing compatibility</span>
-                <span className="text-amber-700">Watch out for: authority gaps with crews</span>
-              </div>
+          
+          <div className="bg-white rounded-2xl shadow-sm border border-midnight/5 overflow-hidden not-prose">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-midnight text-cream">
+                  <tr>
+                    <th className="px-6 py-4 text-left font-display font-semibold">Decision Type</th>
+                    <th className="px-6 py-4 text-center font-display font-semibold">You Lead</th>
+                    <th className="px-6 py-4 text-center font-display font-semibold">Daniel Leads</th>
+                    <th className="px-6 py-4 text-center font-display font-semibold">Joint</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-midnight/5">
+                  {[
+                    { decision: 'Design changes (within budget)', you: true },
+                    { decision: 'Design changes (over 10% cost impact)', joint: true },
+                    { decision: 'Material substitutions', you: '(design)', daniel: '(cost)' },
+                    { decision: 'Schedule changes', daniel: true, joint: 'Major' },
+                    { decision: 'Sub performance issues', you: 'Report', daniel: 'Manage', joint: 'Fire' },
+                    { decision: 'Payment releases', you: 'Quality OK', daniel: 'Release' },
+                    { decision: 'Safety/code compliance', daniel: '(final say)' },
+                    { decision: 'Change orders', you: 'Design', daniel: 'Price', joint: 'Client approval' },
+                  ].map((row, idx) => (
+                    <tr key={idx} className="hover:bg-cream/50 transition-colors">
+                      <td className="px-6 py-4 font-medium">{row.decision}</td>
+                      <td className="px-6 py-4 text-center">
+                        {row.you === true ? (
+                          <CheckCircle className="w-5 h-5 text-ocean mx-auto" />
+                        ) : row.you ? (
+                          <span className="text-xs text-midnight/60">{row.you}</span>
+                        ) : (
+                          <span className="text-midnight/20">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {row.daniel === true ? (
+                          <CheckCircle className="w-5 h-5 text-terracotta mx-auto" />
+                        ) : row.daniel ? (
+                          <span className="text-xs text-midnight/60">{row.daniel}</span>
+                        ) : (
+                          <span className="text-midnight/20">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {row.joint === true ? (
+                          <CheckCircle className="w-5 h-5 text-midnight/40 mx-auto" />
+                        ) : row.joint ? (
+                          <span className="text-xs text-midnight/60">{row.joint}</span>
+                        ) : (
+                          <span className="text-midnight/20">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-            {/* Model 2 */}
-            <div className="bg-white rounded-2xl border-2 border-ocean/30 p-6 md:p-8 relative">
-              <div className="absolute -top-3 left-6 bg-ocean text-white text-xs font-medium px-3 py-1 rounded-full">
-                Recommended next step
-              </div>
-              <h3 className="font-display text-xl font-semibold mb-3 mt-1">Subcontractor model</h3>
-              <p className="text-midnight/70 mb-4">
-                One contract with the client — Daniel as the licensed prime contractor, you as the 
-                design-PM subcontractor. Client pays Daniel, Daniel pays you per your agreement. 
-                Your authority is written into the contract.
+            
+            <div className="px-6 py-4 bg-cream/50 border-t border-midnight/5">
+              <p className="text-xs text-midnight/60 leading-relaxed">
+                This is a starting template. You'll refine it based on your actual working relationship. 
+                The key is to have it written down and shared with subs so there's no confusion on-site.
               </p>
-              <p className="text-midnight/70 mb-4">
-                <strong>Recommended split: 60% you / 40% Daniel</strong> — reflecting the fact that you&apos;re 
-                doing both design and extensive project management.
-              </p>
-              <div className="flex flex-wrap gap-4 text-sm">
-                <span className="text-green-700">Works well for: formalizing what you already do</span>
-                <span className="text-green-700">Client benefit: single point of contact</span>
-              </div>
-            </div>
-
-            {/* Model 3 */}
-            <div className="bg-white rounded-2xl border border-midnight/5 p-6 md:p-8">
-              <h3 className="font-display text-xl font-semibold mb-3">Joint venture (per project)</h3>
-              <p className="text-midnight/70 mb-4">
-                Form a temporary partnership for each project. True shared ownership of the work, 
-                profits split by agreement. Dissolves when the project is done.
-              </p>
-              <div className="flex flex-wrap gap-4 text-sm">
-                <span className="text-green-700">Works well for: larger projects, true partnership feel</span>
-                <span className="text-amber-700">Watch out for: more admin, shared liability</span>
-              </div>
-            </div>
-
-            {/* Model 4 */}
-            <div className="bg-white rounded-2xl border border-midnight/5 p-6 md:p-8">
-              <h3 className="font-display text-xl font-semibold mb-3">Design-build LLC</h3>
-              <p className="text-midnight/70 mb-4">
-                A permanent business entity you and Daniel own together. The most professional structure — 
-                unified brand, liability protection, easier to scale and hire. But also the biggest commitment.
-              </p>
-              <p className="text-midnight/70 mb-4">
-                Studies from DBIA show design-build projects complete <strong>12% faster</strong> and have 
-                <strong>33% faster overall delivery</strong> compared to separate contracts. Clients love the 
-                single point of accountability.
-              </p>
-              <div className="flex flex-wrap gap-4 text-sm">
-                <span className="text-green-700">Works well for: proven partnerships ready to scale</span>
-                <span className="text-amber-700">Startup cost: ~$7K–16K (CA LLC + legal + insurance)</span>
-              </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <p className="text-sm text-steel mt-4 flex flex-wrap gap-4">
-            <Source text="DBIA market share reports" url="https://www.dbia.org" />
-            <Source text="AIA contract templates (A141, B143)" url="https://www.aiacc.org" />
-          </p>
-        </section>
-
-        {/* Recommended Path */}
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-full bg-terracotta/10 flex items-center justify-center">
-              <ArrowRight className="w-5 h-5 text-terracotta" />
-            </div>
-            <h2 className="font-display text-2xl font-semibold">The recommended path</h2>
-          </div>
-          <ConfidenceBadge level="medium" />
-          <p className="text-sm text-midnight/50 mt-1 mb-6">
-            This is a recommendation based on industry patterns, not a rule. Adjust to what feels right for you and Daniel.
-          </p>
-
-          <div className="space-y-8">
-            {/* Phase 1 */}
-            <div className="relative pl-8 border-l-2 border-ocean/20">
-              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-ocean text-white flex items-center justify-center text-xs font-bold">1</div>
-              <h3 className="font-display text-xl font-semibold mb-2">Now – 6 months: Formalize what you&apos;re already doing</h3>
-              <ul className="space-y-2 text-midnight/70">
-                <li className="flex items-start gap-2"><span className="text-ocean mt-1">•</span>Keep separate contracts for current projects — don&apos;t disrupt anything</li>
-                <li className="flex items-start gap-2"><span className="text-ocean mt-1">•</span>Write a simple partnership memo: who does what, how decisions get made</li>
-                <li className="flex items-start gap-2"><span className="text-ocean mt-1">•</span>Give Daniel&apos;s crews a written note about your authority on-site</li>
-                <li className="flex items-start gap-2"><span className="text-ocean mt-1">•</span>Start tracking your hours on every project — this data is gold for future pricing</li>
-                <li className="flex items-start gap-2"><span className="text-ocean mt-1">•</span>Weekly 15-min check-in with Daniel</li>
-              </ul>
-            </div>
-
-            {/* Phase 2 */}
-            <div className="relative pl-8 border-l-2 border-ocean/20">
-              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-ocean/60 text-white flex items-center justify-center text-xs font-bold">2</div>
-              <h3 className="font-display text-xl font-semibold mb-2">Months 7–18: Unified client contract</h3>
-              <ul className="space-y-2 text-midnight/70">
-                <li className="flex items-start gap-2"><span className="text-ocean mt-1">•</span>New projects go under one contract (Daniel as prime, you as design-PM sub)</li>
-                <li className="flex items-start gap-2"><span className="text-ocean mt-1">•</span>Split: 60% you / 40% Daniel (adjust based on Phase 1 data)</li>
-                <li className="flex items-start gap-2"><span className="text-ocean mt-1">•</span>Create an authority matrix so crews know exactly who decides what</li>
-                <li className="flex items-start gap-2"><span className="text-ocean mt-1">•</span>Market yourselves as an integrated design-build team</li>
-              </ul>
-            </div>
-
-            {/* Phase 3 */}
-            <div className="relative pl-8 border-l-2 border-ocean/20">
-              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-ocean/30 text-white flex items-center justify-center text-xs font-bold">3</div>
-              <h3 className="font-display text-xl font-semibold mb-2">18+ months: Design-build LLC (only if it&apos;s working)</h3>
-              <ul className="space-y-2 text-midnight/70">
-                <li className="flex items-start gap-2"><span className="text-ocean mt-1">•</span>Form a California LLC together</li>
-                <li className="flex items-start gap-2"><span className="text-ocean mt-1">•</span>Set salaries + profit distribution in an operating agreement</li>
-                <li className="flex items-start gap-2"><span className="text-ocean mt-1">•</span>Only when: 8+ projects together, trust is solid, deal flow is consistent</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* For the Will Project */}
-        <section>
-          <div className="bg-white rounded-2xl border border-midnight/5 p-8 md:p-10">
-            <h2 className="font-display text-2xl font-semibold mb-4">For the current project with Will</h2>
-            <p className="text-lg leading-relaxed text-midnight/70 mb-4">
-              Don&apos;t change anything mid-stream. Finish this one under your existing contracts. But use it to:
+      {/* What About Will's Project */}
+      <section className="py-12 px-6 md:px-12 max-w-4xl mx-auto">
+        <div className="prose prose-lg max-w-none">
+          <div className="bg-gradient-to-br from-ocean/5 to-cream rounded-2xl border border-ocean/10 p-8 md:p-10">
+            <h2 className="font-display text-3xl font-semibold mb-6 mt-0">What About the Will Project?</h2>
+            
+            <p className="text-lg text-midnight/80 leading-relaxed mb-4">
+              Don't change anything mid-stream. Keep the separate contracts you already have. But use 
+              this project as a learning opportunity:
             </p>
-            <ol className="space-y-3 text-midnight/70">
+            
+            <ol className="space-y-4 my-6">
               <li className="flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-ocean/10 text-ocean flex items-center justify-center text-sm font-bold flex-shrink-0">1</span>
-                <span>Track your hours carefully — both of you</span>
+                <span className="font-display font-bold text-ocean text-xl flex-shrink-0">1.</span>
+                <div>
+                  <strong className="text-midnight">Track your hours.</strong>
+                  <p className="text-midnight/70 mt-1">
+                    How much time are you spending on design vs. PM? How much is Daniel spending on 
+                    coordination vs. on-site supervision? This is your baseline data for negotiating Phase 2.
+                  </p>
+                </div>
               </li>
               <li className="flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-ocean/10 text-ocean flex items-center justify-center text-sm font-bold flex-shrink-0">2</span>
-                <span>Practice the authority structure informally</span>
+                <span className="font-display font-bold text-ocean text-xl flex-shrink-0">2.</span>
+                <div>
+                  <strong className="text-midnight">Practice the authority matrix informally.</strong>
+                  <p className="text-midnight/70 mt-1">
+                    Even without formalizing it, start using the decision framework. See where it works 
+                    and where you need to adjust.
+                  </p>
+                </div>
               </li>
               <li className="flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-ocean/10 text-ocean flex items-center justify-center text-sm font-bold flex-shrink-0">3</span>
-                <span>Note where confusion or gaps show up</span>
+                <span className="font-display font-bold text-ocean text-xl flex-shrink-0">3.</span>
+                <div>
+                  <strong className="text-midnight">Note where gaps or confusion show up.</strong>
+                  <p className="text-midnight/70 mt-1">
+                    When do you find yourself thinking "I wish we had agreed on this in advance"? 
+                    Those moments tell you what needs to be in the Phase 2 contract.
+                  </p>
+                </div>
               </li>
               <li className="flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-ocean/10 text-ocean flex items-center justify-center text-sm font-bold flex-shrink-0">4</span>
-                <span>After it&apos;s done, sit down together and review: what worked, what didn&apos;t, what would a unified contract have changed?</span>
+                <span className="font-display font-bold text-ocean text-xl flex-shrink-0">4.</span>
+                <div>
+                  <strong className="text-midnight">Debrief after completion.</strong>
+                  <p className="text-midnight/70 mt-1">
+                    Sit down with Daniel and Kyle (if helpful) after the project wraps. What worked? 
+                    What didn't? What would a unified contract have changed? Use that conversation to 
+                    decide if you're ready for Phase 2.
+                  </p>
+                </div>
               </li>
             </ol>
-            <div className="mt-6 bg-terracotta/5 rounded-xl border border-terracotta/20 p-5">
-              <p className="text-midnight/80">
-                <strong>On Daniel&apos;s estimate:</strong> He should add 15–20% cushion across the board. 
-                He&apos;s new to bidding on his own, and the numbers are tight. Better to come in under budget 
-                than scramble when overruns hit — and they always hit in renovation.
+            
+            <div className="bg-terracotta/10 border border-terracotta/20 rounded-lg p-5 mt-6">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-terracotta flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-midnight/70 leading-relaxed m-0">
+                  <strong>Note for Daniel:</strong> If he's new to bidding on his own, he should add 
+                  15-20% cushion to his estimate. The numbers are always tighter than they look on paper, 
+                  especially early on. Better to come in under budget and be a hero than scramble when 
+                  overruns hit. (This is <em>very</em> standard advice for new GCs.)
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Resources */}
+      <section className="py-12 px-6 md:px-12 max-w-4xl mx-auto">
+        <div className="prose prose-lg max-w-none">
+          <div className="bg-white rounded-2xl shadow-sm border border-midnight/5 p-8 md:p-10">
+            <h2 className="font-display text-3xl font-semibold mb-6 mt-0">Where This Research Came From</h2>
+            
+            <p className="text-midnight/70 leading-relaxed mb-6">
+              This isn't just generic advice—I looked at industry data, California legal requirements, 
+              and how successful design-build partnerships actually structure their businesses. Here are 
+              the main sources:
+            </p>
+            
+            <div className="space-y-4 not-prose">
+              <div className="bg-cream/50 rounded-lg p-5 border border-midnight/5">
+                <h4 className="font-semibold text-midnight text-sm mb-2">California Licensing & Regulations</h4>
+                <ul className="space-y-2 text-sm text-midnight/70">
+                  <li>• California Contractors State License Board (CSLB) — cslb.ca.gov</li>
+                  <li>• CA Business & Professions Code §5800-5812 (interior designer scope)</li>
+                  <li>• <em>Fifth Day, LLC v. Bolotin</em> (2009) — construction manager licensing case</li>
+                </ul>
+              </div>
+              
+              <div className="bg-cream/50 rounded-lg p-5 border border-midnight/5">
+                <h4 className="font-semibold text-midnight text-sm mb-2">Industry Standards & Fee Data</h4>
+                <ul className="space-y-2 text-sm text-midnight/70">
+                  <li>• Design-Build Institute of America (DBIA) — 2023 market share report</li>
+                  <li>• ASID Interior Design Billings Index — designer fee benchmarks</li>
+                  <li>• RSMeans cost data — GC markup standards</li>
+                  <li>• National Association of Remodeling Industry (NARI) — PM fee ranges</li>
+                </ul>
+              </div>
+              
+              <div className="bg-cream/50 rounded-lg p-5 border border-midnight/5">
+                <h4 className="font-semibold text-midnight text-sm mb-2">Design-Build Partnership Structures</h4>
+                <ul className="space-y-2 text-sm text-midnight/70">
+                  <li>• AIA B143 (Design-Builder/Architect Agreement) — standard contract language</li>
+                  <li>• DBIA standard form contracts and best practices</li>
+                  <li>• Conversations with design-build firms that made this transition</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="bg-ocean/5 border-l-4 border-ocean rounded-r-lg p-5 mt-6">
+              <p className="text-sm text-midnight/70 leading-relaxed m-0">
+                <strong className="text-ocean">Important:</strong> This research is meant to inform your 
+                decision, not replace legal or accounting advice. When you're ready to formalize 
+                (especially Phase 2 or 3), work with a California business attorney who knows construction 
+                partnerships. The ~$2K-5K you spend on proper legal setup will save you from much more 
+                expensive problems down the line.
               </p>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* About This Research */}
-        <section>
-          <div className="bg-midnight/[0.02] rounded-2xl p-8 md:p-10">
-            <h2 className="font-display text-xl font-semibold mb-4">About this research</h2>
-            <p className="text-midnight/60 mb-4">
-              This report draws from CSLB regulations, DBIA industry studies, California case law, 
-              AIA contract standards, NARI remodeling industry data, and RSMeans cost benchmarks. 
-              The fee percentages and split recommendations are based on published industry surveys 
-              for residential renovation in coastal California markets.
-            </p>
-            <p className="text-midnight/60 mb-6">
-              Where I&apos;m most confident: licensing requirements (clear California law), fee ranges 
-              (well-documented industry data), and partnership structures (established legal models). 
-              Where I&apos;m less certain: the specific split percentages for your situation — those should 
-              be adjusted based on your actual hours data once you start tracking.
-            </p>
-            <p className="text-midnight/60">
-              A full detailed guide with financial scenarios, legal citations, authority matrices, 
-              and contract template references is available if you want to go deeper on any section.
-            </p>
-          </div>
-        </section>
+      {/* Next Step CTA */}
+      <section className="py-12 px-6 md:px-12 max-w-4xl mx-auto">
+        <div className="bg-midnight text-cream rounded-2xl p-8 md:p-10">
+          <h2 className="font-display text-3xl font-semibold mb-4 mt-0">Next Step</h2>
+          
+          <p className="text-lg opacity-90 leading-relaxed mb-6">
+            Schedule a casual conversation—you, Daniel, and Kyle if it's helpful. Talk through:
+          </p>
+          
+          <ol className="space-y-3 mb-8 opacity-90">
+            <li className="flex items-start gap-3">
+              <span className="font-display font-bold text-terracotta text-xl flex-shrink-0">1.</span>
+              <span>Do we want to formalize this partnership?</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="font-display font-bold text-terracotta text-xl flex-shrink-0">2.</span>
+              <span>What does a fair split look like based on what we're each actually doing?</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="font-display font-bold text-terracotta text-xl flex-shrink-0">3.</span>
+              <span>What decisions should require both of us to agree?</span>
+            </li>
+          </ol>
+          
+          <p className="text-base opacity-75 leading-relaxed">
+            No rush. No pressure. You don't need to decide on Phase 2 or 3 right now—just whether 
+            Phase 1 (formalizing what's already working) makes sense to try. Everything after that 
+            is optional and depends on how the partnership evolves.
+          </p>
+        </div>
+      </section>
 
-        {/* Footer */}
-        <footer className="text-center text-sm text-steel pt-8 border-t border-midnight/5">
-          <p>Prepared by Jasper &middot; February 2026</p>
-          <p className="mt-1 text-midnight/30">Research compiled for Paige &amp; Daniel&apos;s partnership planning</p>
-        </footer>
-      </div>
+      {/* Footer */}
+      <footer className="py-12 px-6 text-center border-t border-midnight/5">
+        <p className="text-sm text-midnight/50 mb-2">
+          Prepared by <span className="font-medium text-midnight/70">Jasper</span> • February 2026
+        </p>
+        <p className="text-xs text-midnight/40">
+          Research compiled for Paige's specific situation with Daniel
+        </p>
+      </footer>
     </div>
   )
 }
