@@ -1,70 +1,26 @@
 'use client'
 
-import { useState } from 'react'
 import { BookOpen, Mic, Cpu, FileText, ExternalLink, Users, Brain, MessageSquare } from 'lucide-react'
+import { articles } from '@/lib/articles'
+import type { LucideIcon } from 'lucide-react'
 
-const initialArtifacts = [
-  {
-    title: 'Trumpet Mic Comparison',
-    description: 'Bell clip vs off-bell vs dual mount — side by side comparison for live gigging. DPA 4099, AMT P800, EVNO TPX2, and more.',
-    href: '/artifacts/trumpet-mic-comparison.html',
-    category: 'Music & Gear',
-    date: 'Feb 19, 2026',
-    icon: Mic,
-    color: 'terracotta',
-    published: false,
-  },
-  {
-    title: 'LO Buddy × OpenClaw Architecture',
-    description: 'How OpenClaw patterns (SOUL.md, sessions, multi-agent, skills, heartbeat, memory) can power LO Buddy at scale. Full strategy doc with implementation phases.',
-    href: '/artifacts/lo-buddy-openclaw-architecture.html',
-    category: 'LO Buddy',
-    date: 'Feb 19, 2026',
-    icon: Cpu,
-    color: 'ocean',
-    published: false,
-  },
-  {
-    title: 'Paige + Daniel Partnership Roadmap',
-    description: 'Strategic roadmap for the designer-contractor partnership — roles, revenue, and growth phases.',
-    href: '/artifacts/paige-daniel-summary',
-    category: 'GH Design',
-    date: 'Feb 19, 2026',
-    icon: Users,
-    color: 'terracotta',
-    published: false,
-  },
-  {
-    title: 'Multi-Agent Research',
-    description: 'Deep dive into multi-agent AI architectures — patterns, frameworks, and practical applications.',
-    href: '/artifacts/multi-agent-research',
-    category: 'LO Buddy',
-    date: 'Feb 19, 2026',
-    icon: Brain,
-    color: 'ocean',
-    published: false,
-  },
-  {
-    title: 'LO Buddy + Chad Meeting',
-    description: 'Meeting notes and action items from the LO Buddy + Chad strategy session.',
-    href: '/artifacts/lo-buddy-chad-meeting',
-    category: 'LO Buddy',
-    date: 'Feb 19, 2026',
-    icon: MessageSquare,
-    color: 'ocean',
-    published: false,
-  },
-  {
-    title: 'Designer-Contractor Partnership Guide',
-    description: 'Framework for structuring a designer-contractor partnership — from pricing to project flow.',
-    href: '/artifacts/Designer-Contractor_Partnership_Guide.md',
-    category: 'GH Design',
-    date: 'Feb 19, 2026',
-    icon: FileText,
-    color: 'terracotta',
-    published: false,
-  },
-]
+const iconMap: Record<string, LucideIcon> = {
+  '/artifacts/trumpet-mic-comparison.html': Mic,
+  '/artifacts/lo-buddy-openclaw-architecture.html': Cpu,
+  '/artifacts/paige-daniel-summary': Users,
+  '/artifacts/multi-agent-research': Brain,
+  '/artifacts/lo-buddy-chad-meeting': MessageSquare,
+  '/artifacts/Designer-Contractor_Partnership_Guide.md': FileText,
+}
+
+const colorMap: Record<string, string> = {
+  '/artifacts/trumpet-mic-comparison.html': 'terracotta',
+  '/artifacts/lo-buddy-openclaw-architecture.html': 'ocean',
+  '/artifacts/paige-daniel-summary': 'terracotta',
+  '/artifacts/multi-agent-research': 'ocean',
+  '/artifacts/lo-buddy-chad-meeting': 'ocean',
+  '/artifacts/Designer-Contractor_Partnership_Guide.md': 'terracotta',
+}
 
 const contextFiles = [
   {
@@ -115,30 +71,11 @@ const categoryColors: Record<string, string> = {
   'LO Buddy': 'bg-ocean/10 text-ocean',
   'Music & Gear': 'bg-terracotta/10 text-terracotta',
   'GH Design': 'bg-sunset/10 text-amber-600',
+  'Technology': 'bg-ocean/10 text-ocean',
+  'Business': 'bg-sunset/10 text-amber-600',
 }
 
 export default function KnowledgeBasePage() {
-  const [artifacts, setArtifacts] = useState(initialArtifacts)
-
-  const togglePublish = (index: number) => {
-    setArtifacts((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, published: !item.published } : item
-      )
-    )
-    // Future: call /api/kb/publish
-    fetch('/api/kb/publish', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        href: artifacts[index].href,
-        published: !artifacts[index].published,
-      }),
-    }).catch(() => {
-      // API not wired yet — that's fine
-    })
-  }
-
   return (
     <div className="space-y-12">
       <div>
@@ -156,8 +93,8 @@ export default function KnowledgeBasePage() {
           <h2 className="font-display text-2xl text-midnight">Published Articles</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          {artifacts.map((item, index) => {
-            const Icon = item.icon
+          {articles.map((item) => {
+            const Icon = iconMap[item.href] || FileText
             return (
               <div
                 key={item.href}
@@ -185,16 +122,16 @@ export default function KnowledgeBasePage() {
                   <span className="text-xs text-midnight/40">{item.date}</span>
                 </a>
                 <div className="mt-4 pt-4 border-t border-midnight/5">
-                  <button
-                    onClick={() => togglePublish(index)}
-                    className={`text-xs font-semibold px-4 py-2 rounded-lg transition-all ${
+                  <span
+                    className={`text-xs font-semibold px-4 py-2 rounded-lg inline-block ${
                       item.published
-                        ? 'bg-cyan-500 text-white hover:bg-cyan-600'
-                        : 'border border-midnight/20 text-midnight/50 hover:border-cyan-500 hover:text-cyan-500'
+                        ? 'bg-cyan-500 text-white'
+                        : 'border border-midnight/20 text-midnight/50'
                     }`}
                   >
-                    {item.published ? 'Published ✓' : 'Publish to Blog →'}
-                  </button>
+                    {item.published ? 'Published ✓' : 'Not Published'}
+                  </span>
+                  <p className="text-xs text-midnight/30 mt-2">Ask Jasper to publish</p>
                 </div>
               </div>
             )
