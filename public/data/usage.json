@@ -1,42 +1,22 @@
 {
-  "lastUpdated": "2026-02-18T17:00:18.620Z",
-  "period": "2026-02-10 to 2026-02-18",
+  "lastUpdated": "2026-02-19T05:00:17.796Z",
+  "period": "2026-02-19 to 2026-02-19",
   "providers": [
     {
       "name": "anthropic",
       "model": "claude-opus-4-6",
       "status": "active",
-      "calls": 2307,
-      "tokensIn": 3967,
-      "tokensOut": 475338,
-      "estimatedCost": 449.58055199999995,
+      "calls": 57,
+      "tokensIn": 109,
+      "tokensOut": 11443,
+      "estimatedCost": 9.04161875,
       "notes": "Primary reasoning model. Claude Sonnet 4.5 for most tasks, Opus 4 for complex thinking."
-    },
-    {
-      "name": "google",
-      "model": "gemini-2.5-pro",
-      "status": "active",
-      "calls": 352,
-      "tokensIn": 33260055,
-      "tokensOut": 87200,
-      "estimatedCost": 66.38959366999997,
-      "notes": "Gemini models for cost-effective fallback and high-throughput tasks."
-    },
-    {
-      "name": "nexos",
-      "model": "741e0a7a-fd77-4851-ab6d-0a8ffd345a7f",
-      "status": "active",
-      "calls": 211,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "estimatedCost": 0,
-      "notes": "Prepaid credits with zero marginal cost. Covers ~80% of traffic."
     },
     {
       "name": "openclaw",
       "model": "delivery-mirror",
       "status": "active",
-      "calls": 81,
+      "calls": 1,
       "tokensIn": 0,
       "tokensOut": 0,
       "estimatedCost": 0,
@@ -45,167 +25,7 @@
   ],
   "daily": [
     {
-      "date": "2026-02-10",
-      "provider": "anthropic",
-      "calls": 108,
-      "tokensIn": 150,
-      "tokensOut": 33526,
-      "cost": 9.43993
-    },
-    {
-      "date": "2026-02-10",
-      "provider": "nexos",
-      "calls": 8,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-02-11",
-      "provider": "openclaw",
-      "calls": 10,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-02-11",
-      "provider": "nexos",
-      "calls": 79,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-02-11",
-      "provider": "anthropic",
-      "calls": 615,
-      "tokensIn": 955,
-      "tokensOut": 159688,
-      "cost": 119.15050825000003
-    },
-    {
-      "date": "2026-02-12",
-      "provider": "openclaw",
-      "calls": 12,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-02-12",
-      "provider": "nexos",
-      "calls": 72,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-02-12",
-      "provider": "anthropic",
-      "calls": 288,
-      "tokensIn": 501,
-      "tokensOut": 53920,
-      "cost": 47.80407950000002
-    },
-    {
-      "date": "2026-02-13",
-      "provider": "google",
-      "calls": 72,
-      "tokensIn": 11279824,
-      "tokensOut": 39989,
-      "cost": 18.936270869999998
-    },
-    {
-      "date": "2026-02-13",
-      "provider": "openclaw",
-      "calls": 11,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-02-13",
-      "provider": "anthropic",
-      "calls": 180,
-      "tokensIn": 322,
-      "tokensOut": 43287,
-      "cost": 32.10825675000001
-    },
-    {
-      "date": "2026-02-13",
-      "provider": "nexos",
-      "calls": 52,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-02-14",
-      "provider": "openclaw",
-      "calls": 21,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-02-14",
-      "provider": "google",
-      "calls": 278,
-      "tokensIn": 21917455,
-      "tokensOut": 46864,
-      "cost": 47.32360679999996
-    },
-    {
-      "date": "2026-02-14",
-      "provider": "anthropic",
-      "calls": 223,
-      "tokensIn": 306,
-      "tokensOut": 30193,
-      "cost": 30.93297650000001
-    },
-    {
-      "date": "2026-02-15",
-      "provider": "openclaw",
-      "calls": 3,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-02-15",
-      "provider": "anthropic",
-      "calls": 135,
-      "tokensIn": 335,
-      "tokensOut": 9741,
-      "cost": 78.40815824999999
-    },
-    {
-      "date": "2026-02-16",
-      "provider": "openclaw",
-      "calls": 2,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-02-16",
-      "provider": "anthropic",
-      "calls": 179,
-      "tokensIn": 383,
-      "tokensOut": 28701,
-      "cost": 40.555250750000006
-    },
-    {
-      "date": "2026-02-17",
-      "provider": "google",
-      "calls": 2,
-      "tokensIn": 62776,
-      "tokensOut": 347,
-      "cost": 0.129716
-    },
-    {
-      "date": "2026-02-17",
+      "date": "2026-02-19",
       "provider": "openclaw",
       "calls": 1,
       "tokensIn": 0,
@@ -213,36 +33,20 @@
       "cost": 0
     },
     {
-      "date": "2026-02-17",
+      "date": "2026-02-19",
       "provider": "anthropic",
-      "calls": 138,
-      "tokensIn": 309,
-      "tokensOut": 22081,
-      "cost": 21.385782250000005
-    },
-    {
-      "date": "2026-02-18",
-      "provider": "openclaw",
-      "calls": 21,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-02-18",
-      "provider": "anthropic",
-      "calls": 441,
-      "tokensIn": 706,
-      "tokensOut": 94201,
-      "cost": 69.79560974999997
+      "calls": 57,
+      "tokensIn": 109,
+      "tokensOut": 11443,
+      "cost": 9.04161875
     }
   ],
   "totals": {
-    "totalCalls": 2951,
-    "totalTokensIn": 33264022,
-    "totalTokensOut": 562538,
-    "totalCost": 515.97014567,
-    "avgCallsPerDay": 328,
-    "avgTokensPerCall": 11463
+    "totalCalls": 58,
+    "totalTokensIn": 109,
+    "totalTokensOut": 11443,
+    "totalCost": 9.04161875,
+    "avgCallsPerDay": 58,
+    "avgTokensPerCall": 199
   }
 }
