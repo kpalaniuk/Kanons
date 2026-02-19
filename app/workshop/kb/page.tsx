@@ -1,15 +1,9 @@
-import { BookOpen, Mic, Cpu, FileText, ExternalLink } from 'lucide-react'
+'use client'
 
-const artifacts = [
-  {
-    title: 'LO Buddy × OpenClaw Architecture',
-    description: 'How OpenClaw patterns (SOUL.md, sessions, multi-agent, skills, heartbeat, memory) can power LO Buddy at scale. Full strategy doc with implementation phases.',
-    href: '/artifacts/lo-buddy-openclaw-architecture.html',
-    category: 'LO Buddy',
-    date: 'Feb 19, 2026',
-    icon: Cpu,
-    color: 'ocean',
-  },
+import { useState } from 'react'
+import { BookOpen, Mic, Cpu, FileText, ExternalLink, Users, Brain, MessageSquare } from 'lucide-react'
+
+const initialArtifacts = [
   {
     title: 'Trumpet Mic Comparison',
     description: 'Bell clip vs off-bell vs dual mount — side by side comparison for live gigging. DPA 4099, AMT P800, EVNO TPX2, and more.',
@@ -18,6 +12,57 @@ const artifacts = [
     date: 'Feb 19, 2026',
     icon: Mic,
     color: 'terracotta',
+    published: false,
+  },
+  {
+    title: 'LO Buddy × OpenClaw Architecture',
+    description: 'How OpenClaw patterns (SOUL.md, sessions, multi-agent, skills, heartbeat, memory) can power LO Buddy at scale. Full strategy doc with implementation phases.',
+    href: '/artifacts/lo-buddy-openclaw-architecture.html',
+    category: 'LO Buddy',
+    date: 'Feb 19, 2026',
+    icon: Cpu,
+    color: 'ocean',
+    published: false,
+  },
+  {
+    title: 'Paige + Daniel Partnership Roadmap',
+    description: 'Strategic roadmap for the designer-contractor partnership — roles, revenue, and growth phases.',
+    href: '/artifacts/paige-daniel-summary',
+    category: 'GH Design',
+    date: 'Feb 19, 2026',
+    icon: Users,
+    color: 'terracotta',
+    published: false,
+  },
+  {
+    title: 'Multi-Agent Research',
+    description: 'Deep dive into multi-agent AI architectures — patterns, frameworks, and practical applications.',
+    href: '/artifacts/multi-agent-research',
+    category: 'LO Buddy',
+    date: 'Feb 19, 2026',
+    icon: Brain,
+    color: 'ocean',
+    published: false,
+  },
+  {
+    title: 'LO Buddy + Chad Meeting',
+    description: 'Meeting notes and action items from the LO Buddy + Chad strategy session.',
+    href: '/artifacts/lo-buddy-chad-meeting',
+    category: 'LO Buddy',
+    date: 'Feb 19, 2026',
+    icon: MessageSquare,
+    color: 'ocean',
+    published: false,
+  },
+  {
+    title: 'Designer-Contractor Partnership Guide',
+    description: 'Framework for structuring a designer-contractor partnership — from pricing to project flow.',
+    href: '/artifacts/Designer-Contractor_Partnership_Guide.md',
+    category: 'GH Design',
+    date: 'Feb 19, 2026',
+    icon: FileText,
+    color: 'terracotta',
+    published: false,
   },
 ]
 
@@ -66,11 +111,6 @@ const contextFiles = [
   },
 ]
 
-const colorMap: Record<string, string> = {
-  ocean: 'text-ocean bg-ocean/10 border-ocean/20',
-  terracotta: 'text-terracotta bg-terracotta/10 border-terracotta/20',
-}
-
 const categoryColors: Record<string, string> = {
   'LO Buddy': 'bg-ocean/10 text-ocean',
   'Music & Gear': 'bg-terracotta/10 text-terracotta',
@@ -78,6 +118,27 @@ const categoryColors: Record<string, string> = {
 }
 
 export default function KnowledgeBasePage() {
+  const [artifacts, setArtifacts] = useState(initialArtifacts)
+
+  const togglePublish = (index: number) => {
+    setArtifacts((prev) =>
+      prev.map((item, i) =>
+        i === index ? { ...item, published: !item.published } : item
+      )
+    )
+    // Future: call /api/kb/publish
+    fetch('/api/kb/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        href: artifacts[index].href,
+        published: !artifacts[index].published,
+      }),
+    }).catch(() => {
+      // API not wired yet — that's fine
+    })
+  }
+
   return (
     <div className="space-y-12">
       <div>
@@ -95,31 +156,47 @@ export default function KnowledgeBasePage() {
           <h2 className="font-display text-2xl text-midnight">Published Articles</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          {artifacts.map((item) => {
+          {artifacts.map((item, index) => {
             const Icon = item.icon
             return (
-              <a
+              <div
                 key={item.href}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="group bg-cream rounded-xl p-6 border border-midnight/5 hover:border-cyan-500/30 transition-all hover:shadow-lg"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <Icon className="w-6 h-6 text-cyan-500" />
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${categoryColors[item.category] || 'bg-midnight/5 text-midnight/60'}`}>
-                      {item.category}
-                    </span>
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <Icon className="w-6 h-6 text-cyan-500" />
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${categoryColors[item.category] || 'bg-midnight/5 text-midnight/60'}`}>
+                        {item.category}
+                      </span>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-midnight/30 group-hover:text-cyan-500 transition-colors" />
                   </div>
-                  <ExternalLink className="w-4 h-4 text-midnight/30 group-hover:text-cyan-500 transition-colors" />
+                  <h3 className="font-display text-lg text-midnight mb-2 group-hover:text-cyan-500 transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-midnight/60 mb-3">{item.description}</p>
+                  <span className="text-xs text-midnight/40">{item.date}</span>
+                </a>
+                <div className="mt-4 pt-4 border-t border-midnight/5">
+                  <button
+                    onClick={() => togglePublish(index)}
+                    className={`text-xs font-semibold px-4 py-2 rounded-lg transition-all ${
+                      item.published
+                        ? 'bg-cyan-500 text-white hover:bg-cyan-600'
+                        : 'border border-midnight/20 text-midnight/50 hover:border-cyan-500 hover:text-cyan-500'
+                    }`}
+                  >
+                    {item.published ? 'Published ✓' : 'Publish to Blog →'}
+                  </button>
                 </div>
-                <h3 className="font-display text-lg text-midnight mb-2 group-hover:text-cyan-500 transition-colors">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-midnight/60 mb-3">{item.description}</p>
-                <span className="text-xs text-midnight/40">{item.date}</span>
-              </a>
+              </div>
             )
           })}
         </div>
