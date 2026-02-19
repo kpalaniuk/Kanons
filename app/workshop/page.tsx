@@ -10,7 +10,8 @@ import {
   BarChart3, 
   DollarSign,
   Music,
-  ExternalLink
+  ExternalLink,
+  BookOpen
 } from 'lucide-react'
 
 const workTools = [
@@ -86,6 +87,23 @@ const personalTools = [
     description: 'Music lyrics database',
     icon: Music,
     color: 'terracotta' 
+  },
+]
+
+const knowledgeBase = [
+  {
+    href: '/artifacts/trumpet-mic-comparison.html',
+    title: 'Trumpet Mic Comparison',
+    description: 'Bell clip vs off-bell vs dual mount for live gigging',
+    icon: BookOpen,
+    color: 'cyan',
+  },
+  {
+    href: '/artifacts/lo-buddy-openclaw-architecture.html',
+    title: 'LO Buddy × OpenClaw',
+    description: 'How OpenClaw patterns can power LO Buddy at scale',
+    icon: BookOpen,
+    color: 'cyan',
   },
 ]
 
@@ -165,6 +183,38 @@ export default function WorkshopPage() {
                   </div>
                 </div>
               </Link>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* Knowledge Base Section */}
+      <section>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-1 h-8 bg-cyan rounded-full" />
+          <h2 className="font-display text-2xl text-midnight">Knowledge Base</h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {knowledgeBase.map((item) => {
+            const Icon = item.icon
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group bg-cream rounded-xl p-6 border border-midnight/5 hover:border-cyan/30 transition-all hover:shadow-lg"
+              >
+                <div className="flex items-start gap-4">
+                  <Icon className="w-8 h-8 text-cyan" />
+                  <div className="flex-1">
+                    <h3 className="font-display text-lg text-midnight mb-1 group-hover:text-cyan transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-midnight/60">{item.description}</p>
+                  </div>
+                </div>
+              </a>
             )
           })}
         </div>

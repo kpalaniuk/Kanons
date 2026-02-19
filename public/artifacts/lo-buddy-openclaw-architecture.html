@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LO Buddy × OpenClaw — Architecture Strategy Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --midnight: #0a0a0a;
+      --cream: #f8f7f4;
+      --sand: #f0ede8;
+      --terracotta: #FFB366;
+      --ocean: #0066FF;
+      --sunset: #FFBA00;
+      --cyan: #22E8E8;
+      --steel: #7A8F9E;
+      --peach: #FFD4A8;
+      --green: #34D399;
+      --red: #F87171;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--midnight);
+      color: var(--cream);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+      padding: 80px 24px 60px;
+      text-align: center;
+      background: linear-gradient(180deg, #111 0%, var(--midnight) 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 100px;
+      background: rgba(0,102,255,0.12);
+      color: var(--ocean);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--cream) 0%, var(--ocean) 50%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--steel);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .hero-meta {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta span {
+      font-size: 13px;
+      color: var(--steel);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hero-meta .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Section */
+    .section {
+      padding: 60px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .section-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .section h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .section-desc {
+      color: var(--steel);
+      font-size: 15px;
+      margin-bottom: 32px;
+      max-width: 700px;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 16px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .card:hover {
+      border-color: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .card.featured {
+      border-color: var(--ocean);
+      background: rgba(0,102,255,0.05);
+    }
+
+    .card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .card-body {
+      color: rgba(248,247,244,0.75);
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+
+    /* Pattern Cards */
+    .pattern-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .pattern-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .pattern-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .pattern-card .subtitle {
+      color: var(--steel);
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    .pattern-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .pattern-cols { grid-template-columns: 1fr; }
+    }
+
+    .pattern-box {
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .pattern-box.openclaw {
+      background: rgba(0,102,255,0.08);
+      border: 1px solid rgba(0,102,255,0.2);
+    }
+
+    .pattern-box.lobuddy {
+      background: rgba(34,232,232,0.08);
+      border: 1px solid rgba(34,232,232,0.2);
+    }
+
+    .pattern-box-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .pattern-box.openclaw .pattern-box-label { color: var(--ocean); }
+    .pattern-box.lobuddy .pattern-box-label { color: var(--cyan); }
+
+    .pattern-box code {
+      display: block;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: rgba(248,247,244,0.8);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .benefits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .benefit-tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 100px;
+      background: rgba(52,211,153,0.1);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* Pro Quote */
+    .pro-quote {
+      margin-top: 16px;
+      padding: 16px 20px;
+      background: rgba(34,232,232,0.06);
+      border-left: 3px solid var(--cyan);
+      border-radius: 0 10px 10px 0;
+      font-style: italic;
+      color: rgba(248,247,244,0.7);
+      font-size: 14px;
+    }
+
+    .pro-quote .attribution {
+      display: block;
+      margin-top: 6px;
+      font-style: normal;
+      font-size: 12px;
+      color: var(--steel);
+    }
+
+    /* Executive Summary Cards */
+    .exec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .exec-card {
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .exec-card h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .exec-card p {
+      font-size: 14px;
+      color: rgba(248,247,244,0.65);
+      line-height: 1.5;
+    }
+
+    .exec-card.blue { background: rgba(0,102,255,0.08); border-color: rgba(0,102,255,0.25); }
+    .exec-card.cyan { background: rgba(34,232,232,0.08); border-color: rgba(34,232,232,0.25); }
+    .exec-card.gold { background: rgba(255,186,0,0.08); border-color: rgba(255,186,0,0.25); }
+    .exec-card.terra { background: rgba(255,179,102,0.08); border-color: rgba(255,179,102,0.25); }
+
+    .exec-card.blue h4 { color: var(--ocean); }
+    .exec-card.cyan h4 { color: var(--cyan); }
+    .exec-card.gold h4 { color: var(--sunset); }
+    .exec-card.terra h4 { color: var(--terracotta); }
+
+    /* Architecture Diagram */
+    .arch-diagram {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 40px 32px;
+      margin: 32px 0;
+      overflow-x: auto;
+    }
+
+    .arch-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .arch-box {
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      min-width: 140px;
+    }
+
+    .arch-box.web { background: rgba(255,179,102,0.15); border: 1px solid rgba(255,179,102,0.3); color: var(--terracotta); }
+    .arch-box.session { background: rgba(0,102,255,0.15); border: 1px solid rgba(0,102,255,0.3); color: var(--ocean); }
+    .arch-box.agent { background: rgba(34,232,232,0.15); border: 1px solid rgba(34,232,232,0.3); color: var(--cyan); }
+    .arch-box.auto { background: rgba(255,186,0,0.15); border: 1px solid rgba(255,186,0,0.3); color: var(--sunset); }
+    .arch-box.data { background: rgba(122,143,158,0.15); border: 1px solid rgba(122,143,158,0.3); color: var(--steel); }
+    .arch-box.sub { font-size: 12px; padding: 10px 14px; min-width: 110px; }
+
+    .arch-connector {
+      text-align: center;
+      color: var(--steel);
+      font-size: 20px;
+      margin: 4px 0;
+      letter-spacing: 4px;
+    }
+
+    .arch-label {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--steel);
+      margin-bottom: 8px;
+      margin-top: 20px;
+    }
+
+    /* Phase Timeline */
+    .phase-card {
+      position: relative;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 24px 24px 24px 80px;
+      margin-bottom: 12px;
+    }
+
+    .phase-num {
+      position: absolute;
+      left: 24px;
+      top: 24px;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .phase-card h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .phase-time {
+      font-size: 13px;
+      color: var(--terracotta);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .phase-items {
+      list-style: none;
+      padding: 0;
+    }
+
+    .phase-items li {
+      font-size: 14px;
+      color: rgba(248,247,244,0.7);
+      padding: 3px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .phase-items li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--steel);
+    }
+
+    /* Table */
+    .risk-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-top: 24px;
+    }
+
+    .risk-table th {
+      background: rgba(255,255,255,0.06);
+      padding: 14px 18px;
+      text-align: left;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--steel);
+    }
+
+    .risk-table td {
+      padding: 14px 18px;
+      font-size: 14px;
+      color: rgba(248,247,244,0.75);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .risk-table tr:hover td {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .risk-high { color: var(--red); font-weight: 600; }
+    .risk-med { color: var(--sunset); font-weight: 600; }
+    .risk-low { color: var(--green); font-weight: 600; }
+
+    /* Recommendation Cards */
+    .rec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .rec-card {
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .rec-card.primary {
+      background: linear-gradient(135deg, rgba(0,102,255,0.1) 0%, rgba(34,232,232,0.08) 100%);
+      border-color: var(--ocean);
+    }
+
+    .rec-card.secondary {
+      background: rgba(255,186,0,0.06);
+      border-color: rgba(255,186,0,0.3);
+    }
+
+    .rec-card.tertiary {
+      background: rgba(52,211,153,0.06);
+      border-color: rgba(52,211,153,0.3);
+    }
+
+    .rec-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .rec-card .rec-timeline {
+      font-size: 13px;
+      color: var(--terracotta);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .rec-card p, .rec-card ul {
+      font-size: 14px;
+      color: rgba(248,247,244,0.65);
+      line-height: 1.6;
+    }
+
+    .rec-card ul {
+      padding-left: 18px;
+      margin-top: 8px;
+    }
+
+    /* Talking Points */
+    .tp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .tp-grid { grid-template-columns: 1fr; }
+    }
+
+    .tp-card {
+      padding: 20px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .tp-card h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--cream);
+    }
+
+    .tp-card p {
+      font-size: 13px;
+      color: rgba(248,247,244,0.6);
+      line-height: 1.5;
+    }
+
+    /* Code blocks */
+    .code-block {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+
+    .code-block code {
+      font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: rgba(248,247,244,0.8);
+      white-space: pre;
+    }
+
+    .code-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--steel);
+      margin-bottom: 8px;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+
+    .badge-ocean { background: var(--ocean); color: white; }
+    .badge-cyan { background: var(--cyan); color: var(--midnight); }
+    .badge-gold { background: var(--sunset); color: var(--midnight); }
+
+    /* Key Insight callout */
+    .callout {
+      padding: 20px 24px;
+      border-radius: 14px;
+      margin: 24px 0;
+      font-size: 15px;
+    }
+
+    .callout.insight {
+      background: rgba(255,186,0,0.08);
+      border: 1px solid rgba(255,186,0,0.25);
+      border-left: 4px solid var(--sunset);
+    }
+
+    .callout.insight strong {
+      color: var(--sunset);
+    }
+
+    .callout.important {
+      background: rgba(0,102,255,0.08);
+      border: 1px solid rgba(0,102,255,0.25);
+      border-left: 4px solid var(--ocean);
+    }
+
+    .callout.important strong {
+      color: var(--ocean);
+    }
+
+    .callout p {
+      color: rgba(248,247,244,0.75);
+    }
+
+    /* Footer */
+    .footer-note {
+      margin-top: 48px;
+      padding: 48px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      text-align: center;
+      font-size: 13px;
+      color: var(--steel);
+    }
+
+    /* Detail Items */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .detail-item {
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+    }
+
+    .detail-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--steel);
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--cream);
+    }
+
+    /* TOC */
+    .toc {
+      padding: 32px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      margin: 40px 0;
+    }
+
+    .toc h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--steel);
+    }
+
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .toc-list { grid-template-columns: 1fr; }
+    }
+
+    .toc-list a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: rgba(248,247,244,0.7);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .toc-list a:hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--cream);
+    }
+
+    .toc-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--ocean);
+      min-width: 24px;
+    }
+
+    /* Philosophy */
+    .philosophy-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    @media (max-width: 640px) {
+      .philosophy-grid { grid-template-columns: 1fr; }
+      .hero { padding: 60px 20px 40px; }
+      .phase-card { padding: 20px 20px 20px 70px; }
+    }
+
+    .phil-card {
+      padding: 20px;
+      border-radius: 14px;
+    }
+
+    .phil-card.do {
+      background: rgba(52,211,153,0.08);
+      border: 1px solid rgba(52,211,153,0.2);
+    }
+
+    .phil-card.dont {
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.2);
+    }
+
+    .phil-card h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .phil-card.do h4 { color: var(--green); }
+    .phil-card.dont h4 { color: var(--red); }
+
+    .phil-card ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .phil-card li {
+      font-size: 13px;
+      color: rgba(248,247,244,0.7);
+      padding: 3px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">🏗️ Architecture Strategy</div>
+    <h1>LO Buddy × OpenClaw</h1>
+    <p>How OpenClaw's architectural patterns can power LO Buddy at enterprise scale — a strategy report for development planning.</p>
+    <div class="hero-meta">
+      <span><span class="dot" style="background: var(--ocean);"></span> Prepared Feb 2026</span>
+      <span><span class="dot" style="background: var(--cyan);"></span> For Kyle &amp; Chad</span>
+      <span><span class="dot" style="background: var(--sunset);"></span> 9–13 Week Roadmap</span>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- TOC -->
+    <nav class="toc">
+      <h3>Contents</h3>
+      <ol class="toc-list">
+        <li><a href="#exec"><span class="toc-num">01</span> Executive Summary</a></li>
+        <li><a href="#patterns"><span class="toc-num">02</span> The 6 OpenClaw Patterns</a></li>
+        <li><a href="#diagram"><span class="toc-num">03</span> Architecture Diagram</a></li>
+        <li><a href="#phases"><span class="toc-num">04</span> Implementation Phases</a></li>
+        <li><a href="#recommendations"><span class="toc-num">05</span> Key Recommendations</a></li>
+        <li><a href="#risks"><span class="toc-num">06</span> Risks &amp; Mitigation</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1. EXECUTIVE SUMMARY -->
+    <div class="section" id="exec">
+      <div class="section-header">
+        <div class="section-icon" style="background: rgba(0,102,255,0.15);">📋</div>
+        <h2>Executive Summary</h2>
+      </div>
+      <p class="section-desc">LO Buddy is an AI-powered sales retention assistant for mortgage loan officers. OpenClaw is a self-hosted, multi-channel AI gateway with proven patterns for session management, multi-agent orchestration, and extensibility. Here's why they fit together.</p>
+
+      <div class="exec-grid">
+        <div class="exec-card blue">
+          <h4>LO Buddy Today</h4>
+          <p>MVP-ready Next.js 14 + Supabase app with 43 DB migrations, 9 AI tools, voice interface, and a monolithic ~2,950-line agent. Pilot customer: San Diego Mortgage Company.</p>
+        </div>
+        <div class="exec-card cyan">
+          <h4>The Problem at Scale</h4>
+          <p>One monolithic agent can't serve multiple LOs with isolated data, multiple roles (LO, processor, realtor), background automation, and multi-channel comms without architectural changes.</p>
+        </div>
+        <div class="exec-card gold">
+          <h4>OpenClaw's Value</h4>
+          <p>Not the WebSocket gateway or chat routing — but the <strong>architectural patterns</strong>: session isolation, multi-agent routing, extensible skills, heartbeat/cron, sub-agents, and memory.</p>
+        </div>
+        <div class="exec-card terra">
+          <h4>The Recommendation</h4>
+          <p>Adopt patterns incrementally. Finish current modules first (4–6 weeks), ship SDMC pilot, then layer OpenClaw patterns as scale demands. No big-bang rewrite.</p>
+        </div>
+      </div>
+
+      <div class="callout insight" style="margin-top: 32px;">
+        <p><strong>Key Insight:</strong> OpenClaw's value isn't the WebSocket gateway or multi-channel routing (LO Buddy is a web app, not a chat app). The value is the architectural patterns for session isolation, multi-agent routing, extensible skills, and proactive automation. These can be adopted piecemeal as LO Buddy scales.</p>
+      </div>
+
+      <div class="philosophy-grid">
+        <div class="phil-card do">
+          <h4>✅ AI Suggests</h4>
+          <ul>
+            <li>✓ Parse voice commands into structured data</li>
+            <li>✓ Suggest next actions per lead</li>
+            <li>✓ Validate requirement completeness</li>
+            <li>✓ Extract entities from natural language</li>
+            <li>✓ Generate summaries and drafts</li>
+          </ul>
+        </div>
+        <div class="phil-card dont">
+          <h4>❌ Human Approves</h4>
+          <ul>
+            <li>✗ No auto-execute without confirmation</li>
+            <li>✗ No comms sent without approval</li>
+            <li>✗ No overriding human judgment</li>
+            <li>✗ No modifying financial data unvalidated</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. THE 6 PATTERNS -->
+    <div class="section" id="patterns">
+      <div class="section-header">
+        <div class="section-icon" style="background: rgba(34,232,232,0.15);">🧩</div>
+        <h2>The 6 OpenClaw Patterns</h2>
+      </div>
+      <p class="section-desc">Each pattern proven in OpenClaw, adapted for LO Buddy's mortgage domain. Think of these as blueprints — not dependencies.</p>
+
+      <!-- Pattern 1: Sessions -->
+      <div class="pattern-card">
+        <div class="pattern-num" style="background: rgba(0,102,255,0.2); color: var(--ocean);">1</div>
+        <h3>Session Management &amp; Isolation</h3>
+        <p class="subtitle">Isolate conversations by user, role, and context</p>
+
+        <div class="pattern-cols">
+          <div class="pattern-box openclaw">
+            <div class="pattern-box-label">OpenClaw Pattern</div>
+            <code>agent:&lt;agentId&gt;:&lt;mainKey&gt;
+agent:&lt;agentId&gt;:&lt;channel&gt;:group:&lt;id&gt;
+agent:&lt;agentId&gt;:dm:&lt;peerId&gt;</code>
+          </div>
+          <div class="pattern-box lobuddy">
+            <div class="pattern-box-label">LO Buddy Adaptation</div>
+            <code>lo:&lt;userId&gt;:main
+lo:&lt;userId&gt;:opp:&lt;opportunityId&gt;
+lo:&lt;userId&gt;:realtor:&lt;realtorId&gt;
+processor:&lt;userId&gt;:main</code>
+          </div>
+        </div>
+
+        <div class="benefits">
+          <span class="benefit-tag">Per-LO isolation</span>
+          <span class="benefit-tag">Opportunity-scoped threads</span>
+          <span class="benefit-tag">Role-based views</span>
+          <span class="benefit-tag">Transcript persistence</span>
+        </div>
+      </div>
+
+      <!-- Pattern 2: Multi-Agent -->
+      <div class="pattern-card">
+        <div class="pattern-num" style="background: rgba(34,232,232,0.2); color: var(--cyan);">2</div>
+        <h3>Multi-Agent Routing</h3>
+        <p class="subtitle">Different roles get different AI personas, tools, and data access</p>
+
+        <div class="pattern-cols">
+          <div class="pattern-box openclaw">
+            <div class="pattern-box-label">OpenClaw Pattern</div>
+            <code>bindings: [
+  { agentId: "home",
+    match: { channel: "whatsapp",
+             accountId: "personal" } },
+  { agentId: "work",
+    match: { channel: "whatsapp",
+             accountId: "biz" } },
+]</code>
+          </div>
+          <div class="pattern-box lobuddy">
+            <div class="pattern-box-label">LO Buddy Adaptation</div>
+            <code>agents: [
+  { id: "loan-officer",
+    tools: ["create_lead",
+            "manage_opportunity",
+            "get_pipeline_summary"] },
+  { id: "processor",
+    tools: ["manage_opportunity",
+            "update_conditions"] },
+  { id: "realtor",
+    tools: ["submit_referral",
+            "check_status"] },
+]</code>
+          </div>
+        </div>
+
+        <div class="benefits">
+          <span class="benefit-tag">Role-specific personas</span>
+          <span class="benefit-tag">Tool filtering by role</span>
+          <span class="benefit-tag">PII protection for realtors</span>
+          <span class="benefit-tag">Deterministic routing</span>
+        </div>
+
+        <div class="pro-quote">
+          "Realtors can't accidentally see PII. Processors get guided workflows. LOs get the full toolkit. All from one codebase."
+          <span class="attribution">— Pattern design principle</span>
+        </div>
+      </div>
+
+      <!-- Pattern 3: Skills -->
+      <div class="pattern-card">
+        <div class="pattern-num" style="background: rgba(255,186,0,0.2); color: var(--sunset);">3</div>
+        <h3>Skills System</h3>
+        <p class="subtitle">Encapsulate domain expertise in reusable, version-controlled skill folders</p>
+
+        <div class="pattern-cols">
+          <div class="pattern-box openclaw">
+            <div class="pattern-box-label">OpenClaw Pattern</div>
+            <code>workspace/skills/
+├── gemini/
+│   └── SKILL.md
+├── sag/
+│   └── SKILL.md
+└── camera/
+    └── SKILL.md</code>
+          </div>
+          <div class="pattern-box lobuddy">
+            <div class="pattern-box-label">LO Buddy Adaptation</div>
+            <code>workspace/skills/
+├── pre-approval-letter/
+│   ├── SKILL.md
+│   └── template.html
+├── scenario-calculator/
+│   ├── SKILL.md
+│   └── rates.json
+└── realtor-outreach/
+    ├── SKILL.md
+    └── templates/</code>
+          </div>
+        </div>
+
+        <div class="benefits">
+          <span class="benefit-tag">Non-devs can edit skills</span>
+          <span class="benefit-tag">Easy to add loan programs</span>
+          <span class="benefit-tag">Version-controlled</span>
+          <span class="benefit-tag">Shareable across teams</span>
+        </div>
+
+        <div class="callout insight" style="margin-top: 16px;">
+          <p><strong>Why this matters:</strong> Kyle can write <code>VA-LOAN.md</code> and the agent instantly knows VA guidelines — no code changes needed. Faster iteration without waiting for development cycles.</p>
+        </div>
+      </div>
+
+      <!-- Pattern 4: Heartbeat + Cron -->
+      <div class="pattern-card">
+        <div class="pattern-num" style="background: rgba(255,179,102,0.2); color: var(--terracotta);">4</div>
+        <h3>Heartbeat &amp; Cron Automation</h3>
+        <p class="subtitle">Proactive monitoring + precise scheduling replace manual checking</p>
+
+        <div class="pattern-cols">
+          <div class="pattern-box openclaw">
+            <div class="pattern-box-label">Heartbeat (every 30m)</div>
+            <code># HEARTBEAT.md
+- Check for stale opportunities
+  (no activity &gt;5 days)
+- Surface rate lock expirations
+  (&lt;7 days remaining)
+- Detect forgotten new leads
+  (&gt;24 hours uncontacted)
+- Suggest dead deal re-engagement</code>
+          </div>
+          <div class="pattern-box lobuddy">
+            <div class="pattern-box-label">Cron (precise schedules)</div>
+            <code># Daily 7am
+→ LO priority list + urgent items
+
+# Weekly Monday 9am
+→ Pipeline review + stale deal report
+
+# Every Friday 5pm
+→ Weekly summary email
+
+# One-shot
+→ "Remind me to follow up with
+   Anderson in 2 hours"</code>
+          </div>
+        </div>
+
+        <div class="benefits">
+          <span class="benefit-tag">Proactive AI monitoring</span>
+          <span class="benefit-tag">Batched API calls</span>
+          <span class="benefit-tag">Precise report timing</span>
+          <span class="benefit-tag">"Set and forget" automation</span>
+        </div>
+      </div>
+
+      <!-- Pattern 5: Sub-Agents -->
+      <div class="pattern-card">
+        <div class="pattern-num" style="background: rgba(52,211,153,0.2); color: var(--green);">5</div>
+        <h3>Sub-Agents for Background Tasks</h3>
+        <p class="subtitle">Spawn isolated agent runs for long-running work without blocking the main chat</p>
+
+        <div class="pattern-cols">
+          <div class="pattern-box openclaw">
+            <div class="pattern-box-label">OpenClaw Pattern</div>
+            <code>// Main agent spawns sub-agent
+sessions_spawn({
+  task: "Analyze conversion rates",
+  model: "minimax/MiniMax-M2.1"
+})
+
+// Sub-agent runs in background
+// Session: agent:main:subagent:uuid
+// Result announced back when done</code>
+          </div>
+          <div class="pattern-box lobuddy">
+            <div class="pattern-box-label">LO Buddy Use Cases</div>
+            <code>→ Deep pipeline analysis
+  "Why did Q1 conversion drop?"
+
+→ Bulk scenario generation
+  "Build 10 rate/term combos"
+
+→ Document processing
+  "Extract data from bank stmts"
+
+→ Lead research
+  "Research Smith property history"</code>
+          </div>
+        </div>
+
+        <div class="benefits">
+          <span class="benefit-tag">Non-blocking UX</span>
+          <span class="benefit-tag">Parallel background tasks</span>
+          <span class="benefit-tag">Cheaper models for bulk work</span>
+          <span class="benefit-tag">Auto-archived sessions</span>
+        </div>
+      </div>
+
+      <!-- Pattern 6: Memory -->
+      <div class="pattern-card">
+        <div class="pattern-num" style="background: rgba(248,113,113,0.2); color: var(--red);">6</div>
+        <h3>Memory System</h3>
+        <p class="subtitle">Persistent, searchable context that makes the AI smarter over time</p>
+
+        <div class="pattern-cols">
+          <div class="pattern-box openclaw">
+            <div class="pattern-box-label">OpenClaw Pattern</div>
+            <code>workspace/
+├── MEMORY.md        # Curated long-term
+└── memory/
+    ├── 2026-02-10.md  # Daily log
+    └── 2026-02-09.md  # Yesterday</code>
+          </div>
+          <div class="pattern-box lobuddy">
+            <div class="pattern-box-label">LO Buddy Adaptation</div>
+            <code>workspace/
+├── MEMORY.md        # LO preferences
+│   "Always suggest 30yr fixed first"
+└── memory/
+    ├── 2026-02-10.md  # Today's interactions
+    ├── opportunities/
+    │   └── &lt;uuid&gt;.md   # Per-deal notes
+    └── contacts/
+        └── &lt;uuid&gt;.md   # Relationship notes</code>
+          </div>
+        </div>
+
+        <div class="benefits">
+          <span class="benefit-tag">Remembers LO preferences</span>
+          <span class="benefit-tag">Per-opportunity context</span>
+          <span class="benefit-tag">Relationship history</span>
+          <span class="benefit-tag">Vector-searchable</span>
+        </div>
+
+        <div class="pro-quote">
+          "Who was that client with the VA loan referred by Kevin McCarthy?" — The kind of recall that makes AI feel like a real colleague, not a chatbot.
+          <span class="attribution">— Semantic memory search in action</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. ARCHITECTURE DIAGRAM -->
+    <div class="section" id="diagram">
+      <div class="section-header">
+        <div class="section-icon" style="background: rgba(255,186,0,0.15);">🏛️</div>
+        <h2>Architecture Diagram</h2>
+      </div>
+      <p class="section-desc">The hybrid approach: LO Buddy's web app stays as-is, with an OpenClaw-style agent runtime layered alongside. No rewrite — just new capabilities.</p>
+
+      <div class="arch-diagram">
+        <div class="arch-label">LO Buddy Web App (Next.js 14)</div>
+        <div class="arch-row">
+          <div class="arch-box web">Web UI</div>
+          <div class="arch-box web">API Routes</div>
+          <div class="arch-box web">Service Layer</div>
+          <div class="arch-box data">Supabase + RLS</div>
+        </div>
+
+        <div class="arch-connector">↕ ↕ ↕</div>
+
+        <div class="arch-label">OpenClaw-Style Agent Runtime (Containerized)</div>
+        <div class="arch-row">
+          <div class="arch-box session">Session Manager</div>
+          <div class="arch-box session">Multi-Agent Router</div>
+        </div>
+        <div class="arch-row">
+          <div class="arch-box agent sub">🧑‍💼 LO Agent</div>
+          <div class="arch-box agent sub">📋 Processor Agent</div>
+          <div class="arch-box agent sub">🏡 Realtor Agent</div>
+        </div>
+        <div class="arch-row">
+          <div class="arch-box agent sub">Skills System</div>
+          <div class="arch-box agent sub">Memory System</div>
+          <div class="arch-box agent sub">Tool Executor</div>
+        </div>
+
+        <div class="arch-connector">↕ ↕ ↕</div>
+
+        <div class="arch-label">Automation Layer</div>
+        <div class="arch-row">
+          <div class="arch-box auto sub">💓 Heartbeat Runner</div>
+          <div class="arch-box auto sub">⏰ Cron Scheduler</div>
+          <div class="arch-box auto sub">🔀 Sub-Agent Spawner</div>
+        </div>
+      </div>
+
+      <div class="callout important">
+        <p><strong>Key Integration Points:</strong> API Routes → Session Manager (routing). Tool Executor → Service Layer (no business logic duplication). Automation Layer → Session Manager (proactive triggers). Services remain the single source of truth.</p>
+      </div>
+
+      <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600; margin-top: 32px; margin-bottom: 16px;">Security &amp; Isolation</h3>
+      <p style="color: var(--steel); font-size: 14px; margin-bottom: 16px;">LO Buddy handles PII and financial data. The agent runtime must be containerized with strict boundaries.</p>
+
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">Network</div>
+          <div class="detail-value">Internal Docker network only. No direct internet except OpenAI API.</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Filesystem</div>
+          <div class="detail-value">Workspace RW, Skills RO. No host filesystem access.</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Tools</div>
+          <div class="detail-value"><code>exec</code> disabled. DB via service layer only — no direct creds.</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Per-LO</div>
+          <div class="detail-value">Own workspace dir + session keys + Supabase RLS as additional layer.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. IMPLEMENTATION PHASES -->
+    <div class="section" id="phases">
+      <div class="section-header">
+        <div class="section-icon" style="background: rgba(255,179,102,0.15);">📅</div>
+        <h2>Implementation Phases</h2>
+      </div>
+      <p class="section-desc">5 phases, 9–13 weeks total. Each phase delivers standalone value. Can pause after any phase.</p>
+
+      <div class="phase-card">
+        <div class="phase-num" style="background: rgba(0,102,255,0.2); color: var(--ocean);">1</div>
+        <h4>Foundation</h4>
+        <div class="phase-time">2–3 weeks</div>
+        <ul class="phase-items">
+          <li>Add session management to database schema</li>
+          <li>Implement session key routing in API layer</li>
+          <li>Create workspace directory structure per LO</li>
+          <li>Port OpenClaw session manager (simplified)</li>
+          <li>Docker containerization for agent runtime</li>
+        </ul>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-num" style="background: rgba(34,232,232,0.2); color: var(--cyan);">2</div>
+        <h4>Multi-Agent Routing</h4>
+        <div class="phase-time">1–2 weeks</div>
+        <ul class="phase-items">
+          <li>Implement agent registry + bindings config</li>
+          <li>Create role-based persona configs (LO, Processor, Realtor)</li>
+          <li>Add tool filtering by agent type</li>
+          <li>Test isolation between roles</li>
+        </ul>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-num" style="background: rgba(255,186,0,0.2); color: var(--sunset);">3</div>
+        <h4>Skills System</h4>
+        <div class="phase-time">2 weeks</div>
+        <ul class="phase-items">
+          <li>Create <code>workspace/skills/</code> directory structure</li>
+          <li>Port 5 core skills (pre-approval, scenarios, etc.)</li>
+          <li>Implement skill loading at agent init</li>
+          <li>Test skill injection into system prompts</li>
+        </ul>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-num" style="background: rgba(255,179,102,0.2); color: var(--terracotta);">4</div>
+        <h4>Automation</h4>
+        <div class="phase-time">2–3 weeks</div>
+        <ul class="phase-items">
+          <li>Implement heartbeat runner with HEARTBEAT.md support</li>
+          <li>Create cron scheduler service</li>
+          <li>Build cron job management UI</li>
+          <li>Wire up stale-deal detection + rate-lock warnings</li>
+        </ul>
+      </div>
+
+      <div class="phase-card">
+        <div class="phase-num" style="background: rgba(52,211,153,0.2); color: var(--green);">5</div>
+        <h4>Advanced Features</h4>
+        <div class="phase-time">2–3 weeks</div>
+        <ul class="phase-items">
+          <li>Implement sub-agent spawning for background tasks</li>
+          <li>Add memory system with vector search (OpenAI embeddings)</li>
+          <li>Create proactive suggestion engine</li>
+          <li>Polish agent UI integration</li>
+        </ul>
+      </div>
+
+      <div class="detail-grid" style="margin-top: 24px;">
+        <div class="detail-item">
+          <div class="detail-label">Total Estimate</div>
+          <div class="detail-value" style="color: var(--terracotta); font-size: 18px;">9–13 weeks</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Prerequisite</div>
+          <div class="detail-value">Complete current 5-module system first</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Each Phase</div>
+          <div class="detail-value">Delivers standalone value. Pause-safe.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. KEY RECOMMENDATIONS -->
+    <div class="section" id="recommendations">
+      <div class="section-header">
+        <div class="section-icon" style="background: rgba(52,211,153,0.15);">💡</div>
+        <h2>Key Recommendations</h2>
+      </div>
+      <p class="section-desc">The recommended path forward — sequenced for maximum value with minimum risk.</p>
+
+      <div class="rec-grid">
+        <div class="rec-card primary">
+          <h3>Short Term</h3>
+          <div class="rec-timeline">4–6 Weeks</div>
+          <ul>
+            <li>Complete 5 modular agents (Capture, Coach, Qualify, Validator, Realtor)</li>
+            <li>Kyle writes domain content — follow-up strategies, qualification checklists, templates</li>
+            <li>Chad finishes mobile UI overhaul</li>
+          </ul>
+        </div>
+
+        <div class="rec-card secondary">
+          <h3>Mid Term</h3>
+          <div class="rec-timeline">2–3 Months</div>
+          <ul>
+            <li>Ship SDMC pilot &amp; gather feedback</li>
+            <li>Validate "AI suggests → Human approves"</li>
+            <li>Begin Phase 1 (session management) if multi-tenant demand appears</li>
+          </ul>
+        </div>
+
+        <div class="rec-card tertiary">
+          <h3>Long Term</h3>
+          <div class="rec-timeline">6–12 Months</div>
+          <ul>
+            <li>Layer OpenClaw patterns as needed for multi-company scale</li>
+            <li>Full skills system + automation</li>
+            <li>Sub-agents + memory for enterprise features</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600; margin-top: 40px; margin-bottom: 16px;">Talking Points for Chad</h3>
+
+      <div class="tp-grid">
+        <div class="tp-card">
+          <h4>🚀 Scalability</h4>
+          <p>Current monolithic approach works for 1 company. OpenClaw patterns enable 100+ companies on the same instance with session isolation preventing data leaks.</p>
+        </div>
+        <div class="tp-card">
+          <h4>🧩 Extensibility</h4>
+          <p>Skills system lets non-developers add loan programs. Kyle writes VA-LOAN.md → agent instantly knows VA guidelines. Faster iteration without code changes.</p>
+        </div>
+        <div class="tp-card">
+          <h4>⚡ Automation</h4>
+          <p>Heartbeat + cron replace manual checking. "Set it and forget it" proactive monitoring. LOs get alerts only when something needs attention.</p>
+        </div>
+        <div class="tp-card">
+          <h4>🏆 Competitive Edge</h4>
+          <p>Most CRMs are reactive — user must check. LO Buddy with OpenClaw patterns is proactive — AI surfaces issues 24/7 so LOs don't have to.</p>
+        </div>
+        <div class="tp-card">
+          <h4>🔧 Developer Experience</h4>
+          <p>Clean separation of concerns (routing, execution, domain logic). Easier to test, debug, and onboard new developers. Each component is independently testable.</p>
+        </div>
+        <div class="tp-card">
+          <h4>📦 Pattern Adoption, Not Dependency</h4>
+          <p>Don't use OpenClaw as a package dependency. Adopt the architectural patterns. No breaking changes, no maintenance burden, full control.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. RISKS -->
+    <div class="section" id="risks">
+      <div class="section-header">
+        <div class="section-icon" style="background: rgba(248,113,113,0.15);">⚠️</div>
+        <h2>Risks &amp; Mitigation</h2>
+      </div>
+      <p class="section-desc">Every architectural decision carries risk. Here's what to watch for and how to handle it.</p>
+
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th>Risk</th>
+            <th>Impact</th>
+            <th>Mitigation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Over-engineering</strong></td>
+            <td class="risk-high">High — Delayed MVP, wasted effort</td>
+            <td>Adopt patterns incrementally, only as needed. Don't build for 100 companies before serving 1.</td>
+          </tr>
+          <tr>
+            <td><strong>Complexity creep</strong></td>
+            <td class="risk-high">High — Hard to maintain</td>
+            <td>Start simple, document heavily, involve Chad early in architecture decisions.</td>
+          </tr>
+          <tr>
+            <td><strong>Domain knowledge gap</strong></td>
+            <td class="risk-med">Medium — Modules ineffective without content</td>
+            <td>Kyle writes follow-up strategies, qualification checklists, and templates before architecture work.</td>
+          </tr>
+          <tr>
+            <td><strong>Containerization overhead</strong></td>
+            <td class="risk-med">Medium — Performance &amp; ops complexity</td>
+            <td>Defer until multi-company customer signs. Monolithic agent is fine for SDMC pilot.</td>
+          </tr>
+          <tr>
+            <td><strong>OpenClaw dependency</strong></td>
+            <td class="risk-low">Low — Breaking changes, maintenance</td>
+            <td>Don't use as dependency. Adopt patterns only. Full control, zero coupling.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight" style="margin-top: 32px;">
+        <p><strong>Critical Success Factors:</strong> Kyle writes domain content (follow-up strategies, qualification checklists, templates). Chad completes 5 modules (Capture, Coach, Qualify, Validator, Realtor). Brad provides GoHighLevel custom field mappings. SDMC pilot validates the core philosophy. OpenClaw patterns adopted incrementally — not as a big-bang rewrite.</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-note">
+      Strategy report compiled February 2026 — OpenClaw AI Research<br>
+      For Kyle Palaniuk &amp; Chad · LO Buddy Development Planning<br>
+      <span style="color: rgba(255,255,255,0.3); margin-top: 8px; display: inline-block;">Patterns, not dependencies. Incrementally, not all at once.</span>
+    </div>
+
+  </div>
+
+</body>
+</html>
