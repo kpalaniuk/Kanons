@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trumpet Mic Comparison — Bell Clip vs Off-Bell vs Dual Mount</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --midnight: #0a0a0a;
+      --cream: #f8f7f4;
+      --sand: #f0ede8;
+      --terracotta: #FFB366;
+      --ocean: #0066FF;
+      --sunset: #FFBA00;
+      --cyan: #22E8E8;
+      --steel: #7A8F9E;
+      --peach: #FFD4A8;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--midnight);
+      color: var(--cream);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+      padding: 80px 24px 60px;
+      text-align: center;
+      background: linear-gradient(180deg, #111 0%, var(--midnight) 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 100px;
+      background: rgba(255,179,102,0.12);
+      color: var(--terracotta);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--cream) 0%, var(--terracotta) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--steel);
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Mount Type Sections */
+    .mount-section {
+      padding: 60px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .mount-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .mount-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .mount-icon.bell { background: rgba(0,102,255,0.15); }
+    .mount-icon.off { background: rgba(34,232,232,0.15); }
+    .mount-icon.dual { background: rgba(255,186,0,0.15); }
+
+    .mount-section h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .mount-desc {
+      color: var(--steel);
+      font-size: 15px;
+      margin-bottom: 32px;
+      max-width: 640px;
+    }
+
+    /* Mic Cards */
+    .mic-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 16px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .mic-card:hover {
+      border-color: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .mic-card.featured {
+      border-color: var(--terracotta);
+      background: rgba(255,179,102,0.05);
+    }
+
+    .mic-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .mic-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .mic-price {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--terracotta);
+      white-space: nowrap;
+    }
+
+    .mic-type {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.08);
+      color: var(--steel);
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 14px;
+    }
+
+    .mic-body {
+      color: rgba(248,247,244,0.75);
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+
+    .mic-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .detail-item {
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+    }
+
+    .detail-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--steel);
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--cream);
+    }
+
+    .pro-quote {
+      margin-top: 16px;
+      padding: 16px 20px;
+      background: rgba(34,232,232,0.06);
+      border-left: 3px solid var(--cyan);
+      border-radius: 0 10px 10px 0;
+      font-style: italic;
+      color: rgba(248,247,244,0.7);
+      font-size: 14px;
+    }
+
+    .pro-quote .attribution {
+      display: block;
+      margin-top: 6px;
+      font-style: normal;
+      font-size: 12px;
+      color: var(--steel);
+    }
+
+    .badge-featured {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: var(--terracotta);
+      color: var(--midnight);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+
+    /* Comparison Table */
+    .comparison-section {
+      padding: 60px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .comparison-section h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .comparison-section .subtitle {
+      color: var(--steel);
+      font-size: 15px;
+      margin-bottom: 32px;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 140px repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .cg-cell {
+      padding: 16px;
+      background: var(--midnight);
+      font-size: 14px;
+    }
+
+    .cg-header {
+      background: rgba(255,255,255,0.04);
+      font-weight: 600;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      text-align: center;
+    }
+
+    .cg-label {
+      background: rgba(255,255,255,0.02);
+      font-weight: 500;
+      color: var(--steel);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+    }
+
+    .cg-cell.bell-col { border-top: 2px solid var(--ocean); }
+    .cg-cell.off-col { border-top: 2px solid var(--cyan); }
+    .cg-cell.dual-col { border-top: 2px solid var(--sunset); }
+
+    .cg-value { text-align: center; color: rgba(248,247,244,0.8); }
+
+    /* Bottom Line */
+    .bottom-line {
+      padding: 60px 0 80px;
+    }
+
+    .bottom-line h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .rec-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .rec-card {
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .rec-card.primary {
+      background: linear-gradient(135deg, rgba(0,102,255,0.1) 0%, rgba(34,232,232,0.08) 100%);
+      border-color: var(--ocean);
+    }
+
+    .rec-card.secondary {
+      background: rgba(255,186,0,0.06);
+      border-color: rgba(255,186,0,0.3);
+    }
+
+    .rec-card.budget {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .rec-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .rec-card .rec-price {
+      font-size: 14px;
+      color: var(--terracotta);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .rec-card p {
+      font-size: 14px;
+      color: rgba(248,247,244,0.65);
+      line-height: 1.5;
+    }
+
+    .footer-note {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      text-align: center;
+      font-size: 13px;
+      color: var(--steel);
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 60px 20px 40px; }
+      .comparison-grid { grid-template-columns: 100px repeat(3, 1fr); font-size: 12px; }
+      .cg-cell { padding: 10px 8px; }
+      .mic-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="hero-badge">🎺 Gear Research</div>
+    <h1>Trumpet Mics:<br>Three Ways to Clip</h1>
+    <p>Bell clip, off-bell, or dual mount — side by side comparison for live gigging.</p>
+  </div>
+
+  <div class="container">
+
+    <!-- BELL CLIP -->
+    <div class="mount-section">
+      <div class="mount-header">
+        <div class="mount-icon bell">🔔</div>
+        <h2>Bell Clip</h2>
+      </div>
+      <p class="mount-desc">Clips directly onto the bell rim. Most common, easiest setup. Trade-off: adds mass to the bell which can dampen vibration and subtly affect tone.</p>
+
+      <div class="mic-card featured">
+        <div class="mic-card-header">
+          <div>
+            <span class="mic-name">DPA 4099 CORE+</span>
+            <span class="badge-featured">Top Pick</span>
+          </div>
+          <span class="mic-price">$590</span>
+        </div>
+        <span class="mic-type">Supercardioid Condenser</span>
+        <p class="mic-body">Industry gold standard. Used by top orchestral and jazz players worldwide. DPA's clip is less obtrusive than most — praised for preserving tone better than other bell clips. Handles extreme SPL. CORE+ technology delivers a cleaner, more dynamic signal.</p>
+        <div class="mic-details">
+          <div class="detail-item">
+            <div class="detail-label">Wireless</div>
+            <div class="detail-value">Separate — Shure GLXD14+ (~$450)</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Total Wireless Cost</div>
+            <div class="detail-value">~$1,000 – 1,200</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Who Uses It</div>
+            <div class="detail-value">Top orchestral & jazz players</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Trade-off</div>
+            <div class="detail-value">Expensive. No built-in wireless.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mic-card">
+        <div class="mic-card-header">
+          <span class="mic-name">Shure Beta 98 H/C</span>
+          <span class="mic-price">~$250</span>
+        </div>
+        <span class="mic-type">Cardioid Condenser</span>
+        <p class="mic-body">The workhorse. Most commonly provided clip-on at venues. Seamless pairing with Shure wireless bundles. Reliable, not flashy — the Honda Civic of trumpet mics.</p>
+        <div class="mic-details">
+          <div class="detail-item">
+            <div class="detail-label">Wireless</div>
+            <div class="detail-value">Shure ecosystem (bundle deals)</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Total Wireless Cost</div>
+            <div class="detail-value">~$600 – 850</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mic-card">
+        <div class="mic-card-header">
+          <span class="mic-name">AKG C519</span>
+          <span class="mic-price">~$225</span>
+        </div>
+        <span class="mic-type">Cardioid Condenser</span>
+        <p class="mic-body">Some pros say it sounds slightly clearer than the Shure. Solid mid-range option. AKG wireless systems have occasional reliability complaints.</p>
+      </div>
+
+      <div class="mic-card">
+        <div class="mic-card-header">
+          <span class="mic-name">Sennheiser e908</span>
+          <span class="mic-price">~$275</span>
+        </div>
+        <span class="mic-type">Cardioid Condenser</span>
+        <p class="mic-body">Good quality from Sennheiser. Less commonly seen in the trumpet world. Pairs with Sennheiser EW-D wireless.</p>
+      </div>
+    </div>
+
+    <!-- OFF-BELL -->
+    <div class="mount-section">
+      <div class="mount-header">
+        <div class="mount-icon off">🎯</div>
+        <h2>Off-Bell</h2>
+      </div>
+      <p class="mount-desc">Clips to tubing or leadpipe — NOT the bell. Zero impact on bell vibration. Best tone preservation. The choice for players who are picky about their sound.</p>
+
+      <div class="mic-card featured">
+        <div class="mic-card-header">
+          <div>
+            <span class="mic-name">AMT P800</span>
+            <span class="badge-featured">Pro Favorite</span>
+          </div>
+          <span class="mic-price">~$400 – 600</span>
+        </div>
+        <span class="mic-type">Off-Bell — Clips to Tubing</span>
+        <p class="mic-body">The go-to for players who hate bell clips. Clips to tubing so it doesn't affect bell vibration at all. Your horn sounds like your horn. Period.</p>
+        <div class="mic-details">
+          <div class="detail-item">
+            <div class="detail-label">Wireless</div>
+            <div class="detail-value">Separate Shure/Sennheiser system</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Total Wireless Cost</div>
+            <div class="detail-value">~$850 – 1,100</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Trade-off</div>
+            <div class="detail-value">Bulkier. Less common to demo.</div>
+          </div>
+        </div>
+        <div class="pro-quote">
+          "I use the AMT P800 as my primary mic. Off-bell = zero impact on your sound."
+          <span class="attribution">— u/Felt_Ninja, r/trumpet moderator & touring pro</span>
+        </div>
+      </div>
+
+      <div class="mic-card">
+        <div class="mic-card-header">
+          <span class="mic-name">SD Systems LCM77</span>
+          <span class="mic-price">~$450</span>
+        </div>
+        <span class="mic-type">Off-Bell Clip</span>
+        <p class="mic-body">Clean sound, professional look, off-bell design. Sleek on stage. One catch: trumpet only — SD makes a separate mic for flugelhorn.</p>
+        <div class="mic-details">
+          <div class="detail-item">
+            <div class="detail-label">Wireless</div>
+            <div class="detail-value">Separate Shure/Sennheiser system</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Total Wireless Cost</div>
+            <div class="detail-value">~$850 – 1,100</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DUAL MOUNT -->
+    <div class="mount-section">
+      <div class="mount-header">
+        <div class="mount-icon dual">⚡</div>
+        <h2>Dual / Flexible Mount</h2>
+      </div>
+      <p class="mount-desc">Can be mounted ON or OFF the bell depending on the gig. Maximum flexibility. The new kid making waves.</p>
+
+      <div class="mic-card featured">
+        <div class="mic-card-header">
+          <div>
+            <span class="mic-name">EVNO TPX2</span>
+            <span class="badge-featured">Rising Star</span>
+          </div>
+          <span class="mic-price">Contact for pricing</span>
+        </div>
+        <span class="mic-type">High SPL Condenser — Dual Mount</span>
+        <p class="mic-body">US-made, trumpet-specific. Dual mount — on OR off bell. 5.5–6.5" flex-stay gooseneck. Works with mutes (huge for live performance). Detachable lightweight swivel clamp. Modular design that adapts to your setup.</p>
+        <div class="mic-details">
+          <div class="detail-item">
+            <div class="detail-label">Wireless Options</div>
+            <div class="detail-value">EVNO W1, W2, Air — or Shure/Sennheiser</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Packages</div>
+            <div class="detail-value">Hardwired, W1, W2 Dual, Air</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Works with Mutes</div>
+            <div class="detail-value">Yes ✓</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Estimated Total</div>
+            <div class="detail-value">~$800 – 1,000</div>
+          </div>
+        </div>
+        <div class="pro-quote">
+          "Nicer detail work on the microphones, and active market support from the company."
+          <span class="attribution">— Touring pro who's used Shure, AKG, Sennheiser & AMT</span>
+        </div>
+      </div>
+
+      <div class="mic-card">
+        <div class="mic-card-header">
+          <span class="mic-name">EVNO TPX1</span>
+          <span class="mic-price">Contact for pricing</span>
+        </div>
+        <span class="mic-type">High SPL Condenser — Bell Mount</span>
+        <p class="mic-body">Same build quality and modularity as the TPX2, but bell-mount only with a detachable clamp. Works with mutes. Lighter, simpler setup if you don't need the off-bell option.</p>
+      </div>
+    </div>
+
+    <!-- COMPARISON -->
+    <div class="comparison-section">
+      <h2>Side by Side</h2>
+      <p class="subtitle">Top pick from each mount type, head to head.</p>
+
+      <div class="comparison-grid">
+        <div class="cg-cell cg-header"></div>
+        <div class="cg-cell cg-header bell-col" style="color: var(--ocean);">DPA 4099<br><small>Bell Clip</small></div>
+        <div class="cg-cell cg-header off-col" style="color: var(--cyan);">AMT P800<br><small>Off-Bell</small></div>
+        <div class="cg-cell cg-header dual-col" style="color: var(--sunset);">EVNO TPX2<br><small>Dual Mount</small></div>
+
+        <div class="cg-cell cg-label">Mic Price</div>
+        <div class="cg-cell cg-value">$590</div>
+        <div class="cg-cell cg-value">~$500</div>
+        <div class="cg-cell cg-value">TBD</div>
+
+        <div class="cg-cell cg-label">Total w/ Wireless</div>
+        <div class="cg-cell cg-value">~$1,100</div>
+        <div class="cg-cell cg-value">~$950</div>
+        <div class="cg-cell cg-value">~$900?</div>
+
+        <div class="cg-cell cg-label">Tone Impact</div>
+        <div class="cg-cell cg-value">Some dampening</div>
+        <div class="cg-cell cg-value">None</div>
+        <div class="cg-cell cg-value">Your choice</div>
+
+        <div class="cg-cell cg-label">Works w/ Mutes</div>
+        <div class="cg-cell cg-value">Varies</div>
+        <div class="cg-cell cg-value">Yes</div>
+        <div class="cg-cell cg-value">Yes</div>
+
+        <div class="cg-cell cg-label">Wireless</div>
+        <div class="cg-cell cg-value">Add-on (Shure)</div>
+        <div class="cg-cell cg-value">Add-on (Shure)</div>
+        <div class="cg-cell cg-value">Built-in option</div>
+
+        <div class="cg-cell cg-label">Ease of Setup</div>
+        <div class="cg-cell cg-value">Easiest</div>
+        <div class="cg-cell cg-value">Medium</div>
+        <div class="cg-cell cg-value">Flexible</div>
+
+        <div class="cg-cell cg-label">Pro Consensus</div>
+        <div class="cg-cell cg-value">The standard</div>
+        <div class="cg-cell cg-value">Tone purist pick</div>
+        <div class="cg-cell cg-value">Rising fast</div>
+      </div>
+    </div>
+
+    <!-- BOTTOM LINE -->
+    <div class="bottom-line">
+      <h2>The Bottom Line</h2>
+
+      <div class="rec-cards">
+        <div class="rec-card primary">
+          <h3>If tone purity matters most</h3>
+          <div class="rec-price">AMT P800 + Shure GLXD14+ → ~$950</div>
+          <p>Off-bell means zero impact on your sound. The choice of touring pros who won't compromise. Proven, reliable, the purist's pick.</p>
+        </div>
+
+        <div class="rec-card secondary">
+          <h3>If you want maximum flexibility</h3>
+          <div class="rec-price">EVNO TPX2 + W1 Wireless → ~$900?</div>
+          <p>Dual mount adapts to any gig. Works with mutes. Integrated wireless is the simplest path. Worth contacting them directly for pricing.</p>
+        </div>
+
+        <div class="rec-card budget">
+          <h3>If you want the proven standard</h3>
+          <div class="rec-price">DPA 4099 CORE+ + Shure GLXD14+ → ~$1,100</div>
+          <p>The gold standard bell clip. Nothing sounds better in this category. You're paying for the name and the quality — both earned.</p>
+        </div>
+      </div>
+
+      <p class="footer-note">Research compiled Feb 2026 — based on pro forums, touring player accounts, and manufacturer specs.<br>Prices approximate and subject to change.</p>
+    </div>
+
+  </div>
+
+</body>
+</html>
