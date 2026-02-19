@@ -13,7 +13,8 @@ import {
   BarChart3, 
   DollarSign,
   LayoutDashboard,
-  Music
+  Music,
+  BookOpen
 } from 'lucide-react'
 
 const workLinks = [
@@ -36,6 +37,7 @@ export default function WorkshopNav() {
   const pathname = usePathname()
   const isWorkActive = pathname?.startsWith('/workshop/work')
   const isPersonalActive = pathname?.startsWith('/workshop/personal')
+  const isKBActive = pathname?.startsWith('/workshop/kb')
 
   return (
     <div className="bg-cream border-b border-midnight/10 sticky top-16 z-30">
@@ -109,6 +111,21 @@ export default function WorkshopNav() {
               </Link>
             )
           })}
+
+          <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
+
+          {/* Knowledge Base */}
+          <Link
+            href="/workshop/kb"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+              isKBActive
+                ? 'bg-cyan-500 text-cream'
+                : 'text-midnight/50 hover:text-midnight hover:bg-sand'
+            }`}
+          >
+            <BookOpen size={14} />
+            KB
+          </Link>
         </nav>
       </div>
     </div>
