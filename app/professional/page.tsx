@@ -121,7 +121,7 @@ export default function Professional() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8">
             <div className="border border-midnight/10 rounded-2xl p-8 hover:border-ocean/30 transition-colors">
               <GraduationCap className="w-8 h-8 text-ocean mb-4" />
               <h3 className="font-display text-xl text-midnight mb-2">Education</h3>
@@ -142,6 +142,18 @@ export default function Professional() {
                 Deep expertise in purchase lending, refinance strategy, DSCR investment analysis, 
                 and creative financing solutions. Education-first approach — clients understand 
                 every number before they sign.
+              </p>
+            </div>
+
+            <div className="border border-midnight/10 rounded-2xl p-8 hover:border-ocean/30 transition-colors">
+              <Music className="w-8 h-8 text-ocean mb-4" />
+              <h3 className="font-display text-xl text-midnight mb-2">Music</h3>
+              <p className="font-medium text-midnight mb-1">Trumpet · Keyboards · Vocals</p>
+              <p className="text-midnight/60 text-sm mb-4">Jazz, Funk & Live Performance</p>
+              <p className="text-midnight/60 text-sm">
+                Lifelong musician and band leader. Trumpet is the primary voice — jazz roots 
+                with funk, soul, and experimental edges. Performs with multiple San Diego bands 
+                and produces through Granada House Sessions.
               </p>
             </div>
 
