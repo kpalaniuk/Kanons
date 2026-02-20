@@ -14,7 +14,8 @@ import {
   DollarSign,
   LayoutDashboard,
   Music,
-  BookOpen
+  BookOpen,
+  MessageSquare
 } from 'lucide-react'
 
 const workLinks = [
@@ -23,6 +24,7 @@ const workLinks = [
   { href: '/workshop/work/dscr-calculator', label: 'DSCR', icon: Calculator },
   { href: '/workshop/work/refi-builder', label: 'Refi', icon: Building2 },
   { href: '/workshop/work/purchase-builder', label: 'Purchase', icon: Home },
+  { href: '/workshop/work/underwriting', label: 'Underwriting', icon: MessageSquare },
 ]
 
 const personalLinks = [
