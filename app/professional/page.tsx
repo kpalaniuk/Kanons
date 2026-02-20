@@ -117,112 +117,137 @@ function ConnectorLine() {
 }
 
 function HeroWithConnector() {
-  const sectionRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start start', 'end start'],
+    target: containerRef,
+    offset: ['start start', 'end end'],
   })
 
-  // Line grows across as you scroll through the hero
-  const lineWidth = useTransform(scrollYProgress, [0.05, 0.7], ['0%', '100%'])
+  // Line grows from left — starts immediately, completes at 70%
+  const lineWidth = useTransform(scrollYProgress, [0, 0.7], ['0%', '100%'])
   
-  // Decorative shapes drift down toward the line
-  const shapeY = useTransform(scrollYProgress, [0, 0.5], [0, 120])
-  const shapeX = useTransform(scrollYProgress, [0.2, 0.6], [0, -80])
-  const shapeOpacity = useTransform(scrollYProgress, [0, 0.1, 0.6, 0.75], [0, 1, 1, 0.3])
+  // Shapes move left and down to meet the line (they start top-right, end center-right where line reaches)
+  const shapeX = useTransform(scrollYProgress, [0, 0.6], [0, -350])
+  const shapeY = useTransform(scrollYProgress, [0, 0.6], [0, 200])
+  const shapeScale = useTransform(scrollYProgress, [0.5, 0.7], [1, 0.6])
+  const shapeOpacity = useTransform(scrollYProgress, [0, 0.05, 0.65, 0.8], [0, 1, 1, 0])
   
-  // Dots appear along the line
-  const dotScale1 = useTransform(scrollYProgress, [0.2, 0.3], [0, 1])
-  const dotScale2 = useTransform(scrollYProgress, [0.4, 0.5], [0, 1])
+  // Ring that appears around shapes when line reaches them
+  const ringScale = useTransform(scrollYProgress, [0.6, 0.75], [0, 1])
+  const ringOpacity = useTransform(scrollYProgress, [0.6, 0.7, 0.85, 0.95], [0, 1, 1, 0])
+
+  // Dots along the line
+  const dotScale1 = useTransform(scrollYProgress, [0.15, 0.25], [0, 1])
+  const dotScale2 = useTransform(scrollYProgress, [0.35, 0.45], [0, 1])
   const dotScale3 = useTransform(scrollYProgress, [0.55, 0.65], [0, 1])
-  const labelOpacity1 = useTransform(scrollYProgress, [0.25, 0.35], [0, 1])
-  const labelOpacity2 = useTransform(scrollYProgress, [0.45, 0.55], [0, 1])
+  const labelOpacity1 = useTransform(scrollYProgress, [0.2, 0.3], [0, 1])
+  const labelOpacity2 = useTransform(scrollYProgress, [0.4, 0.5], [0, 1])
   const labelOpacity3 = useTransform(scrollYProgress, [0.6, 0.7], [0, 1])
 
   return (
-    <section ref={sectionRef} className="pt-20 md:pt-32 pb-8 relative overflow-hidden">
-      {/* Decorative shapes — drift toward the line as you scroll */}
-      <motion.div
-        className="absolute top-12 right-12 md:right-24 hidden md:block"
-        style={{ y: shapeY, x: shapeX, opacity: shapeOpacity }}
-      >
-        <div className="relative w-64 h-64">
-          <div className="absolute top-0 right-0 w-32 h-32 border-2 border-ocean/20 rounded-full" />
-          <div className="absolute top-8 right-8 w-24 h-24 bg-terracotta/10 rounded-full" />
-          <div className="absolute bottom-4 right-16 w-16 h-16 border-2 border-sunset/30 rounded-lg rotate-12" />
-          <div className="absolute top-20 right-0 w-3 h-3 bg-ocean rounded-full" />
-          <div className="absolute top-4 right-24 w-2 h-2 bg-terracotta rounded-full" />
-          <div className="absolute bottom-8 right-4 w-2 h-2 bg-midnight rounded-full" />
-        </div>
-      </motion.div>
+    <div ref={containerRef} style={{ height: '200vh' }}>
+      <div className="sticky top-0 h-screen overflow-hidden">
+        <div className="pt-28 md:pt-36 relative h-full">
+          {/* Decorative shapes — drift toward the line */}
+          <motion.div
+            className="absolute top-16 right-16 md:right-28 hidden md:block z-20"
+            style={{ x: shapeX, y: shapeY, scale: shapeScale, opacity: shapeOpacity }}
+          >
+            <div className="relative w-48 h-48">
+              <div className="absolute top-0 right-0 w-32 h-32 border-2 border-ocean/30 rounded-full" />
+              <div className="absolute top-6 right-6 w-20 h-20 bg-terracotta/15 rounded-full" />
+              <div className="absolute bottom-2 right-12 w-14 h-14 border-2 border-sunset/40 rounded-lg rotate-12" />
+              <div className="absolute top-16 right-0 w-3 h-3 bg-ocean rounded-full" />
+              <div className="absolute top-2 right-20 w-2 h-2 bg-terracotta rounded-full" />
+            </div>
+          </motion.div>
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-terracotta font-medium mb-4 tracking-wider uppercase text-sm"
-        >
-          Professional
-        </motion.p>
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="font-display text-5xl md:text-7xl text-midnight mb-6 max-w-4xl"
-        >
-          Consultant, Builder, Connector
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-xl text-midnight/60 max-w-2xl"
-        >
-          Mortgage planning, systems design, and strategic operations — through Granada House Design LLC.
-        </motion.p>
-      </div>
+          {/* Merge ring — appears where shapes meet the line */}
+          <motion.div
+            className="absolute hidden md:block z-10"
+            style={{
+              right: '15%',
+              top: '65%',
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              border: '2px solid #0066FF',
+              scale: ringScale,
+              opacity: ringOpacity,
+              translateX: '50%',
+              translateY: '-50%',
+            }}
+          />
 
-      {/* The connector line — inline, no dead space */}
-      <div className="max-w-7xl mx-auto px-6 mt-12 mb-4">
-        <div className="relative h-12 flex items-center">
-          <motion.div
-            className="absolute top-1/2 left-0 h-[3px] bg-ocean rounded-full origin-left -translate-y-1/2"
-            style={{ width: lineWidth }}
-          />
-          <motion.div
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-midnight rounded-full"
-            style={{ left: '25%', scale: dotScale1 }}
-          />
-          <motion.div
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-sunset rounded-full"
-            style={{ left: '50%', scale: dotScale2 }}
-          />
-          <motion.div
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-terracotta rounded-full"
-            style={{ left: '75%', scale: dotScale3 }}
-          />
-          <motion.p
-            className="absolute top-full mt-1 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
-            style={{ left: '25%', opacity: labelOpacity1 }}
-          >
-            connect
-          </motion.p>
-          <motion.p
-            className="absolute top-full mt-1 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
-            style={{ left: '50%', opacity: labelOpacity2 }}
-          >
-            build
-          </motion.p>
-          <motion.p
-            className="absolute top-full mt-1 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
-            style={{ left: '75%', opacity: labelOpacity3 }}
-          >
-            grow
-          </motion.p>
+          <div className="max-w-7xl mx-auto px-6 relative z-10">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-terracotta font-medium mb-4 tracking-wider uppercase text-sm"
+            >
+              Professional
+            </motion.p>
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+              className="font-display text-5xl md:text-7xl text-midnight mb-6 max-w-4xl"
+            >
+              Consultant, Builder, Connector
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-xl text-midnight/60 max-w-2xl mb-16"
+            >
+              Mortgage planning, systems design, and strategic operations — through Granada House Design LLC.
+            </motion.p>
+          </div>
+
+          {/* The connector line */}
+          <div className="absolute bottom-[30%] left-0 right-0 px-6 z-10">
+            <div className="max-w-7xl mx-auto relative h-12 flex items-center">
+              <motion.div
+                className="absolute top-1/2 left-0 h-[3px] bg-ocean rounded-full origin-left -translate-y-1/2"
+                style={{ width: lineWidth }}
+              />
+              <motion.div
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-midnight rounded-full"
+                style={{ left: '25%', scale: dotScale1 }}
+              />
+              <motion.div
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-sunset rounded-full"
+                style={{ left: '50%', scale: dotScale2 }}
+              />
+              <motion.div
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-terracotta rounded-full"
+                style={{ left: '75%', scale: dotScale3 }}
+              />
+              <motion.p
+                className="absolute top-full mt-1 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
+                style={{ left: '25%', opacity: labelOpacity1 }}
+              >
+                connect
+              </motion.p>
+              <motion.p
+                className="absolute top-full mt-1 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
+                style={{ left: '50%', opacity: labelOpacity2 }}
+              >
+                build
+              </motion.p>
+              <motion.p
+                className="absolute top-full mt-1 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
+                style={{ left: '75%', opacity: labelOpacity3 }}
+              >
+                grow
+              </motion.p>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   )
 }
 
