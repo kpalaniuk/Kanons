@@ -19,7 +19,7 @@ The following environment variable must be set:
 
 **Local development** (`.env.local`):
 ```bash
-OPENROUTER_API_KEY=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
+OPENROUTER_API_KEY=YOUR_OPENROUTER_API_KEY_HERE
 ```
 
 **Production** (Vercel):
