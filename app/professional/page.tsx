@@ -141,7 +141,8 @@ function HeroWithConnector() {
   const labelOpacity3 = useTransform(scrollYProgress, [0.7, 0.8], [0, 1])
 
   return (
-    <section ref={sectionRef} className="pt-20 md:pt-32 pb-10 relative overflow-hidden">
+    <div ref={sectionRef} style={{ height: '180vh' }} className="relative">
+    <section className="sticky top-0 pt-20 md:pt-32 pb-10 relative overflow-hidden bg-paper min-h-screen z-10">
       {/* Decorative shapes — drift toward the line */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -227,14 +228,16 @@ function HeroWithConnector() {
         </div>
       </div>
     </section>
+    </div>
   )
 }
 
 export default function Professional() {
   return (
     <div className="page-transition pt-24">
-      {/* Hero + Connector Line (unified scroll animation) */}
+      {/* Hero + Connector — pinned while animation plays */}
       <HeroWithConnector />
+      {/* Spacer consumed by sticky — not visible */}
 
       {/* Connector Visual Section — wraps everything below */}
       <div className="relative">
