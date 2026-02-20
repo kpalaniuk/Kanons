@@ -117,64 +117,57 @@ function ConnectorLine() {
 }
 
 function HorizontalConnector() {
-  const containerRef = useRef<HTMLDivElement>(null)
+  const lineRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end start'],
+    target: lineRef,
+    offset: ['start 0.85', 'start 0.15'],
   })
 
-  const lineWidth = useTransform(scrollYProgress, [0, 0.6], ['0%', '100%'])
-  const dotScale1 = useTransform(scrollYProgress, [0.1, 0.15], [0, 1])
-  const dotScale2 = useTransform(scrollYProgress, [0.25, 0.3], [0, 1])
-  const dotScale3 = useTransform(scrollYProgress, [0.4, 0.45], [0, 1])
-  const labelOpacity1 = useTransform(scrollYProgress, [0.12, 0.18], [0, 1])
-  const labelOpacity2 = useTransform(scrollYProgress, [0.27, 0.33], [0, 1])
-  const labelOpacity3 = useTransform(scrollYProgress, [0.42, 0.48], [0, 1])
+  const lineWidth = useTransform(scrollYProgress, [0, 1], ['0%', '100%'])
+  const dotScale1 = useTransform(scrollYProgress, [0.15, 0.25], [0, 1])
+  const dotScale2 = useTransform(scrollYProgress, [0.4, 0.5], [0, 1])
+  const dotScale3 = useTransform(scrollYProgress, [0.65, 0.75], [0, 1])
+  const labelOpacity1 = useTransform(scrollYProgress, [0.2, 0.3], [0, 1])
+  const labelOpacity2 = useTransform(scrollYProgress, [0.45, 0.55], [0, 1])
+  const labelOpacity3 = useTransform(scrollYProgress, [0.7, 0.8], [0, 1])
 
   return (
-    <div ref={containerRef} className="relative" style={{ height: '30vh' }}>
-      <div className="sticky top-[30vh] z-10 px-6">
-        <div className="max-w-7xl mx-auto relative h-12 flex items-center">
-          {/* The growing line */}
-          <motion.div
-            className="absolute top-1/2 left-0 h-[3px] bg-ocean rounded-full origin-left -translate-y-1/2"
-            style={{ width: lineWidth }}
-          />
-          
-          {/* Dots */}
-          <motion.div
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-midnight rounded-full"
-            style={{ left: '25%', scale: dotScale1 }}
-          />
-          <motion.div
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-sunset rounded-full"
-            style={{ left: '50%', scale: dotScale2 }}
-          />
-          <motion.div
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-terracotta rounded-full"
-            style={{ left: '75%', scale: dotScale3 }}
-          />
-
-          {/* Labels */}
-          <motion.p
-            className="absolute top-full mt-2 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
-            style={{ left: '25%', opacity: labelOpacity1 }}
-          >
-            connect
-          </motion.p>
-          <motion.p
-            className="absolute top-full mt-2 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
-            style={{ left: '50%', opacity: labelOpacity2 }}
-          >
-            build
-          </motion.p>
-          <motion.p
-            className="absolute top-full mt-2 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
-            style={{ left: '75%', opacity: labelOpacity3 }}
-          >
-            grow
-          </motion.p>
-        </div>
+    <div ref={lineRef} className="py-6 px-6">
+      <div className="max-w-7xl mx-auto relative h-12 flex items-center">
+        <motion.div
+          className="absolute top-1/2 left-0 h-[3px] bg-ocean rounded-full origin-left -translate-y-1/2"
+          style={{ width: lineWidth }}
+        />
+        <motion.div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-midnight rounded-full"
+          style={{ left: '25%', scale: dotScale1 }}
+        />
+        <motion.div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-sunset rounded-full"
+          style={{ left: '50%', scale: dotScale2 }}
+        />
+        <motion.div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-terracotta rounded-full"
+          style={{ left: '75%', scale: dotScale3 }}
+        />
+        <motion.p
+          className="absolute top-full mt-1 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
+          style={{ left: '25%', opacity: labelOpacity1 }}
+        >
+          connect
+        </motion.p>
+        <motion.p
+          className="absolute top-full mt-1 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
+          style={{ left: '50%', opacity: labelOpacity2 }}
+        >
+          build
+        </motion.p>
+        <motion.p
+          className="absolute top-full mt-1 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
+          style={{ left: '75%', opacity: labelOpacity3 }}
+        >
+          grow
+        </motion.p>
       </div>
     </div>
   )
