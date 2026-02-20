@@ -11,6 +11,15 @@ export interface Article {
 export const articles: Article[] = [
   // === NEWEST FIRST ===
   {
+    title: 'LO Buddy Phase 3: Portals, Scenarios & Communication',
+    description: 'Realtor purchasing kits, client portals, scenario engine merger, team communication, and mobile app roadmap.',
+    category: 'LO Buddy',
+    date: 'Feb 20, 2026',
+    href: '/artifacts/lo-buddy-phase3-vision.html',
+    published: false,
+    type: 'report',
+  },
+  {
     title: 'LO Buddy Phase 2: Architecture Build Report',
     description: '11 commits, 6,643 lines added. Full progress report on modular architecture — 5 agent modules, model router, soul security cage, orchestrator, and org hierarchy.',
     category: 'LO Buddy',
