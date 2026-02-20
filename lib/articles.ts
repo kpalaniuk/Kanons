@@ -5,16 +5,37 @@ export interface Article {
   category: string
   date: string
   published: boolean
+  type?: 'report' | 'article' | 'guide'  // report = Jasper's inbox-style deliverables
 }
 
 export const articles: Article[] = [
+  // === NEWEST FIRST ===
   {
-    title: 'Trumpet Mic Comparison',
-    description: 'Bell clip vs off-bell vs dual mount — side by side comparison for live gigging. DPA 4099, AMT P800, EVNO TPX2, and more.',
-    href: '/artifacts/trumpet-mic-comparison.html',
-    category: 'Music & Gear',
-    date: 'Feb 19, 2026',
+    title: 'LO Buddy Phase 2: Architecture Build Report',
+    description: '11 commits, 6,643 lines added. Full progress report on modular architecture — 5 agent modules, model router, soul security cage, orchestrator, and org hierarchy.',
+    category: 'LO Buddy',
+    date: 'Feb 20, 2026',
+    href: '/artifacts/lo-buddy-phase2-report.html',
     published: false,
+    type: 'report',
+  },
+  {
+    title: 'LO Buddy Testing Guide',
+    description: 'Step-by-step QA scenarios for each module — Capture, Follow-Up Coach, Qualify, Validator, Realtor.',
+    category: 'LO Buddy',
+    date: 'Feb 20, 2026',
+    href: '/artifacts/lo-buddy-testing-guide.html',
+    published: false,
+    type: 'guide',
+  },
+  {
+    title: 'LO Buddy Git & Release Guide',
+    description: 'Branch strategy, versioning, deployment workflow, and rollback procedures for the team.',
+    category: 'LO Buddy',
+    date: 'Feb 20, 2026',
+    href: '/artifacts/lo-buddy-git-release-guide.html',
+    published: false,
+    type: 'guide',
   },
   {
     title: 'LO Buddy × OpenClaw Architecture',
@@ -23,6 +44,16 @@ export const articles: Article[] = [
     category: 'Technology',
     date: 'Feb 19, 2026',
     published: false,
+    type: 'article',
+  },
+  {
+    title: 'Trumpet Mic Comparison',
+    description: 'Bell clip vs off-bell vs dual mount — side by side comparison for live gigging. DPA 4099, AMT P800, EVNO TPX2, and more.',
+    href: '/artifacts/trumpet-mic-comparison.html',
+    category: 'Music & Gear',
+    date: 'Feb 19, 2026',
+    published: false,
+    type: 'article',
   },
   {
     title: 'Paige + Daniel Partnership Roadmap',
@@ -31,6 +62,7 @@ export const articles: Article[] = [
     category: 'Business',
     date: 'Feb 19, 2026',
     published: false,
+    type: 'article',
   },
   {
     title: 'Multi-Agent Research',
@@ -39,6 +71,7 @@ export const articles: Article[] = [
     category: 'Technology',
     date: 'Feb 19, 2026',
     published: false,
+    type: 'article',
   },
   {
     title: 'LO Buddy + Chad Meeting',
@@ -47,6 +80,7 @@ export const articles: Article[] = [
     category: 'LO Buddy',
     date: 'Feb 19, 2026',
     published: false,
+    type: 'article',
   },
   {
     title: 'Designer-Contractor Partnership Guide',
@@ -55,29 +89,11 @@ export const articles: Article[] = [
     category: 'Business',
     date: 'Feb 19, 2026',
     published: false,
-  },
-  {
-    title: 'LO Buddy Testing Guide',
-    description: 'Step-by-step QA scenarios for each module — Capture, Follow-Up Coach, Qualify, Validator, Realtor',
-    category: 'LO Buddy',
-    date: 'Feb 20, 2026',
-    href: '/artifacts/lo-buddy-testing-guide.html',
-    published: false,
-  },
-  {
-    title: 'LO Buddy Git & Release Guide',
-    description: 'Branch strategy, versioning, deployment workflow, and rollback procedures for the team',
-    category: 'LO Buddy',
-    date: 'Feb 20, 2026',
-    href: '/artifacts/lo-buddy-git-release-guide.html',
-    published: false,
-  },
-  {
-    title: 'LO Buddy Phase 2: Architecture Build Report',
-    description: '11 commits, 6,643 lines added. Full progress report on modular architecture, 5 specialized agent modules, model router, soul security cage, and orchestration layer.',
-    category: 'project',
-    date: 'Feb 20, 2026',
-    href: '/artifacts/lo-buddy-phase2-report.html',
-    published: false,
+    type: 'guide',
   },
 ]
+
+// Helpers
+export const reports = articles.filter(a => a.type === 'report')
+export const guides = articles.filter(a => a.type === 'guide')
+export const allArticles = articles  // alias for backward compat
