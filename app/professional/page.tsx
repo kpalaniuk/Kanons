@@ -116,6 +116,67 @@ function ConnectorLine() {
   )
 }
 
+function HorizontalConnector() {
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start end', 'end end'],
+  })
+
+  const lineWidth = useTransform(scrollYProgress, [0, 0.8], ['0%', '100%'])
+  const dotOpacity1 = useTransform(scrollYProgress, [0.2, 0.3], [0, 1])
+  const dotOpacity2 = useTransform(scrollYProgress, [0.4, 0.5], [0, 1])
+  const dotOpacity3 = useTransform(scrollYProgress, [0.6, 0.7], [0, 1])
+
+  return (
+    <div ref={ref} className="h-[50vh] relative">
+      <div className="sticky top-1/2 -translate-y-1/2 overflow-hidden px-6">
+        <div className="max-w-7xl mx-auto relative">
+          {/* The growing line */}
+          <motion.div
+            className="h-[3px] bg-ocean rounded-full origin-left"
+            style={{ width: lineWidth }}
+          />
+          
+          {/* Dots that appear along the line as it grows */}
+          <motion.div
+            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-midnight rounded-full"
+            style={{ left: '25%', opacity: dotOpacity1 }}
+          />
+          <motion.div
+            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-sunset rounded-full"
+            style={{ left: '50%', opacity: dotOpacity2 }}
+          />
+          <motion.div
+            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-terracotta rounded-full"
+            style={{ left: '75%', opacity: dotOpacity3 }}
+          />
+
+          {/* Small labels that fade in at each node */}
+          <motion.p
+            className="absolute -top-6 text-xs font-medium text-midnight/40"
+            style={{ left: '25%', opacity: dotOpacity1, translateX: '-50%' }}
+          >
+            connect
+          </motion.p>
+          <motion.p
+            className="absolute -top-6 text-xs font-medium text-midnight/40"
+            style={{ left: '50%', opacity: dotOpacity2, translateX: '-50%' }}
+          >
+            build
+          </motion.p>
+          <motion.p
+            className="absolute -top-6 text-xs font-medium text-midnight/40"
+            style={{ left: '75%', opacity: dotOpacity3, translateX: '-50%' }}
+          >
+            grow
+          </motion.p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Professional() {
   return (
     <div className="page-transition pt-24">
@@ -165,12 +226,12 @@ export default function Professional() {
           </motion.p>
         </div>
 
-        {/* Decorative accent bar */}
+        {/* Static seed — the starting segments */}
         <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="max-w-7xl mx-auto px-6 mt-16 origin-left"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="max-w-7xl mx-auto px-6 mt-16"
         >
           <div className="flex items-center gap-2">
             <div className="h-1 w-16 bg-ocean rounded-full" />
@@ -179,6 +240,9 @@ export default function Professional() {
           </div>
         </motion.div>
       </section>
+
+      {/* Scroll-pinned horizontal connector line */}
+      <HorizontalConnector />
 
       {/* Connector Visual Section — wraps everything below */}
       <div className="relative">
