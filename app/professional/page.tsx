@@ -117,57 +117,60 @@ function ConnectorLine() {
 }
 
 function HorizontalConnector() {
-  const ref = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'end end'],
+    target: containerRef,
+    offset: ['start start', 'end start'],
   })
 
-  const lineWidth = useTransform(scrollYProgress, [0, 0.8], ['0%', '100%'])
-  const dotOpacity1 = useTransform(scrollYProgress, [0.2, 0.3], [0, 1])
-  const dotOpacity2 = useTransform(scrollYProgress, [0.4, 0.5], [0, 1])
-  const dotOpacity3 = useTransform(scrollYProgress, [0.6, 0.7], [0, 1])
+  const lineWidth = useTransform(scrollYProgress, [0, 1], ['0%', '100%'])
+  const dotScale1 = useTransform(scrollYProgress, [0.2, 0.3], [0, 1])
+  const dotScale2 = useTransform(scrollYProgress, [0.45, 0.55], [0, 1])
+  const dotScale3 = useTransform(scrollYProgress, [0.7, 0.8], [0, 1])
+  const labelOpacity1 = useTransform(scrollYProgress, [0.25, 0.35], [0, 1])
+  const labelOpacity2 = useTransform(scrollYProgress, [0.5, 0.6], [0, 1])
+  const labelOpacity3 = useTransform(scrollYProgress, [0.75, 0.85], [0, 1])
 
   return (
-    <div ref={ref} className="h-[50vh] relative">
-      <div className="sticky top-1/2 -translate-y-1/2 overflow-hidden px-6">
-        <div className="max-w-7xl mx-auto relative">
+    <div ref={containerRef} className="relative" style={{ height: '150vh' }}>
+      <div className="sticky top-[45vh] z-10 px-6">
+        <div className="max-w-7xl mx-auto relative h-12 flex items-center">
           {/* The growing line */}
           <motion.div
-            className="h-[3px] bg-ocean rounded-full origin-left"
+            className="absolute top-1/2 left-0 h-[3px] bg-ocean rounded-full origin-left -translate-y-1/2"
             style={{ width: lineWidth }}
           />
           
-          {/* Dots that appear along the line as it grows */}
+          {/* Dots */}
           <motion.div
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-midnight rounded-full"
-            style={{ left: '25%', opacity: dotOpacity1 }}
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-midnight rounded-full"
+            style={{ left: '25%', scale: dotScale1 }}
           />
           <motion.div
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-sunset rounded-full"
-            style={{ left: '50%', opacity: dotOpacity2 }}
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-sunset rounded-full"
+            style={{ left: '50%', scale: dotScale2 }}
           />
           <motion.div
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-terracotta rounded-full"
-            style={{ left: '75%', opacity: dotOpacity3 }}
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-terracotta rounded-full"
+            style={{ left: '75%', scale: dotScale3 }}
           />
 
-          {/* Small labels that fade in at each node */}
+          {/* Labels */}
           <motion.p
-            className="absolute -top-6 text-xs font-medium text-midnight/40"
-            style={{ left: '25%', opacity: dotOpacity1, translateX: '-50%' }}
+            className="absolute top-full mt-2 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
+            style={{ left: '25%', opacity: labelOpacity1 }}
           >
             connect
           </motion.p>
           <motion.p
-            className="absolute -top-6 text-xs font-medium text-midnight/40"
-            style={{ left: '50%', opacity: dotOpacity2, translateX: '-50%' }}
+            className="absolute top-full mt-2 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
+            style={{ left: '50%', opacity: labelOpacity2 }}
           >
             build
           </motion.p>
           <motion.p
-            className="absolute -top-6 text-xs font-medium text-midnight/40"
-            style={{ left: '75%', opacity: dotOpacity3, translateX: '-50%' }}
+            className="absolute top-full mt-2 text-sm font-display font-medium text-midnight/50 -translate-x-1/2"
+            style={{ left: '75%', opacity: labelOpacity3 }}
           >
             grow
           </motion.p>
