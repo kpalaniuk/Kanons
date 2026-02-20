@@ -9,8 +9,25 @@ export default function Professional() {
   return (
     <div className="page-transition pt-24">
       {/* Hero */}
-      <section className="py-20 md:py-32">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="py-20 md:py-32 relative overflow-hidden">
+        {/* Decorative shapes — top right */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.2, delay: 0.3 }}
+          className="absolute top-12 right-12 md:right-24 hidden md:block"
+        >
+          <div className="relative w-64 h-64">
+            <div className="absolute top-0 right-0 w-32 h-32 border-2 border-ocean/20 rounded-full" />
+            <div className="absolute top-8 right-8 w-24 h-24 bg-terracotta/10 rounded-full" />
+            <div className="absolute bottom-4 right-16 w-16 h-16 border-2 border-sunset/30 rounded-lg rotate-12" />
+            <div className="absolute top-20 right-0 w-3 h-3 bg-ocean rounded-full" />
+            <div className="absolute top-4 right-24 w-2 h-2 bg-terracotta rounded-full" />
+            <div className="absolute bottom-8 right-4 w-2 h-2 bg-midnight rounded-full" />
+          </div>
+        </motion.div>
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -36,11 +53,34 @@ export default function Professional() {
             Mortgage planning, systems design, and strategic operations — through Granada House Design LLC.
           </motion.p>
         </div>
+
+        {/* Decorative accent bar */}
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="max-w-7xl mx-auto px-6 mt-16 origin-left"
+        >
+          <div className="flex items-center gap-2">
+            <div className="h-1 w-16 bg-ocean rounded-full" />
+            <div className="h-1 w-4 bg-midnight rounded-full" />
+            <div className="h-1 w-8 bg-sunset rounded-full" />
+          </div>
+        </motion.div>
       </section>
 
       {/* Current Role — Granada House Design LLC */}
-      <AnimatedSection className="py-20 bg-sand">
-        <div className="max-w-7xl mx-auto px-6">
+      <AnimatedSection className="py-20 bg-sand relative overflow-hidden">
+        {/* Decorative shapes — bottom left of section */}
+        <div className="absolute bottom-8 left-8 hidden md:block opacity-30">
+          <div className="relative w-48 h-48">
+            <div className="absolute bottom-0 left-0 w-20 h-20 border-2 border-midnight/20 rounded-lg -rotate-6" />
+            <div className="absolute bottom-6 left-10 w-12 h-12 bg-ocean/15 rounded-full" />
+            <div className="absolute bottom-16 left-2 w-2 h-2 bg-sunset rounded-full" />
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid md:grid-cols-2 gap-16 items-start">
             <div>
               <div className="flex items-center gap-3 mb-2">
