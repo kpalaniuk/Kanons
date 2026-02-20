@@ -132,8 +132,8 @@ function HorizontalConnector() {
   const labelOpacity3 = useTransform(scrollYProgress, [0.75, 0.85], [0, 1])
 
   return (
-    <div ref={containerRef} className="relative" style={{ height: '150vh' }}>
-      <div className="sticky top-[45vh] z-10 px-6">
+    <div ref={containerRef} className="relative -mt-4" style={{ height: '80vh' }}>
+      <div className="sticky top-[40vh] z-10 px-6">
         <div className="max-w-7xl mx-auto relative h-12 flex items-center">
           {/* The growing line */}
           <motion.div
@@ -184,7 +184,7 @@ export default function Professional() {
   return (
     <div className="page-transition pt-24">
       {/* Hero */}
-      <section className="py-20 md:py-32 relative overflow-hidden">
+      <section className="pt-20 md:pt-32 pb-8 relative overflow-hidden">
         {/* Decorative shapes — top right */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -234,7 +234,7 @@ export default function Professional() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="max-w-7xl mx-auto px-6 mt-16"
+          className="max-w-7xl mx-auto px-6 mt-8"
         >
           <div className="flex items-center gap-2">
             <div className="h-1 w-16 bg-ocean rounded-full" />
@@ -244,7 +244,7 @@ export default function Professional() {
         </motion.div>
       </section>
 
-      {/* Scroll-pinned horizontal connector line */}
+      {/* Scroll-pinned horizontal connector line — no gap */}
       <HorizontalConnector />
 
       {/* Connector Visual Section — wraps everything below */}
