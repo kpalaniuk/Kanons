@@ -5,7 +5,7 @@ export interface Article {
   category: string
   date: string
   published: boolean
-  type?: 'report' | 'article' | 'guide'  // report = Jasper's inbox-style deliverables
+  type?: 'report' | 'article' | 'guide'
 }
 
 export const articles: Article[] = [

@@ -51,11 +51,13 @@ function ArticleCard({ item }: { item: Article }) {
           </div>
           <ExternalLink className="w-4 h-4 text-midnight/30 group-hover:text-cyan-500 transition-colors flex-shrink-0" />
         </div>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-sm font-semibold text-cyan-600">{item.date}</span>
+        </div>
         <h3 className="font-display text-lg text-midnight mb-2 group-hover:text-cyan-500 transition-colors">
           {item.title}
         </h3>
-        <p className="text-sm text-midnight/60 mb-3">{item.description}</p>
-        <span className="text-xs text-midnight/40">{item.date}</span>
+        <p className="text-sm text-midnight/60">{item.description}</p>
       </a>
     </div>
   )
