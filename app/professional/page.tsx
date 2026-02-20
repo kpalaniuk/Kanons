@@ -123,17 +123,17 @@ function HorizontalConnector() {
     offset: ['start start', 'end start'],
   })
 
-  const lineWidth = useTransform(scrollYProgress, [0, 1], ['0%', '100%'])
-  const dotScale1 = useTransform(scrollYProgress, [0.2, 0.3], [0, 1])
-  const dotScale2 = useTransform(scrollYProgress, [0.45, 0.55], [0, 1])
-  const dotScale3 = useTransform(scrollYProgress, [0.7, 0.8], [0, 1])
-  const labelOpacity1 = useTransform(scrollYProgress, [0.25, 0.35], [0, 1])
-  const labelOpacity2 = useTransform(scrollYProgress, [0.5, 0.6], [0, 1])
-  const labelOpacity3 = useTransform(scrollYProgress, [0.75, 0.85], [0, 1])
+  const lineWidth = useTransform(scrollYProgress, [0, 0.6], ['0%', '100%'])
+  const dotScale1 = useTransform(scrollYProgress, [0.1, 0.15], [0, 1])
+  const dotScale2 = useTransform(scrollYProgress, [0.25, 0.3], [0, 1])
+  const dotScale3 = useTransform(scrollYProgress, [0.4, 0.45], [0, 1])
+  const labelOpacity1 = useTransform(scrollYProgress, [0.12, 0.18], [0, 1])
+  const labelOpacity2 = useTransform(scrollYProgress, [0.27, 0.33], [0, 1])
+  const labelOpacity3 = useTransform(scrollYProgress, [0.42, 0.48], [0, 1])
 
   return (
-    <div ref={containerRef} className="relative -mt-4" style={{ height: '80vh' }}>
-      <div className="sticky top-[40vh] z-10 px-6">
+    <div ref={containerRef} className="relative" style={{ height: '30vh' }}>
+      <div className="sticky top-[30vh] z-10 px-6">
         <div className="max-w-7xl mx-auto relative h-12 flex items-center">
           {/* The growing line */}
           <motion.div
