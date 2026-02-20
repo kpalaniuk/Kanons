@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LO Buddy — Git &amp; Release Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --midnight: #0a0a0a;
+      --cream: #f8f7f4;
+      --terracotta: #FFB366;
+      --ocean: #0066FF;
+      --sunset: #FFBA00;
+      --cyan: #22E8E8;
+      --steel: #7A8F9E;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--midnight);
+      color: var(--cream);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+      padding: 80px 24px 60px;
+      text-align: center;
+      background: linear-gradient(180deg, #111 0%, var(--midnight) 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 100px;
+      background: rgba(34,232,232,0.12);
+      color: var(--cyan);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--cream) 0%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--steel);
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    .hero-meta {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--steel);
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .section {
+      padding: 60px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .section:last-child { border-bottom: none; }
+
+    .section h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .section-desc {
+      color: var(--steel);
+      font-size: 15px;
+      margin-bottom: 32px;
+      max-width: 640px;
+    }
+
+    /* Branch Diagram */
+    .branch-diagram {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: 32px;
+    }
+
+    .branch-row {
+      display: grid;
+      grid-template-columns: 140px 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .branch-row:first-child { border-radius: 16px 16px 0 0; }
+    .branch-row:last-child { border-radius: 0 0 16px 16px; }
+    .branch-row + .branch-row { border-top: none; }
+
+    .branch-row.main-branch { border-left: 4px solid var(--cyan); background: rgba(34,232,232,0.04); }
+    .branch-row.develop-branch { border-left: 4px solid var(--ocean); background: rgba(0,102,255,0.04); }
+    .branch-row.feature-branch { border-left: 4px solid var(--sunset); background: rgba(255,186,0,0.04); }
+
+    .branch-name {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .branch-row.main-branch .branch-name { color: var(--cyan); }
+    .branch-row.develop-branch .branch-name { color: var(--ocean); }
+    .branch-row.feature-branch .branch-name { color: var(--sunset); }
+
+    .branch-info {
+      font-size: 14px;
+      color: rgba(248,247,244,0.7);
+    }
+
+    .branch-info strong { color: var(--cream); }
+
+    .branch-deploy {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .branch-row.main-branch .branch-deploy { background: rgba(34,232,232,0.15); color: var(--cyan); }
+    .branch-row.develop-branch .branch-deploy { background: rgba(0,102,255,0.15); color: var(--ocean); }
+    .branch-row.feature-branch .branch-deploy { background: rgba(255,186,0,0.15); color: var(--sunset); }
+
+    /* Roles Card */
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .role-card {
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .role-card h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .role-card p {
+      font-size: 14px;
+      color: rgba(248,247,244,0.6);
+      line-height: 1.5;
+    }
+
+    /* Versioning Table */
+    .version-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+
+    .version-table th {
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--steel);
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .version-table th:first-child { border-radius: 10px 0 0 0; }
+    .version-table th:last-child { border-radius: 0 10px 0 0; }
+
+    .version-table td {
+      padding: 14px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: rgba(248,247,244,0.8);
+    }
+
+    .version-table td:first-child {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-weight: 600;
+      color: var(--cream);
+    }
+
+    .version-tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 6px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .version-tag.major { background: rgba(255,80,80,0.15); color: #ff6b6b; }
+    .version-tag.minor { background: rgba(0,102,255,0.15); color: var(--ocean); }
+    .version-tag.patch { background: rgba(34,232,232,0.15); color: var(--cyan); }
+
+    /* Deployment Flow */
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      counter-reset: flow;
+      margin-bottom: 32px;
+    }
+
+    .flow-step {
+      counter-increment: flow;
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 16px;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .flow-step:last-child { border-bottom: none; }
+
+    .flow-number {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .flow-step:nth-child(1) .flow-number { background: rgba(255,186,0,0.15); color: var(--sunset); }
+    .flow-step:nth-child(2) .flow-number { background: rgba(0,102,255,0.15); color: var(--ocean); }
+    .flow-step:nth-child(3) .flow-number { background: rgba(0,102,255,0.15); color: var(--ocean); }
+    .flow-step:nth-child(4) .flow-number { background: rgba(255,179,102,0.15); color: var(--terracotta); }
+    .flow-step:nth-child(5) .flow-number { background: rgba(255,179,102,0.15); color: var(--terracotta); }
+    .flow-step:nth-child(6) .flow-number { background: rgba(34,232,232,0.15); color: var(--cyan); }
+    .flow-step:nth-child(7) .flow-number { background: rgba(34,232,232,0.15); color: var(--cyan); }
+    .flow-step:nth-child(8) .flow-number { background: rgba(34,232,232,0.15); color: var(--cyan); }
+
+    .flow-content h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .flow-content p {
+      font-size: 14px;
+      color: rgba(248,247,244,0.6);
+    }
+
+    .flow-arrow {
+      text-align: center;
+      padding: 4px 0;
+      color: rgba(255,255,255,0.15);
+      font-size: 20px;
+      grid-column: 1 / -1;
+    }
+
+    /* Checklist */
+    .checklist {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .checklist h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 14px;
+      color: rgba(248,247,244,0.8);
+      cursor: pointer;
+    }
+
+    .checklist-item:last-child { border-bottom: none; }
+
+    .check-box {
+      width: 22px;
+      height: 22px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: all 0.2s;
+    }
+
+    .checklist-item:hover .check-box {
+      border-color: var(--cyan);
+      background: rgba(34,232,232,0.1);
+    }
+
+    .checklist-item.checked .check-box {
+      background: var(--cyan);
+      border-color: var(--cyan);
+    }
+
+    .checklist-item.checked { text-decoration: line-through; color: var(--steel); }
+
+    /* Rollback / Hotfix Cards */
+    .process-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .process-card {
+      padding: 28px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .process-card.rollback {
+      border-color: rgba(255,80,80,0.3);
+      background: rgba(255,80,80,0.04);
+    }
+
+    .process-card.hotfix {
+      border-color: rgba(255,186,0,0.3);
+      background: rgba(255,186,0,0.04);
+    }
+
+    .process-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .process-card.rollback h3 { color: #ff6b6b; }
+    .process-card.hotfix h3 { color: var(--sunset); }
+
+    .process-steps {
+      list-style: none;
+      counter-reset: psteps;
+    }
+
+    .process-steps li {
+      counter-increment: psteps;
+      padding: 8px 0 8px 32px;
+      position: relative;
+      font-size: 14px;
+      color: rgba(248,247,244,0.7);
+    }
+
+    .process-steps li::before {
+      content: counter(psteps);
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.08);
+      color: var(--steel);
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .callout {
+      margin-top: 16px;
+      padding: 16px 20px;
+      background: rgba(34,232,232,0.06);
+      border-left: 3px solid var(--cyan);
+      border-radius: 0 10px 10px 0;
+      font-size: 14px;
+      color: rgba(248,247,244,0.7);
+    }
+
+    .callout strong { color: var(--cyan); }
+
+    /* DNS Section */
+    .dns-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    .dns-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .dns-steps {
+      list-style: none;
+      counter-reset: dns;
+    }
+
+    .dns-steps li {
+      counter-increment: dns;
+      padding: 10px 0 10px 40px;
+      position: relative;
+      font-size: 14px;
+      color: rgba(248,247,244,0.8);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .dns-steps li:last-child { border-bottom: none; }
+
+    .dns-steps li::before {
+      content: counter(dns);
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: rgba(0,102,255,0.15);
+      color: var(--ocean);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dns-steps li strong { color: var(--cream); }
+
+    .code-inline {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      background: rgba(255,255,255,0.08);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: var(--terracotta);
+    }
+
+    .dns-record {
+      display: grid;
+      grid-template-columns: 80px 80px 1fr;
+      gap: 8px;
+      margin: 12px 0;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+    }
+
+    .dns-record .dns-label {
+      color: var(--steel);
+      font-size: 11px;
+      text-transform: uppercase;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+    }
+
+    /* Quick Reference */
+    .ref-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .ref-table th {
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--steel);
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .ref-table th:first-child { border-radius: 10px 0 0 0; }
+    .ref-table th:last-child { border-radius: 0 10px 0 0; }
+
+    .ref-table td {
+      padding: 14px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: rgba(248,247,244,0.8);
+    }
+
+    .ref-table td:first-child { font-weight: 600; color: var(--cream); }
+
+    .footer-note {
+      margin-top: 48px;
+      padding: 24px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      text-align: center;
+      font-size: 13px;
+      color: var(--steel);
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 60px 20px 40px; }
+      .branch-row { grid-template-columns: 1fr; gap: 8px; }
+      .branch-deploy { justify-self: start; }
+      .hero-meta { flex-direction: column; align-items: center; gap: 8px; }
+      .flow-step { grid-template-columns: 44px 1fr; }
+      .flow-number { width: 40px; height: 40px; font-size: 16px; }
+    }
+  </style>
+  <script>
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('.checklist-item')) {
+        e.target.closest('.checklist-item').classList.toggle('checked');
+      }
+    });
+  </script>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="hero-badge">⚙️ Developer Handbook</div>
+    <h1>Git &amp; Release<br>Management</h1>
+    <p>Branch strategy, versioning, deployment workflow, and rollback procedures for LO Buddy.</p>
+    <div class="hero-meta">
+      <span>👥 Kyle, Chad &amp; Team</span>
+      <span>📅 February 2026</span>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- BRANCH MANAGEMENT -->
+    <div class="section">
+      <h2>Branch Management Strategy</h2>
+      <p class="section-desc">Three types of branches — like lanes on a highway. Each has a purpose and destination.</p>
+
+      <div class="branch-diagram">
+        <div class="branch-row main-branch">
+          <div class="branch-name">main</div>
+          <div class="branch-info"><strong>Production</strong> — the live app. Merged from <code>develop</code> only.</div>
+          <div class="branch-deploy">app.lobuddy.com</div>
+        </div>
+        <div class="branch-row develop-branch">
+          <div class="branch-name">develop</div>
+          <div class="branch-info"><strong>Staging/Preview</strong> — testing ground. Merged from feature branches.</div>
+          <div class="branch-deploy">Vercel Preview URL</div>
+        </div>
+        <div class="branch-row feature-branch">
+          <div class="branch-name">feature/*</div>
+          <div class="branch-info"><strong>Work in Progress</strong> — individual tasks. Jasper or any developer.</div>
+          <div class="branch-deploy">Local Only</div>
+        </div>
+      </div>
+
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;margin-bottom:16px;">How It Works Day-to-Day</h3>
+      <div class="flow-steps" style="margin-bottom:32px;">
+        <div class="flow-step">
+          <div class="flow-number">1</div>
+          <div class="flow-content">
+            <h4>Jasper works on a feature branch</h4>
+            <p>e.g., <code style="color:var(--sunset)">feature/jasper</code></p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">2</div>
+          <div class="flow-content">
+            <h4>Pull Request opened</h4>
+            <p>From <code style="color:var(--sunset)">feature/jasper</code> → <code style="color:var(--ocean)">develop</code></p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">3</div>
+          <div class="flow-content">
+            <h4>Auto-deploys to preview URL</h4>
+            <p>Ready for Kyle &amp; Chad to test</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">4</div>
+          <div class="flow-content">
+            <h4>Kyle approves: "Good to go"</h4>
+            <p><code style="color:var(--ocean)">develop</code> merged into <code style="color:var(--cyan)">main</code></p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">5</div>
+          <div class="flow-content">
+            <h4>Auto-deploys to production</h4>
+            <p><code style="color:var(--cyan)">main</code> → <strong>app.lobuddy.com</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>Initial Production Push:</strong> For the first release, <code style="color:var(--sunset)">feature/jasper</code> merges directly into <code style="color:var(--cyan)">main</code> since there's no existing production code to protect. After that, all changes flow through <code style="color:var(--ocean)">develop</code> first.
+      </div>
+
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;margin:32px 0 16px;">Team Roles</h3>
+      <div class="roles-grid">
+        <div class="role-card">
+          <h4>🤖 Jasper</h4>
+          <p>The only one pushing code. Creates PRs, manages merges, handles deployments and tagging.</p>
+        </div>
+        <div class="role-card">
+          <h4>👤 Kyle</h4>
+          <p>Approves merges from develop → main (production deploys). Reviews and tests on the preview URL.</p>
+        </div>
+        <div class="role-card">
+          <h4>👤 Chad</h4>
+          <p>Assists with testing and QA on the preview URL. Reports bugs and feedback.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- VERSIONING -->
+    <div class="section">
+      <h2>Release Versioning</h2>
+      <p class="section-desc">Semantic versioning: <strong>vMAJOR.MINOR.PATCH</strong></p>
+
+      <table class="version-table">
+        <thead>
+          <tr>
+            <th>Part</th>
+            <th>When It Changes</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="version-tag major">MAJOR</span></td>
+            <td>Breaking changes, major redesign, new platform</td>
+            <td>Rebuilding the dashboard from scratch</td>
+          </tr>
+          <tr>
+            <td><span class="version-tag minor">MINOR</span></td>
+            <td>New features, new modules, significant improvements</td>
+            <td>Adding the Realtor portal, new Qualify module</td>
+          </tr>
+          <tr>
+            <td><span class="version-tag patch">PATCH</span></td>
+            <td>Bug fixes, small tweaks, copy changes</td>
+            <td>Fixing a button that wasn't working</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;margin:24px 0 16px;">Proposed Versions</h3>
+      <table class="version-table">
+        <thead>
+          <tr>
+            <th>Version</th>
+            <th>What It Includes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="version-tag minor">v1.0.0</span></td>
+            <td>Initial production release — all Phase 1 &amp; 2 modules (Capture, Follow-Up Coach, Qualify, Validator, Realtor)</td>
+          </tr>
+          <tr>
+            <td><span class="version-tag minor">v1.1.0</span></td>
+            <td>Post-pilot improvements based on GH team feedback</td>
+          </tr>
+          <tr>
+            <td><span class="version-tag patch">v1.0.1</span></td>
+            <td>Any quick bug fixes after launch</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout" style="margin-top:24px;">
+        <strong>Version Visibility:</strong> The current version number is visible in the app's settings/footer area so everyone knows which version they're running.
+      </div>
+    </div>
+
+    <!-- DEPLOYMENT WORKFLOW -->
+    <div class="section">
+      <h2>Production Deployment Workflow</h2>
+      <p class="section-desc">Step-by-step: how code gets from Jasper's branch to the live app.</p>
+
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-number">1</div>
+          <div class="flow-content">
+            <h4>Jasper finishes a feature</h4>
+            <p>Code is complete and locally tested</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">2</div>
+          <div class="flow-content">
+            <h4>PR created → merges into develop</h4>
+            <p>Pull request opened and merged</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">3</div>
+          <div class="flow-content">
+            <h4>Auto-deploys to Preview URL</h4>
+            <p>Vercel builds and deploys the staging version</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">4</div>
+          <div class="flow-content">
+            <h4>Kyle &amp; Chad test</h4>
+            <p>Using the Testing Guide on the preview URL</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">5</div>
+          <div class="flow-content">
+            <h4>Kyle approves: "Good to go"</h4>
+            <p>All tests pass, no blocking issues</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">6</div>
+          <div class="flow-content">
+            <h4>Jasper merges develop → main</h4>
+            <p>Production merge executed</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">7</div>
+          <div class="flow-content">
+            <h4>Auto-deploys to app.lobuddy.com</h4>
+            <p>Production is live 🚀</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">8</div>
+          <div class="flow-content">
+            <h4>Jasper tags the release</h4>
+            <p>e.g., <code style="color:var(--cyan)">v1.1.0</code></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pre-Deployment Checklist -->
+      <div class="checklist">
+        <h3>✅ Pre-Deployment Checklist</h3>
+        <p style="color:var(--steel);font-size:14px;margin-bottom:16px;">Before approving a push to production, verify each item. Click to check off.</p>
+        <div class="checklist-item"><div class="check-box"></div><span><strong>Core flows work</strong> — Can you create a lead via voice? Does the pipeline display correctly?</span></div>
+        <div class="checklist-item"><div class="check-box"></div><span><strong>Login works</strong> — Can you log in with your account? Can a realtor log in?</span></div>
+        <div class="checklist-item"><div class="check-box"></div><span><strong>No console errors</strong> — Open browser dev tools (F12), check the Console tab for red errors</span></div>
+        <div class="checklist-item"><div class="check-box"></div><span><strong>Data looks right</strong> — Are existing opportunities, contacts, and tasks still showing correctly?</span></div>
+        <div class="checklist-item"><div class="check-box"></div><span><strong>Mobile check</strong> — Does the app look okay on a phone-sized screen?</span></div>
+        <div class="checklist-item"><div class="check-box"></div><span><strong>All test scenarios pass</strong> — Refer to the Testing Guide</span></div>
+      </div>
+
+      <!-- Rollback & Hotfix -->
+      <div class="process-cards">
+        <div class="process-card rollback">
+          <h3>🔙 Rollback Strategy</h3>
+          <p style="font-size:14px;color:rgba(248,247,244,0.6);margin-bottom:16px;">If something breaks after a production deploy:</p>
+          <ol class="process-steps">
+            <li>Jasper reverts the merge on <code style="color:var(--cyan)">main</code> (~2 minutes)</li>
+            <li>Vercel auto-deploys the previous working version</li>
+            <li>Production is restored to the last known good state</li>
+            <li>Jasper investigates and fixes on <code style="color:var(--ocean)">develop</code>, then re-deploys</li>
+          </ol>
+          <div class="callout" style="margin-top:16px;">
+            <strong>Key point:</strong> Vercel keeps every deploy. We can instantly roll back to any previous version from the Vercel dashboard.
+          </div>
+        </div>
+
+        <div class="process-card hotfix">
+          <h3>🔥 Hotfix Process</h3>
+          <p style="font-size:14px;color:rgba(248,247,244,0.6);margin-bottom:16px;">For urgent bugs in production:</p>
+          <ol class="process-steps">
+            <li>Jasper creates a <code style="color:var(--sunset)">hotfix/*</code> branch from <code style="color:var(--cyan)">main</code></li>
+            <li>Fix is made and tested locally</li>
+            <li>Hotfix merges directly into <code style="color:var(--cyan)">main</code> (skipping develop for speed)</li>
+            <li>Hotfix also merged into <code style="color:var(--ocean)">develop</code> to keep branches in sync</li>
+            <li>Tagged as a patch version (e.g., <code style="color:var(--cyan)">v1.0.1</code>)</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOM DOMAIN -->
+    <div class="section">
+      <h2>Custom Domain Setup</h2>
+      <p class="section-desc">Connecting <strong>app.lobuddy.com</strong> via GoDaddy to Vercel.</p>
+
+      <div class="dns-card">
+        <h3>Step 1: In Vercel (Jasper)</h3>
+        <ol class="dns-steps">
+          <li>Go to <strong>Project Settings → Domains</strong></li>
+          <li>Add <span class="code-inline">app.lobuddy.com</span></li>
+          <li>Vercel provides DNS records to configure</li>
+        </ol>
+      </div>
+
+      <div class="dns-card">
+        <h3>Step 2: In GoDaddy (Kyle or Chad)</h3>
+        <ol class="dns-steps">
+          <li>Go to <strong>DNS Management</strong> for <span class="code-inline">lobuddy.com</span></li>
+          <li>Add a <strong>CNAME record</strong>:
+            <div class="dns-record">
+              <div><span class="dns-label">Name</span><br>app</div>
+              <div><span class="dns-label">Type</span><br>CNAME</div>
+              <div><span class="dns-label">Value</span><br>cname.vercel-dns.com</div>
+            </div>
+          </li>
+          <li>Or if Vercel requires an <strong>A record</strong>:
+            <div class="dns-record">
+              <div><span class="dns-label">Name</span><br>app</div>
+              <div><span class="dns-label">Type</span><br>A</div>
+              <div><span class="dns-label">Value</span><br>76.76.21.21</div>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="dns-card">
+        <h3>Step 3: Verify &amp; Test</h3>
+        <ol class="dns-steps">
+          <li>After DNS propagates (5–30 minutes), Vercel confirms the domain</li>
+          <li>SSL certificate is <strong>automatically provisioned</strong> (HTTPS)</li>
+          <li>Visit <span class="code-inline">https://app.lobuddy.com</span> — should load the app</li>
+          <li>Verify the <strong>SSL padlock icon</strong> appears in the browser</li>
+        </ol>
+      </div>
+
+      <div class="callout">
+        <strong>Important:</strong> DNS changes can take up to 48 hours but usually happen within 30 minutes. Do NOT delete the existing Vercel URL — it serves as a backup. The domain only points to the <code style="color:var(--cyan)">main</code> branch (production).
+      </div>
+    </div>
+
+    <!-- QUICK REFERENCE -->
+    <div class="section">
+      <h2>Quick Reference</h2>
+
+      <table class="ref-table">
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Who</th>
+            <th>How</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Push new feature</td>
+            <td>Jasper</td>
+            <td>PR → develop → test → main</td>
+          </tr>
+          <tr>
+            <td>Approve for production</td>
+            <td>Kyle</td>
+            <td>Test on preview URL, give thumbs up</td>
+          </tr>
+          <tr>
+            <td>Emergency rollback</td>
+            <td>Jasper</td>
+            <td>Revert on main via Git/Vercel</td>
+          </tr>
+          <tr>
+            <td>Check current version</td>
+            <td>Anyone</td>
+            <td>Look at app footer/settings</td>
+          </tr>
+          <tr>
+            <td>Report a bug</td>
+            <td>Kyle / Chad</td>
+            <td>Note version, describe issue, share screenshot</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer-note">
+      LO Buddy Git &amp; Release Management — February 2026<br>
+      Written in plain language for Kyle, Chad &amp; team leads
+    </div>
+
+  </div>
+
+</body>
+</html>

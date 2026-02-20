@@ -56,4 +56,20 @@ export const articles: Article[] = [
     date: 'Feb 19, 2026',
     published: false,
   },
+  {
+    title: 'LO Buddy Testing Guide',
+    description: 'Step-by-step QA scenarios for each module — Capture, Follow-Up Coach, Qualify, Validator, Realtor',
+    category: 'LO Buddy',
+    date: 'Feb 20, 2026',
+    href: '/artifacts/lo-buddy-testing-guide.html',
+    published: false,
+  },
+  {
+    title: 'LO Buddy Git & Release Guide',
+    description: 'Branch strategy, versioning, deployment workflow, and rollback procedures for the team',
+    category: 'LO Buddy',
+    date: 'Feb 20, 2026',
+    href: '/artifacts/lo-buddy-git-release-guide.html',
+    published: false,
+  },
 ]

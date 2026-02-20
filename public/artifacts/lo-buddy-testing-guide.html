@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LO Buddy — Testing Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --midnight: #0a0a0a;
+      --cream: #f8f7f4;
+      --terracotta: #FFB366;
+      --ocean: #0066FF;
+      --sunset: #FFBA00;
+      --cyan: #22E8E8;
+      --steel: #7A8F9E;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--midnight);
+      color: var(--cream);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+      padding: 80px 24px 60px;
+      text-align: center;
+      background: linear-gradient(180deg, #111 0%, var(--midnight) 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 100px;
+      background: rgba(0,102,255,0.12);
+      color: var(--ocean);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--cream) 0%, var(--ocean) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--steel);
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    .hero-meta {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--steel);
+    }
+
+    .hero-meta span { display: flex; align-items: center; gap: 6px; }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Section */
+    .section {
+      padding: 60px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .section:last-child { border-bottom: none; }
+
+    .section h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .section h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    /* Setup Card */
+    .setup-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    .setup-card h3 { margin-bottom: 16px; }
+
+    .setup-list {
+      list-style: none;
+      counter-reset: setup;
+    }
+
+    .setup-list li {
+      counter-increment: setup;
+      padding: 10px 0 10px 44px;
+      position: relative;
+      color: rgba(248,247,244,0.8);
+      font-size: 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .setup-list li:last-child { border-bottom: none; }
+
+    .setup-list li::before {
+      content: counter(setup);
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(0,102,255,0.15);
+      color: var(--ocean);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .setup-list li strong { color: var(--cream); }
+
+    .tip-box {
+      margin-top: 16px;
+      padding: 16px 20px;
+      background: rgba(34,232,232,0.06);
+      border-left: 3px solid var(--cyan);
+      border-radius: 0 10px 10px 0;
+      font-size: 14px;
+      color: rgba(248,247,244,0.7);
+    }
+
+    .tip-box strong { color: var(--cyan); }
+
+    /* Module Cards */
+    .module-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      transition: border-color 0.2s;
+    }
+
+    .module-card:hover {
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .module-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    .module-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .module-icon.capture { background: rgba(255,179,102,0.15); }
+    .module-icon.followup { background: rgba(0,102,255,0.15); }
+    .module-icon.qualify { background: rgba(34,232,232,0.15); }
+    .module-icon.validator { background: rgba(255,186,0,0.15); }
+    .module-icon.realtor { background: rgba(122,143,158,0.2); }
+
+    .module-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 0;
+    }
+
+    .module-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 16px;
+    }
+
+    .module-badge.capture { background: rgba(255,179,102,0.15); color: var(--terracotta); }
+    .module-badge.followup { background: rgba(0,102,255,0.15); color: var(--ocean); }
+    .module-badge.qualify { background: rgba(34,232,232,0.15); color: var(--cyan); }
+    .module-badge.validator { background: rgba(255,186,0,0.15); color: var(--sunset); }
+    .module-badge.realtor { background: rgba(122,143,158,0.2); color: var(--steel); }
+
+    .module-desc {
+      color: var(--steel);
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+
+    .voice-prompt {
+      background: rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: var(--cream);
+      border-left: 3px solid var(--terracotta);
+    }
+
+    .voice-prompt .label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--terracotta);
+      margin-bottom: 6px;
+    }
+
+    .voice-prompt .prompt-text {
+      font-style: italic;
+      color: rgba(248,247,244,0.85);
+    }
+
+    /* Test Steps */
+    .test-steps {
+      list-style: none;
+      counter-reset: steps;
+      margin-bottom: 20px;
+    }
+
+    .test-steps li {
+      counter-increment: steps;
+      padding: 8px 0 8px 36px;
+      position: relative;
+      color: rgba(248,247,244,0.8);
+      font-size: 14px;
+    }
+
+    .test-steps li::before {
+      content: counter(steps);
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.08);
+      color: var(--steel);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Pass/Fail */
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .result-grid { grid-template-columns: 1fr; }
+    }
+
+    .result-box {
+      padding: 16px;
+      border-radius: 12px;
+    }
+
+    .result-box.pass {
+      background: rgba(34,232,232,0.06);
+      border: 1px solid rgba(34,232,232,0.2);
+    }
+
+    .result-box.fail {
+      background: rgba(255,80,80,0.06);
+      border: 1px solid rgba(255,80,80,0.2);
+    }
+
+    .result-box .result-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .result-box.pass .result-title { color: var(--cyan); }
+    .result-box.fail .result-title { color: #ff5050; }
+
+    .result-box ul {
+      list-style: none;
+      font-size: 13px;
+    }
+
+    .result-box ul li {
+      padding: 4px 0;
+      color: rgba(248,247,244,0.7);
+    }
+
+    .result-box.pass ul li::before { content: '✅ '; }
+    .result-box.fail ul li::before { content: '❌ '; }
+
+    /* Smoke Tests */
+    .smoke-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    .smoke-table th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--steel);
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .smoke-table th:first-child { border-radius: 10px 0 0 0; }
+    .smoke-table th:last-child { border-radius: 0 10px 0 0; }
+
+    .smoke-table td {
+      padding: 12px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: rgba(248,247,244,0.8);
+    }
+
+    .smoke-table td:first-child {
+      font-weight: 600;
+      color: var(--cream);
+      width: 40px;
+      text-align: center;
+    }
+
+    .smoke-table .check-cell {
+      text-align: center;
+      width: 60px;
+    }
+
+    .checkbox-fake {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .checkbox-fake:hover {
+      border-color: var(--cyan);
+      background: rgba(34,232,232,0.1);
+    }
+
+    .checkbox-fake.checked {
+      background: var(--cyan);
+      border-color: var(--cyan);
+    }
+
+    /* Reporting Template */
+    .report-template {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 28px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: rgba(248,247,244,0.7);
+      white-space: pre-wrap;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+
+    .report-template .highlight { color: var(--ocean); font-weight: 600; }
+    .report-template .dim { color: var(--steel); }
+
+    /* Tips Section */
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .tip-card {
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .tip-card .tip-emoji {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+
+    .tip-card h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .tip-card p {
+      font-size: 14px;
+      color: rgba(248,247,244,0.6);
+      line-height: 1.5;
+    }
+
+    .footer-note {
+      margin-top: 48px;
+      padding: 24px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      text-align: center;
+      font-size: 13px;
+      color: var(--steel);
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 60px 20px 40px; }
+      .module-card { padding: 20px; }
+      .hero-meta { flex-direction: column; align-items: center; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="hero-badge">🧪 QA Document</div>
+    <h1>LO Buddy<br>Testing Guide</h1>
+    <p>Step-by-step manual testing scenarios for each module — Capture, Follow-Up Coach, Qualify, Validator, and Realtor.</p>
+    <div class="hero-meta">
+      <span>👥 For Kyle &amp; Chad</span>
+      <span>📅 February 2026</span>
+      <span>📋 5 Modules + Smoke Tests</span>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- SETUP -->
+    <div class="section">
+      <h2>Setup Instructions</h2>
+
+      <div class="setup-card">
+        <h3>Accessing the App</h3>
+        <ol class="setup-list">
+          <li>Open your browser and go to the <strong>preview/staging URL</strong> (provided by Jasper) or <strong>https://app.lobuddy.com</strong> for production</li>
+          <li>Log in with your credentials</li>
+          <li>You should see the main dashboard with the pipeline view</li>
+        </ol>
+      </div>
+
+      <div class="setup-card">
+        <h3>Before You Start Testing</h3>
+        <ol class="setup-list">
+          <li>Use <strong>Chrome</strong> or <strong>Edge</strong> (recommended browsers)</li>
+          <li>Make sure your <strong>microphone is enabled</strong> for voice testing (browser will ask for permission)</li>
+          <li>Have this guide open in a <strong>separate tab</strong> for reference</li>
+          <li>Keep a copy of the <strong>Reporting Template</strong> (at the bottom) open to record results</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- MODULE TESTS -->
+    <div class="section">
+      <h2>Module Test Scenarios</h2>
+
+      <!-- Module 1: Capture -->
+      <div class="module-card">
+        <div class="module-header">
+          <div class="module-icon capture">🎤</div>
+          <h3>Module 1: Capture</h3>
+        </div>
+        <span class="module-badge capture">Voice Lead Creation</span>
+        <p class="module-desc">Creates a new lead/opportunity from a voice command.</p>
+
+        <h4 style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--steel);margin-bottom:12px;">Test Steps</h4>
+        <ol class="test-steps">
+          <li>From the dashboard, open the voice/chat interface</li>
+          <li>Say or type the sample prompt below</li>
+          <li>Wait for the system to process</li>
+        </ol>
+
+        <div class="voice-prompt">
+          <div class="label">🎤 Say or Type</div>
+          <div class="prompt-text">"I just talked to John Smith, he's looking to buy a home around $400,000. His phone is 555-123-4567 and email is john@email.com"</div>
+        </div>
+
+        <div class="result-grid">
+          <div class="result-box pass">
+            <div class="result-title">✓ Expected — Pass</div>
+            <ul>
+              <li>A new contact "John Smith" appears</li>
+              <li>A new opportunity with status "New Lead"</li>
+              <li>Phone number and email saved correctly</li>
+              <li>Loan type set to "Purchase"</li>
+              <li>Estimated amount is ~$400,000</li>
+            </ul>
+          </div>
+          <div class="result-box fail">
+            <div class="result-title">✗ Failure Indicators</div>
+            <ul>
+              <li>No contact or opportunity created</li>
+              <li>Data is missing or scrambled</li>
+              <li>Error message appears</li>
+              <li>Voice input is not recognized at all</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module 2: Follow-Up Coach -->
+      <div class="module-card">
+        <div class="module-header">
+          <div class="module-icon followup">📋</div>
+          <h3>Module 2: Follow-Up Coach</h3>
+        </div>
+        <span class="module-badge followup">Task Creation</span>
+        <p class="module-desc">Creates follow-up tasks for the right user on the right opportunity.</p>
+
+        <h4 style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--steel);margin-bottom:12px;">Test Steps</h4>
+        <ol class="test-steps">
+          <li>Navigate to an existing opportunity (use the one created in Test 1, or any existing one)</li>
+          <li>Via voice or chat, say the sample prompt below</li>
+          <li>Check the Tasks section on the opportunity detail page</li>
+        </ol>
+
+        <div class="voice-prompt">
+          <div class="label">🎤 Say or Type</div>
+          <div class="prompt-text">"Remind me to follow up with John Smith in 2 days"</div>
+        </div>
+
+        <div class="result-grid">
+          <div class="result-box pass">
+            <div class="result-title">✓ Expected — Pass</div>
+            <ul>
+              <li>A new task appears with due date 2 days from now</li>
+              <li>Task is assigned to you (logged-in LO)</li>
+              <li>Task is linked to the correct opportunity</li>
+              <li>Task description references the follow-up</li>
+            </ul>
+          </div>
+          <div class="result-box fail">
+            <div class="result-title">✗ Failure Indicators</div>
+            <ul>
+              <li>No task created</li>
+              <li>Task assigned to the wrong person</li>
+              <li>Task on the wrong opportunity</li>
+              <li>Due date is wrong or missing</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module 3: Qualify -->
+      <div class="module-card">
+        <div class="module-header">
+          <div class="module-icon qualify">🔍</div>
+          <h3>Module 3: Qualify</h3>
+        </div>
+        <span class="module-badge qualify">Discovery Call Data Capture</span>
+        <p class="module-desc">Captures borrower qualification data from a conversation and updates the opportunity.</p>
+
+        <h4 style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--steel);margin-bottom:12px;">Test Steps</h4>
+        <ol class="test-steps">
+          <li>Open an opportunity that's in "Contacted" or "Pre-Qualified" status</li>
+          <li>Via voice or chat, provide the qualification info below</li>
+          <li>Check the opportunity detail page for updated financial data</li>
+        </ol>
+
+        <div class="voice-prompt">
+          <div class="label">🎤 Say or Type</div>
+          <div class="prompt-text">"John Smith makes $85,000 a year, has about $15,000 in savings, his credit score is 720, and he has $500 in monthly debt payments. He's been at his job for 3 years."</div>
+        </div>
+
+        <div class="result-grid">
+          <div class="result-box pass">
+            <div class="result-title">✓ Expected — Pass</div>
+            <ul>
+              <li>Income, assets, credit info are captured</li>
+              <li>Data appears in borrower financials section</li>
+              <li>Opportunity can be advanced to next stage</li>
+            </ul>
+          </div>
+          <div class="result-box fail">
+            <div class="result-title">✗ Failure Indicators</div>
+            <ul>
+              <li>Financial data is not saved</li>
+              <li>Numbers are wrong or mixed up</li>
+              <li>System doesn't recognize financial info</li>
+              <li>Error during processing</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module 4: Validator -->
+      <div class="module-card">
+        <div class="module-header">
+          <div class="module-icon validator">✅</div>
+          <h3>Module 4: Validator</h3>
+        </div>
+        <span class="module-badge validator">Status Transition Checks</span>
+        <p class="module-desc">Checks that required data is present before allowing a status change.</p>
+
+        <h4 style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--steel);margin-bottom:12px;">Test Steps</h4>
+        <ol class="test-steps">
+          <li>Find or create an opportunity in "Pre-Qualified" status</li>
+          <li>Try to advance it to "Pre-Approved" by clicking the status change button</li>
+          <li>The system should show what requirements are met and what's missing</li>
+        </ol>
+
+        <div class="result-grid">
+          <div class="result-box pass">
+            <div class="result-title">✓ Expected — Pass</div>
+            <ul>
+              <li>Validation summary appears showing required items</li>
+              <li>Missing items clearly listed (e.g., "Credit Report needed")</li>
+              <li>Can still proceed (warns but doesn't hard-block)</li>
+              <li>Completion percentage is shown</li>
+            </ul>
+          </div>
+          <div class="result-box fail">
+            <div class="result-title">✗ Failure Indicators</div>
+            <ul>
+              <li>No validation — status just changes</li>
+              <li>Validation shows incorrect requirements</li>
+              <li>System crashes or shows an error</li>
+              <li>Status change completely blocked, no way to proceed</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module 5: Realtor -->
+      <div class="module-card">
+        <div class="module-header">
+          <div class="module-icon realtor">🏠</div>
+          <h3>Module 5: Realtor</h3>
+        </div>
+        <span class="module-badge realtor">Partner Portal</span>
+        <p class="module-desc">Provides realtors with a filtered view of their referred deals.</p>
+
+        <h4 style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--steel);margin-bottom:12px;">Test Steps</h4>
+        <ol class="test-steps">
+          <li>Log out of your LO account</li>
+          <li>Log in as a <strong>realtor/partner</strong> account (credentials provided separately)</li>
+          <li>Check what you can see on the dashboard</li>
+        </ol>
+
+        <div class="result-grid">
+          <div class="result-box pass">
+            <div class="result-title">✓ Expected — Pass</div>
+            <ul>
+              <li>Only opportunities referred by this realtor visible</li>
+              <li>Borrower contact info visible (name, phone, email)</li>
+              <li>Internal notes and credit scores NOT visible</li>
+              <li>Can view loan status and scenarios</li>
+              <li>Can request a pre-approval letter</li>
+              <li>Cannot change loan status or edit financials</li>
+            </ul>
+          </div>
+          <div class="result-box fail">
+            <div class="result-title">✗ Failure Indicators</div>
+            <ul>
+              <li>Realtor can see ALL opportunities</li>
+              <li>Realtor can see internal notes or credit scores</li>
+              <li>Realtor can perform unauthorized actions</li>
+              <li>Empty dashboard when referrals should exist</li>
+              <li>Error on login or page load</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SMOKE TESTS -->
+    <div class="section">
+      <h2>Quick Smoke Tests</h2>
+      <p style="color:var(--steel);font-size:15px;margin-bottom:20px;">Fast checks you can do anytime. Click to mark as passed.</p>
+
+      <table class="smoke-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Test</th>
+            <th>How</th>
+            <th class="check-cell">Pass?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>App loads</td><td>Go to the URL, see the dashboard</td><td class="check-cell"><div class="checkbox-fake" onclick="this.classList.toggle('checked')"></div></td></tr>
+          <tr><td>2</td><td>Login works</td><td>Log in with your credentials</td><td class="check-cell"><div class="checkbox-fake" onclick="this.classList.toggle('checked')"></div></td></tr>
+          <tr><td>3</td><td>Pipeline shows deals</td><td>See opportunities in the pipeline view</td><td class="check-cell"><div class="checkbox-fake" onclick="this.classList.toggle('checked')"></div></td></tr>
+          <tr><td>4</td><td>Can open a deal</td><td>Click on any opportunity, see detail page</td><td class="check-cell"><div class="checkbox-fake" onclick="this.classList.toggle('checked')"></div></td></tr>
+          <tr><td>5</td><td>Voice works</td><td>Click mic, speak, see transcription</td><td class="check-cell"><div class="checkbox-fake" onclick="this.classList.toggle('checked')"></div></td></tr>
+          <tr><td>6</td><td>Can create a task</td><td>Create a manual task on any opportunity</td><td class="check-cell"><div class="checkbox-fake" onclick="this.classList.toggle('checked')"></div></td></tr>
+          <tr><td>7</td><td>Notes save</td><td>Add a note, refresh, still there</td><td class="check-cell"><div class="checkbox-fake" onclick="this.classList.toggle('checked')"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- REPORTING TEMPLATE -->
+    <div class="section">
+      <h2>Reporting Template</h2>
+      <p style="color:var(--steel);font-size:15px;margin-bottom:20px;">Copy this for each testing session. Fill it out and send to Jasper.</p>
+
+      <div class="report-template"><span class="highlight">TESTING REPORT</span>
+<span class="highlight">==============</span>
+Date: ___________
+Tester: ___________
+Environment: [ ] Preview  [ ] Production
+App Version: ___________
+
+<span class="highlight">MODULE 1 — CAPTURE</span>
+  Result: [ ] PASS  [ ] FAIL  [ ] PARTIAL
+  Notes:
+
+<span class="highlight">MODULE 2 — FOLLOW-UP COACH</span>
+  Result: [ ] PASS  [ ] FAIL  [ ] PARTIAL
+  Notes:
+
+<span class="highlight">MODULE 3 — QUALIFY</span>
+  Result: [ ] PASS  [ ] FAIL  [ ] PARTIAL
+  Notes:
+
+<span class="highlight">MODULE 4 — VALIDATOR</span>
+  Result: [ ] PASS  [ ] FAIL  [ ] PARTIAL
+  Notes:
+
+<span class="highlight">MODULE 5 — REALTOR</span>
+  Result: [ ] PASS  [ ] FAIL  [ ] PARTIAL
+  Notes:
+
+<span class="dim">SMOKE TESTS (1-7): __ / 7 passed
+
+BUGS FOUND:
+1.
+2.
+3.
+
+SCREENSHOTS: (attach or link)
+
+OVERALL: [ ] Ready for production  [ ] Needs fixes</span></div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="section">
+      <h2>Testing Tips</h2>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-emoji">📸</div>
+          <h4>Screenshots Are Gold</h4>
+          <p>If something looks wrong, screenshot it. Include the URL from the browser bar.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🤪</div>
+          <h4>Try Weird Inputs</h4>
+          <p>Type names with special characters, leave fields blank, use very long text. Break it on purpose.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">📱</div>
+          <h4>Test on Your Phone</h4>
+          <p>Open the app URL on your phone browser too. Things can look different on mobile.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">⚡</div>
+          <h4>Report Immediately</h4>
+          <p>Don't wait to batch reports. A quick message to Jasper helps fix things faster.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🔀</div>
+          <h4>"PARTIAL" Is Valid</h4>
+          <p>Means it mostly works but something was off — describe what in your notes.</p>
+        </div>
+        <div class="tip-card">
+          <div class="tip-emoji">🔗</div>
+          <h4>Note the URL</h4>
+          <p>If you see a broken page, copy the URL from the browser bar and include it in your report.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      LO Buddy Testing Guide — February 2026<br>
+      For Kyle &amp; Chad · Report bugs to Jasper
+    </div>
+
+  </div>
+
+</body>
+</html>

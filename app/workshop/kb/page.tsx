@@ -11,6 +11,8 @@ const iconMap: Record<string, LucideIcon> = {
   '/artifacts/multi-agent-research': Brain,
   '/artifacts/lo-buddy-chad-meeting': MessageSquare,
   '/artifacts/Designer-Contractor_Partnership_Guide.md': FileText,
+  '/artifacts/lo-buddy-testing-guide.html': Cpu,
+  '/artifacts/lo-buddy-git-release-guide.html': Cpu,
 }
 
 const colorMap: Record<string, string> = {
@@ -20,6 +22,8 @@ const colorMap: Record<string, string> = {
   '/artifacts/multi-agent-research': 'ocean',
   '/artifacts/lo-buddy-chad-meeting': 'ocean',
   '/artifacts/Designer-Contractor_Partnership_Guide.md': 'terracotta',
+  '/artifacts/lo-buddy-testing-guide.html': 'ocean',
+  '/artifacts/lo-buddy-git-release-guide.html': 'ocean',
 }
 
 const contextFiles = [
