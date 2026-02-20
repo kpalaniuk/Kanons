@@ -141,8 +141,7 @@ function HeroWithConnector() {
   const labelOpacity3 = useTransform(scrollYProgress, [0.7, 0.8], [0, 1])
 
   return (
-    <div ref={sectionRef} style={{ height: '180vh' }} className="relative">
-    <section className="sticky top-0 pt-20 md:pt-32 pb-10 relative overflow-hidden bg-paper min-h-screen z-10">
+    <section ref={sectionRef} className="pt-20 md:pt-32 pb-10 relative overflow-hidden">
       {/* Decorative shapes — drift toward the line */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -228,7 +227,6 @@ function HeroWithConnector() {
         </div>
       </div>
     </section>
-    </div>
   )
 }
 
