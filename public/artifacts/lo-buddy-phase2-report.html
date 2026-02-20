@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LO Buddy Phase 2: Architecture Build Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --midnight: #0a0a0a;
+            --cream: #f8f7f4;
+            --ocean: #0066FF;
+            --cyan: #22E8E8;
+            --terracotta: #FFB366;
+            --sunset: #FFBA00;
+            --card-bg: #131313;
+            --border: #222;
+        }
+
+        body {
+            background: var(--midnight);
+            color: var(--cream);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--cream);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin: 3rem 0 1.5rem;
+            color: var(--cyan);
+            border-bottom: 2px solid var(--ocean);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            color: var(--terracotta);
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--cream);
+        }
+
+        a {
+            color: var(--ocean);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--cyan);
+        }
+
+        .header {
+            text-align: center;
+            padding: 3rem 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 3rem;
+        }
+
+        .meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            color: #999;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .meta-label {
+            color: var(--cyan);
+            font-weight: 600;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            transition: border-color 0.3s, transform 0.2s;
+        }
+
+        .card:hover {
+            border-color: var(--ocean);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background: rgba(34, 232, 232, 0.15);
+            color: var(--cyan);
+            border: 1px solid var(--cyan);
+        }
+
+        .badge-highlight {
+            background: rgba(255, 179, 102, 0.15);
+            color: var(--terracotta);
+            border: 1px solid var(--terracotta);
+        }
+
+        .badge-warning {
+            background: rgba(255, 186, 0, 0.15);
+            color: var(--sunset);
+            border: 1px solid var(--sunset);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #1a1a1a 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+            border-color: var(--ocean);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--ocean);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .module-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: border-color 0.3s, transform 0.2s;
+        }
+
+        .module-card:hover {
+            border-color: var(--ocean);
+            transform: translateY(-4px);
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .module-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--cyan);
+        }
+
+        .line-count {
+            font-size: 1rem;
+            color: var(--terracotta);
+            font-weight: 600;
+        }
+
+        .module-features {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .module-features li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            font-size: 0.95rem;
+            color: #ccc;
+        }
+
+        .module-features li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--ocean);
+            font-weight: bold;
+        }
+
+        .architecture {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            margin: 3rem 0;
+        }
+
+        .arch-layer {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border-left: 4px solid var(--ocean);
+            background: rgba(0, 102, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .arch-layer-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--cyan);
+            margin-bottom: 1rem;
+        }
+
+        .arch-components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .arch-component {
+            background: var(--midnight);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .arch-component-name {
+            font-weight: 600;
+            color: var(--cream);
+            margin-bottom: 0.25rem;
+        }
+
+        .arch-component-lines {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .arch-component-type {
+            color: var(--terracotta);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .arrow-down {
+            text-align: center;
+            color: var(--ocean);
+            font-size: 2rem;
+            margin: 1rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        thead {
+            background: rgba(0, 102, 255, 0.1);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--cyan);
+            border-bottom: 2px solid var(--ocean);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr:hover {
+            background: rgba(0, 102, 255, 0.05);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .commit-timeline {
+            margin: 2rem 0;
+        }
+
+        .commit {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .commit::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            background: var(--ocean);
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.2);
+        }
+
+        .commit::after {
+            content: "";
+            position: absolute;
+            left: 5px;
+            top: 1.5rem;
+            width: 2px;
+            height: calc(100% + 1rem);
+            background: var(--border);
+        }
+
+        .commit:last-child::after {
+            display: none;
+        }
+
+        .commit-hash {
+            font-family: 'Courier New', monospace;
+            color: var(--terracotta);
+            font-size: 0.9rem;
+            font-weight: 600;
+            min-width: 80px;
+        }
+
+        .commit-message {
+            flex: 1;
+            color: var(--cream);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.1) 0%, rgba(34, 232, 232, 0.1) 100%);
+            border: 1px solid var(--ocean);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .highlight-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+            color: var(--cyan);
+        }
+
+        .warning-box {
+            background: rgba(255, 186, 0, 0.1);
+            border: 1px solid var(--sunset);
+            border-left: 4px solid var(--sunset);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .warning-title {
+            color: var(--sunset);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        ul {
+            margin-left: 2rem;
+            margin-top: 0.5rem;
+        }
+
+        li {
+            margin: 0.5rem 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        code {
+            background: rgba(0, 102, 255, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: var(--cyan);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .module-grid,
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>LO Buddy Phase 2: Architecture Build</h1>
+        <div class="meta">
+            <div class="meta-item">
+                <span class="meta-label">Date:</span>
+                <span>February 20, 2026</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Author:</span>
+                <span>Jasper</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Branch:</span>
+                <code>feature/jasper</code>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">For:</span>
+                <span>Kyle & Chad</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="highlight-box">
+        <div class="highlight-text">
+            11 commits. 6,643 lines added. 743 lines removed. The monolith has been broken.
+        </div>
+    </div>
+
+    <section>
+        <h2>Executive Summary</h2>
+        <div class="card">
+            <p>The 3,388-line <code>tool-calling-agent.service.ts</code> has been decomposed into a modular architecture with 5 specialized agent modules, a model router, a soul security cage, an org hierarchy, and a full orchestrator — all pushed to <code>feature/jasper</code>. The monolith is now down to 3,223 lines (still needs further trimming as module logic fully takes over, but the extraction is done).</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">11</div>
+                <div class="stat-label">Commits</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">6,643</div>
+                <div class="stat-label">Lines Added</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">743</div>
+                <div class="stat-label">Lines Removed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">~6,064</div>
+                <div class="stat-label">New Code</div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Agent Modules</h2>
+        <p>Five specialized modules extracted from the monolith, each with dedicated responsibilities and optimized for specific task types.</p>
+        
+        <div class="module-grid">
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-name">Follow-Up Coach</div>
+                    <div class="line-count">837 lines</div>
+                </div>
+                <span class="badge badge-highlight">Strategic</span>
+                <ul class="module-features">
+                    <li>DB-backed contact attempt logging</li>
+                    <li>Interest level tracking (1-10 scale)</li>
+                    <li>Lead-source-aware cadence tables</li>
+                    <li>Escalation rules (3 failed → switch channel)</li>
+                    <li>Banned phrase detection (compliance)</li>
+                    <li>Message template system with variables</li>
+                    <li>Auto-task creation pipeline</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-name">Capture</div>
+                    <div class="line-count">867 lines</div>
+                </div>
+                <span class="badge badge-success">Fast</span>
+                <ul class="module-features">
+                    <li>Ultra-fast lead creation from voice/text</li>
+                    <li>Referral source tracking with partner attribution</li>
+                    <li>Email/phone validation with confirm-back</li>
+                    <li>Duplicate detection (fuzzy name matching)</li>
+                    <li>"LO Buddy Wants to Know" missing data prompts</li>
+                    <li>Voice-to-lead pipeline integration</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-name">Qualify</div>
+                    <div class="line-count">764 lines</div>
+                </div>
+                <span class="badge badge-highlight">Precision</span>
+                <ul class="module-features">
+                    <li>Discovery call data capture</li>
+                    <li>Financial data extraction (income, assets, debts)</li>
+                    <li>DTI calculation and loan eligibility check</li>
+                    <li>Qualification scoring with confidence levels</li>
+                    <li>Pre-approval letter generation triggers</li>
+                    <li>Employment verification tracking</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-name">Validator</div>
+                    <div class="line-count">593 lines</div>
+                </div>
+                <span class="badge badge-success">General</span>
+                <ul class="module-features">
+                    <li>Status transition validation</li>
+                    <li>Completion percentage per stage</li>
+                    <li>Missing-item identification</li>
+                    <li>Soft vs hard validation modes</li>
+                    <li>PM checkpoint disabled from UI</li>
+                    <li>Configurable requirements per stage</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-name">Realtor</div>
+                    <div class="line-count">714 lines</div>
+                </div>
+                <span class="badge badge-success">General</span>
+                <ul class="module-features">
+                    <li>Filtered opportunity views (strips sensitive data)</li>
+                    <li>Partner-safe activity types only</li>
+                    <li>Permission enforcement (ALLOWED/DENIED)</li>
+                    <li>Realtor dashboard with engagement metrics</li>
+                    <li>Portal invitation system</li>
+                    <li>Login tracking and active status</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Architecture Overview</h2>
+        <div class="architecture">
+            <div class="arch-layer">
+                <div class="arch-layer-title">Frontend Layer (Next.js)</div>
+                <p>Voice Orb → Quick Actions → Navigation Directives</p>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <div class="arch-layer">
+                <div class="arch-layer-title">Orchestration Layer</div>
+                <div class="arch-components">
+                    <div class="arch-component">
+                        <div class="arch-component-name">Module Selector</div>
+                        <div class="arch-component-lines">499 lines</div>
+                        <div class="arch-component-type">Rules + LLM hybrid routing</div>
+                    </div>
+                    <div class="arch-component">
+                        <div class="arch-component-name">Quick Actions API</div>
+                        <div class="arch-component-lines">/api/agent/quick-actions</div>
+                        <div class="arch-component-type">Context-aware buttons</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <div class="arch-layer">
+                <div class="arch-layer-title">Agent Modules (5 Specialized Services)</div>
+                <div class="arch-components">
+                    <div class="arch-component">
+                        <div class="arch-component-name">Capture</div>
+                        <div class="arch-component-lines">867 lines</div>
+                        <div class="arch-component-type">fast</div>
+                    </div>
+                    <div class="arch-component">
+                        <div class="arch-component-name">Qualify</div>
+                        <div class="arch-component-lines">764 lines</div>
+                        <div class="arch-component-type">precision</div>
+                    </div>
+                    <div class="arch-component">
+                        <div class="arch-component-name">Follow-Up Coach</div>
+                        <div class="arch-component-lines">837 lines</div>
+                        <div class="arch-component-type">strategic</div>
+                    </div>
+                    <div class="arch-component">
+                        <div class="arch-component-name">Validator</div>
+                        <div class="arch-component-lines">593 lines</div>
+                        <div class="arch-component-type">general</div>
+                    </div>
+                    <div class="arch-component">
+                        <div class="arch-component-name">Realtor</div>
+                        <div class="arch-component-lines">714 lines</div>
+                        <div class="arch-component-type">general</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <div class="arch-layer">
+                <div class="arch-layer-title">Infrastructure Layer</div>
+                <div class="arch-components">
+                    <div class="arch-component">
+                        <div class="arch-component-name">Model Router</div>
+                        <div class="arch-component-lines">531 lines</div>
+                        <div class="arch-component-type">OpenRouter + Budget Mgmt</div>
+                    </div>
+                    <div class="arch-component">
+                        <div class="arch-component-name">Soul Security</div>
+                        <div class="arch-component-lines">271 lines</div>
+                        <div class="arch-component-type">3-Layer Cage</div>
+                    </div>
+                    <div class="arch-component">
+                        <div class="arch-component-name">Activity Service</div>
+                        <div class="arch-component-lines">537 lines</div>
+                        <div class="arch-component-type">Contact Log + Auto-tasks</div>
+                    </div>
+                    <div class="arch-component">
+                        <div class="arch-component-name">Team Soul Types</div>
+                        <div class="arch-component-lines">184 lines</div>
+                        <div class="arch-component-type">Config Interfaces</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <div class="arch-layer">
+                <div class="arch-layer-title">Data Layer (Supabase)</div>
+                <p>organizations → teams → team_members → users<br>
+                   token_usage + team_budget_settings<br>
+                   2 new migrations ready to deploy</p>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Module Selector & Quick Actions</h2>
+        <div class="card">
+            <h4>Hybrid Routing System</h4>
+            <p>Combines rules-based keyword matching with LLM fallback for ambiguous input. Smart enough to route "I just talked to a lead" to Capture, but flexible enough to handle natural language variations.</p>
+            
+            <h4 style="margin-top: 2rem;">Quick Action Buttons (Up to 8 Around Voice Orb)</h4>
+            <ul>
+                <li><strong>6 staple buttons:</strong> New Lead, Brain Dump, Get Status, To-Do, New Realtor Partner, Ask Buddy</li>
+                <li><strong>Dynamic buttons:</strong> Based on pipeline state (SLA breaches, overdue tasks, new leads)</li>
+                <li><strong>Navigation directives:</strong> Agent responses include <code>{ navigate: "/path" }</code> for UI control</li>
+                <li><strong>Act-then-ask pattern:</strong> Execute action → show result → offer 2-3 follow-up buttons</li>
+                <li><strong>API endpoint:</strong> <code>GET /api/agent/quick-actions</code> with 5-minute frontend cache</li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>Team Soul Architecture</h2>
+        <div class="card">
+            <h3>Three-Layer Security Model</h3>
+            
+            <h4>Layer 1: JSON Config (Locked, Code-Level)</h4>
+            <ul>
+                <li><code>LOBUDDY_PERSONA.json</code> — Core personality, assertiveness 8/10</li>
+                <li><code>LOBUDDY_PERMISSIONS.json</code> — Role hierarchy + capability matrix</li>
+                <li><code>LOBUDDY_STAGES.json</code> — 13-stage pipeline lifecycle</li>
+                <li><code>LOBUDDY_SLA_CONFIG.json</code> — SLA thresholds + escalation chains</li>
+            </ul>
+
+            <h4 style="margin-top: 1.5rem;">Layer 2: Security Cage (Enforced at Runtime)</h4>
+            <ul>
+                <li><code>isOffTopic()</code> — Keyword-based off-topic detection</li>
+                <li><code>isPersonalityViolation()</code> — Validates soul config within bounds</li>
+                <li><code>checkCrossTeamAccess()</code> — Blocks + escalates cross-team data access</li>
+                <li><code>checkSelfElevation()</code> — Prevents self-role-promotion</li>
+                <li><code>checkComplianceRedFlags()</code> — Passive RESPA/Fair Lending flags</li>
+            </ul>
+
+            <h4 style="margin-top: 1.5rem;">Layer 3: Team Soul (DB-Configurable)</h4>
+            <ul>
+                <li><code>TeamSoulConfig</code> interface with all configurable fields</li>
+                <li><code>DEFAULT_SOUL_CONFIG</code> constant as baseline</li>
+                <li>Configurable per-team personality adjustments</li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>Model Router & Budget Management</h2>
+        <div class="card">
+            <h4>Task Classification & Model Selection</h4>
+            <ul>
+                <li><strong>Precision tasks:</strong> Qualify module → Claude Sonnet, GPT-4.1</li>
+                <li><strong>Fast tasks:</strong> Capture module → GPT-4.1-mini, Claude Haiku</li>
+                <li><strong>Strategic tasks:</strong> Follow-Up Coach → Claude Sonnet, GPT-4.1</li>
+                <li><strong>General tasks:</strong> Fallback to primary models</li>
+            </ul>
+
+            <h4 style="margin-top: 1.5rem;">Budget-Aware Routing</h4>
+            <ul>
+                <li><strong>Normal (&lt; 80%):</strong> Primary models (Claude Sonnet, GPT-4.1)</li>
+                <li><strong>Warning (80-100%):</strong> Cheaper models (Haiku, GPT-4.1-mini)</li>
+                <li><strong>Degraded (&gt; 100%):</strong> Cheapest only (Haiku, Flash)</li>
+            </ul>
+
+            <h4 style="margin-top: 1.5rem;">Token Usage Tracking</h4>
+            <ul>
+                <li>New <code>token_usage</code> table (team_id, model, task_type, tokens, cost)</li>
+                <li>New <code>team_budget_settings</code> table (per-team config)</li>
+                <li>API: <code>GET /api/admin/token-usage</code> for team and admin views</li>
+                <li>60-second cache on budget checks to avoid DB hits</li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>New Files Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>File</th>
+                    <th>Lines</th>
+                    <th>Purpose</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>services/agent-modules/modules/followup-coach.module.ts</code></td>
+                    <td>837</td>
+                    <td>Follow-up strategy, cadences, banned phrases</td>
+                </tr>
+                <tr>
+                    <td><code>services/agent-modules/modules/capture.module.ts</code></td>
+                    <td>867</td>
+                    <td>Voice lead creation, duplicate detection</td>
+                </tr>
+                <tr>
+                    <td><code>services/agent-modules/modules/qualify.module.ts</code></td>
+                    <td>764</td>
+                    <td>Discovery call capture, DTI, eligibility</td>
+                </tr>
+                <tr>
+                    <td><code>services/agent-modules/modules/validator.module.ts</code></td>
+                    <td>593</td>
+                    <td>Status transition validation</td>
+                </tr>
+                <tr>
+                    <td><code>services/agent-modules/modules/realtor.module.ts</code></td>
+                    <td>714</td>
+                    <td>Partner portal, filtered views, permissions</td>
+                </tr>
+                <tr>
+                    <td><code>services/agent-modules/module-selector.service.ts</code></td>
+                    <td>499</td>
+                    <td>Hybrid routing, quick actions, navigation</td>
+                </tr>
+                <tr>
+                    <td><code>services/model-router.service.ts</code></td>
+                    <td>531</td>
+                    <td>OpenRouter routing, budget enforcement</td>
+                </tr>
+                <tr>
+                    <td><code>services/soul-security.service.ts</code></td>
+                    <td>271</td>
+                    <td>Security cage (Layer 2)</td>
+                </tr>
+                <tr>
+                    <td><code>services/followup-coach-hook.service.ts</code></td>
+                    <td>267</td>
+                    <td>Auto-task creation hook</td>
+                </tr>
+                <tr>
+                    <td><code>services/activity.service.ts</code></td>
+                    <td>537</td>
+                    <td>Contact logging, activity tracking</td>
+                </tr>
+                <tr>
+                    <td><code>types/team-soul.types.ts</code></td>
+                    <td>184</td>
+                    <td>Soul config types, org/team/member types</td>
+                </tr>
+                <tr>
+                    <td><code>config/LOBUDDY_PERSONA.json</code></td>
+                    <td>24</td>
+                    <td>Core personality config</td>
+                </tr>
+                <tr>
+                    <td><code>config/LOBUDDY_PERMISSIONS.json</code></td>
+                    <td>98</td>
+                    <td>Role hierarchy + capabilities</td>
+                </tr>
+                <tr>
+                    <td><code>config/LOBUDDY_STAGES.json</code></td>
+                    <td>102</td>
+                    <td>13-stage pipeline lifecycle</td>
+                </tr>
+                <tr>
+                    <td><code>config/LOBUDDY_SLA_CONFIG.json</code></td>
+                    <td>76</td>
+                    <td>SLA thresholds + escalation</td>
+                </tr>
+                <tr>
+                    <td><code>docs/TESTING-GUIDE.md</code></td>
+                    <td>225</td>
+                    <td>Manual test scenarios per module</td>
+                </tr>
+                <tr>
+                    <td><code>docs/GIT-AND-RELEASE-MANAGEMENT.md</code></td>
+                    <td>173</td>
+                    <td>Branch strategy + deploy workflow</td>
+                </tr>
+                <tr>
+                    <td><code>docs/FOLLOWUP_COACH.md</code></td>
+                    <td>77</td>
+                    <td>Follow-up coach technical docs</td>
+                </tr>
+                <tr>
+                    <td><code>supabase/migrations/202602200000...</code></td>
+                    <td>87</td>
+                    <td>Org hierarchy + soul enhancements</td>
+                </tr>
+                <tr>
+                    <td><code>supabase/migrations/202602201000...</code></td>
+                    <td>57</td>
+                    <td>Token usage tracking tables</td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="text-align: right; font-weight: 600; color: var(--cyan); border-top: 2px solid var(--ocean);">
+                        TOTAL NEW CODE: ~6,064 lines
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>Commit Timeline</h2>
+        <div class="commit-timeline">
+            <div class="commit">
+                <div class="commit-hash">918e035</div>
+                <div class="commit-message">feat(modules): wire follow-up coach auto-task creation after contact attempts</div>
+            </div>
+            <div class="commit">
+                <div class="commit-hash">f3e72dc</div>
+                <div class="commit-message">Phase 2 Step 1: Extract Follow-Up Coach module from monolith</div>
+            </div>
+            <div class="commit">
+                <div class="commit-hash">72c6f37</div>
+                <div class="commit-message">Phase 2 Step 2: Extract Capture Module from monolith</div>
+            </div>
+            <div class="commit">
+                <div class="commit-hash">1620d04</div>
+                <div class="commit-message">Phase 2 Step 3: Qualify Module extraction — full QualifyService</div>
+            </div>
+            <div class="commit">
+                <div class="commit-hash">ce984d7</div>
+                <div class="commit-message">Phase 2 Step 4: Extract Validator Module from monolith</div>
+            </div>
+            <div class="commit">
+                <div class="commit-hash">428e485</div>
+                <div class="commit-message">Phase 2, Step 5: Realtor module extraction</div>
+            </div>
+            <div class="commit">
+                <div class="commit-hash">4d9882c</div>
+                <div class="commit-message">Phase 2 Step 6: Module Selector / Orchestrator (Q7)</div>
+            </div>
+            <div class="commit">
+                <div class="commit-hash">59d97bf</div>
+                <div class="commit-message">feat: Team Soul Architecture (Layer 1-3) + Org hierarchy migration</div>
+            </div>
+            <div class="commit">
+                <div class="commit-hash">04c3722</div>
+                <div class="commit-message">feat: OpenRouter model routing, token usage tracking, budget enforcement</div>
+            </div>
+            <div class="commit">
+                <div class="commit-hash">8b15423</div>
+                <div class="commit-message">Phase 2 Steps 9-11: Deployment docs, PM checkpoint disabled, testing guide</div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>What's Not Done Yet</h2>
+        
+        <div class="warning-box">
+            <div class="warning-title">⚠️ Migrations Need to Run</div>
+            <p>Two new Supabase migrations are ready but <strong>not yet pushed to the database</strong>:</p>
+            <ul>
+                <li><code>20260220000000_organizations_and_soul_enhancements.sql</code></li>
+                <li><code>20260220100000_token_usage_tracking.sql</code></li>
+            </ul>
+            <p><strong>Action needed:</strong> <code>supabase db push --linked</code> (or review migrations first)</p>
+        </div>
+
+        <div class="card">
+            <h3>Frontend Wiring</h3>
+            <p>The backend modules are built, but the frontend needs updates to:</p>
+            <ul>
+                <li>Consume <code>navigation</code> directives from agent responses → <code>router.push()</code></li>
+                <li>Render <code>quickActions</code> buttons around the voice orb</li>
+                <li>Show follow-up suggestion buttons after agent responses</li>
+                <li>Hit <code>/api/agent/quick-actions</code> for contextual button loading</li>
+            </ul>
+
+            <h3 style="margin-top: 2rem;">Monolith Still Exists (3,223 lines)</h3>
+            <p>The monolith (<code>tool-calling-agent.service.ts</code>) has been <strong>extended</strong> to call modules but not yet <strong>gutted</strong>. The old inline logic is still there alongside the new module calls. Next phase: strip the duplicated logic from the monolith as modules prove stable.</p>
+
+            <h3 style="margin-top: 2rem;">OpenRouter Key Not Wired</h3>
+            <p>The model router service is built with OpenRouter support, but the actual API key (<code>sk-or-v1-...</code>) needs to be set as an environment variable. Currently the router will fall through to whatever LLM provider is already configured.</p>
+
+            <h3 style="margin-top: 2rem;">Jasper's 8 Clarification Questions</h3>
+            <p>Still awaiting Kyle's answers on:</p>
+            <ol>
+                <li>Budget throttling — degrade models or hard-stop?</li>
+                <li>Cadence customization — overall dial vs per-source?</li>
+                <li>Navigation from agent — how to handle <code>router.push()</code>?</li>
+                <li>Knowledge base — static markdown or dynamic?</li>
+                <li>Org vs team — model both or team-only for pilot?</li>
+                <li>Follow-up coach — banned phrases list for San Diego market?</li>
+                <li>Realtor portal — what portal engagement metrics matter most?</li>
+                <li>Testing — automated tests or manual validation?</li>
+            </ol>
+        </div>
+    </section>
+
+    <section>
+        <h2>Next Steps (Recommended Priority)</h2>
+        <div class="card">
+            <ol>
+                <li><strong>Review this report</strong> — Flag anything that looks off or needs re-architecture</li>
+                <li><strong>Run migrations</strong> — Push the 2 new SQL files to Supabase</li>
+                <li><strong>Wire frontend</strong> — Quick actions, navigation directives, follow-up buttons</li>
+                <li><strong>Set OpenRouter env var</strong> — Enable real model routing</li>
+                <li><strong>Test each module</strong> — Use the Testing Guide, report per module</li>
+                <li><strong>Strip monolith</strong> — As modules prove stable, remove duplicated logic</li>
+                <li><strong>Connect staging</strong> — Vercel preview for <code>feature/jasper</code> branch</li>
+            </ol>
+        </div>
+    </section>
+
+    <div class="footer">
+        <p>Generated by Jasper • February 20, 2026</p>
+        <p>LO Buddy Phase 2: Architecture Build Report</p>
+    </div>
+</body>
+</html>

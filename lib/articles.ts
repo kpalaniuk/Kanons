@@ -72,4 +72,12 @@ export const articles: Article[] = [
     href: '/artifacts/lo-buddy-git-release-guide.html',
     published: false,
   },
+  {
+    title: 'LO Buddy Phase 2: Architecture Build Report',
+    description: '11 commits, 6,643 lines added. Full progress report on modular architecture, 5 specialized agent modules, model router, soul security cage, and orchestration layer.',
+    category: 'project',
+    date: 'Feb 20, 2026',
+    href: '/artifacts/lo-buddy-phase2-report.html',
+    published: false,
+  },
 ]
