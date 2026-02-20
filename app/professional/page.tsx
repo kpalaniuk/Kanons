@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import AnimatedSection from '@/components/AnimatedSection'
+import { Briefcase, GraduationCap, Globe, Heart, Building2, Music, Palette, Mic, Mail } from 'lucide-react'
 
 export default function Professional() {
   return (
@@ -24,7 +25,7 @@ export default function Professional() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="font-display text-5xl md:text-7xl text-midnight mb-6 max-w-4xl"
           >
-            Operations Leadership & Strategic Growth
+            Consultant, Builder, Connector
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -32,65 +33,74 @@ export default function Professional() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-xl text-midnight/60 max-w-2xl"
           >
-            Building efficient systems and leading teams in the mortgage and real estate industry.
+            Mortgage planning, systems design, and strategic operations — through Granada House Design LLC.
           </motion.p>
         </div>
       </section>
 
-      {/* Current Role */}
+      {/* Current Role — Granada House Design LLC */}
       <AnimatedSection className="py-20 bg-sand">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="grid md:grid-cols-2 gap-16 items-start">
             <div>
-              <p className="text-ocean font-medium mb-2 text-sm uppercase tracking-wider">Current Role</p>
+              <div className="flex items-center gap-3 mb-2">
+                <Building2 className="w-5 h-5 text-ocean" />
+                <p className="text-ocean font-medium text-sm uppercase tracking-wider">Current Role</p>
+              </div>
               <h2 className="font-display text-3xl md:text-4xl text-midnight mb-2">
-                Chief Operating Officer
+                Granada House Design LLC
               </h2>
-              <p className="text-terracotta font-medium mb-6">SDMC (San Diego Mortgage Couple)</p>
+              <p className="text-terracotta font-medium mb-6">Founder & Principal Consultant</p>
               <div className="text-midnight/70 space-y-4">
                 <p>
-                  As COO, I oversee the operational backbone that keeps our team 
-                  running smoothly. From systems optimization to team coordination, 
-                  my focus is on creating the infrastructure that lets our people 
-                  do their best work.
+                  Granada House Design is a multi-disciplinary consulting practice 
+                  spanning mortgage planning, business operations, interior design, 
+                  and creative ventures — all rooted in San Diego's North Park neighborhood.
                 </p>
                 <p>
-                  We've built SDMC on the principle that the mortgage process doesn't 
-                  have to be stressful. By investing in operations, we ensure our 
-                  clients get a seamless experience from first call to closing.
+                  Through GH Design, I serve as a strategic consultant across several 
+                  organizations, bringing systems thinking and operational expertise 
+                  to every engagement.
                 </p>
               </div>
             </div>
             
             <div className="bg-cream rounded-2xl p-8">
-              <h3 className="font-semibold text-midnight mb-6">Key Focus Areas</h3>
-              <ul className="space-y-4">
+              <h3 className="font-semibold text-midnight mb-6">Consulting Engagements</h3>
+              <ul className="space-y-5">
                 <li className="flex items-start gap-3">
-                  <span className="w-2 h-2 bg-terracotta rounded-full mt-2" />
+                  <span className="w-2 h-2 bg-ocean rounded-full mt-2 flex-shrink-0" />
                   <div>
-                    <p className="font-medium text-midnight">Systems & Process Design</p>
-                    <p className="text-midnight/60 text-sm">Building workflows that scale</p>
+                    <p className="font-medium text-midnight">Plan Prepare Home</p>
+                    <p className="text-midnight/60 text-sm">Mortgage brokerage — education-driven lending, automation-forward operations</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="w-2 h-2 bg-terracotta rounded-full mt-2" />
+                  <span className="w-2 h-2 bg-ocean rounded-full mt-2 flex-shrink-0" />
                   <div>
-                    <p className="font-medium text-midnight">Team Leadership</p>
-                    <p className="text-midnight/60 text-sm">Developing people and culture</p>
+                    <p className="font-medium text-midnight">SDMC (San Diego Mortgage Couple)</p>
+                    <p className="text-midnight/60 text-sm">Operations leadership, systems design, team coordination</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="w-2 h-2 bg-terracotta rounded-full mt-2" />
+                  <span className="w-2 h-2 bg-ocean rounded-full mt-2 flex-shrink-0" />
                   <div>
-                    <p className="font-medium text-midnight">Strategic Planning</p>
-                    <p className="text-midnight/60 text-sm">Long-term vision and execution</p>
+                    <p className="font-medium text-midnight">C2 Financial Corporation</p>
+                    <p className="text-midnight/60 text-sm">Licensed mortgage broker — DRE #02200765</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="w-2 h-2 bg-terracotta rounded-full mt-2" />
+                  <span className="w-2 h-2 bg-terracotta rounded-full mt-2 flex-shrink-0" />
                   <div>
-                    <p className="font-medium text-midnight">Client Experience</p>
-                    <p className="text-midnight/60 text-sm">Ensuring seamless service delivery</p>
+                    <p className="font-medium text-midnight">GH Design Studio</p>
+                    <p className="text-midnight/60 text-sm">Interior design and renovation — led by Paige Palaniuk</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="w-2 h-2 bg-terracotta rounded-full mt-2 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-midnight">Granada House Events & Sessions</p>
+                    <p className="text-midnight/60 text-sm">Curated music events, community programming, creative space</p>
                   </div>
                 </li>
               </ul>
@@ -99,8 +109,58 @@ export default function Professional() {
         </div>
       </AnimatedSection>
 
-      {/* Granada House Ecosystem */}
+      {/* Background */}
       <AnimatedSection className="py-20 md:py-32">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <p className="text-terracotta font-medium mb-4 tracking-wider uppercase text-sm">
+              Background
+            </p>
+            <h2 className="font-display text-4xl md:text-5xl text-midnight">
+              Education & Experience
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="border border-midnight/10 rounded-2xl p-8 hover:border-ocean/30 transition-colors">
+              <GraduationCap className="w-8 h-8 text-ocean mb-4" />
+              <h3 className="font-display text-xl text-midnight mb-2">Education</h3>
+              <p className="font-medium text-midnight mb-1">B.A. International Economic Analysis</p>
+              <p className="text-midnight/60 text-sm mb-4">Pacific Lutheran University</p>
+              <p className="text-midnight/60 text-sm">
+                Cross-disciplinary study of global markets, trade policy, and economic systems — 
+                a foundation for understanding how money moves and how to help people navigate it.
+              </p>
+            </div>
+
+            <div className="border border-midnight/10 rounded-2xl p-8 hover:border-ocean/30 transition-colors">
+              <Briefcase className="w-8 h-8 text-ocean mb-4" />
+              <h3 className="font-display text-xl text-midnight mb-2">Mortgage Planning</h3>
+              <p className="font-medium text-midnight mb-1">NMLS #984138</p>
+              <p className="text-midnight/60 text-sm mb-4">Licensed Mortgage Broker</p>
+              <p className="text-midnight/60 text-sm">
+                Deep expertise in purchase lending, refinance strategy, DSCR investment analysis, 
+                and creative financing solutions. Education-first approach — clients understand 
+                every number before they sign.
+              </p>
+            </div>
+
+            <div className="border border-midnight/10 rounded-2xl p-8 hover:border-ocean/30 transition-colors">
+              <Globe className="w-8 h-8 text-ocean mb-4" />
+              <h3 className="font-display text-xl text-midnight mb-2">Global Perspective</h3>
+              <p className="font-medium text-midnight mb-1">Extensive Travel & Volunteering</p>
+              <p className="text-midnight/60 text-sm mb-4">30+ countries across 5 continents</p>
+              <p className="text-midnight/60 text-sm">
+                Years of international travel and community volunteering shaped a worldview 
+                grounded in adaptability, cultural fluency, and genuine human connection.
+              </p>
+            </div>
+          </div>
+        </div>
+      </AnimatedSection>
+
+      {/* Granada House Ecosystem */}
+      <AnimatedSection className="py-20 bg-sand">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-terracotta font-medium mb-4 tracking-wider uppercase text-sm">
@@ -112,40 +172,44 @@ export default function Professional() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            <div className="border border-midnight/10 rounded-2xl p-8 hover:border-terracotta/30 transition-colors">
-              <h3 className="font-display text-2xl text-midnight mb-4">GH Group</h3>
+            <div className="border border-midnight/10 rounded-2xl p-8 hover:border-terracotta/30 transition-colors bg-cream">
+              <Building2 className="w-6 h-6 text-terracotta mb-3" />
+              <h3 className="font-display text-2xl text-midnight mb-4">Plan Prepare Home</h3>
               <p className="text-midnight/60 mb-4">
-                Mortgage and real estate services built on trust, transparency, 
-                and genuine care for our clients' financial futures.
+                Education-driven mortgage brokerage. Automation-forward operations, 
+                transparent lending, and a genuine focus on client financial health.
               </p>
               <span className="text-terracotta text-sm font-medium">Mortgage & Real Estate</span>
             </div>
 
-            <div className="border border-midnight/10 rounded-2xl p-8 hover:border-terracotta/30 transition-colors">
-              <h3 className="font-display text-2xl text-midnight mb-4">GH Sessions</h3>
-              <p className="text-midnight/60 mb-4">
-                Curated jazz events bringing together musicians and music lovers 
-                for intimate performances and genuine connection.
-              </p>
-              <span className="text-terracotta text-sm font-medium">Events & Entertainment</span>
-            </div>
-
-            <div className="border border-midnight/10 rounded-2xl p-8 hover:border-terracotta/30 transition-colors">
-              <h3 className="font-display text-2xl text-midnight mb-4">Granada House Podcast</h3>
-              <p className="text-midnight/60 mb-4">
-                Conversations that matter — exploring business, creativity, and 
-                what it means to build a meaningful life.
-              </p>
-              <span className="text-terracotta text-sm font-medium">Media & Content</span>
-            </div>
-
-            <div className="border border-midnight/10 rounded-2xl p-8 hover:border-terracotta/30 transition-colors">
+            <div className="border border-midnight/10 rounded-2xl p-8 hover:border-terracotta/30 transition-colors bg-cream">
+              <Palette className="w-6 h-6 text-terracotta mb-3" />
               <h3 className="font-display text-2xl text-midnight mb-4">GH Design</h3>
               <p className="text-midnight/60 mb-4">
-                Interior design services led by Paige, transforming spaces into 
-                places that feel like home.
+                Interior design and renovation, led by Paige. Transforming spaces 
+                with warm, intentional aesthetic — mid-century meets modern.
               </p>
               <span className="text-terracotta text-sm font-medium">Design Services</span>
+            </div>
+
+            <div className="border border-midnight/10 rounded-2xl p-8 hover:border-terracotta/30 transition-colors bg-cream">
+              <Music className="w-6 h-6 text-terracotta mb-3" />
+              <h3 className="font-display text-2xl text-midnight mb-4">GH Sessions</h3>
+              <p className="text-midnight/60 mb-4">
+                Curated jazz and live music events bringing together musicians and 
+                community for intimate performances and genuine connection.
+              </p>
+              <span className="text-terracotta text-sm font-medium">Events & Music</span>
+            </div>
+
+            <div className="border border-midnight/10 rounded-2xl p-8 hover:border-terracotta/30 transition-colors bg-cream">
+              <Mic className="w-6 h-6 text-terracotta mb-3" />
+              <h3 className="font-display text-2xl text-midnight mb-4">Granada House Podcast</h3>
+              <p className="text-midnight/60 mb-4">
+                Conversations about business, creativity, and what it means to 
+                build a meaningful life in community.
+              </p>
+              <span className="text-terracotta text-sm font-medium">Media & Content</span>
             </div>
           </div>
         </div>
@@ -160,14 +224,14 @@ export default function Professional() {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              'Operations Management',
-              'Process Optimization',
-              'Team Building',
-              'Strategic Planning',
+              'Mortgage Planning',
+              'Operations Design',
+              'Team Leadership',
               'Financial Analysis',
-              'Client Relations',
-              'Systems Design',
-              'Project Management',
+              'Systems Architecture',
+              'Process Automation',
+              'Client Strategy',
+              'Community Building',
             ].map((skill, index) => (
               <motion.div
                 key={skill}
@@ -187,18 +251,27 @@ export default function Professional() {
       <AnimatedSection className="py-20 md:py-32">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="font-display text-3xl md:text-4xl text-midnight mb-6">
-            Let's Work Together
+            Let's Connect
           </h2>
           <p className="text-midnight/60 text-lg mb-8 max-w-xl mx-auto">
-            Whether you're looking for operational expertise, strategic consulting, 
-            or want to explore collaboration opportunities.
+            Whether you're exploring mortgage options, looking for operational consulting, 
+            or want to collaborate on something creative.
           </p>
-          <Link
-            href="/contact"
-            className="inline-block px-8 py-3 bg-terracotta text-cream rounded-full font-medium hover:bg-ocean transition-colors"
-          >
-            Get in Touch
-          </Link>
+          <div className="flex items-center justify-center gap-4 flex-wrap">
+            <a
+              href="mailto:kyle@palaniuk.net"
+              className="inline-flex items-center gap-2 px-8 py-3 bg-midnight text-cream rounded-full font-medium hover:bg-ocean transition-colors"
+            >
+              <Mail className="w-4 h-4" />
+              kyle@palaniuk.net
+            </a>
+            <Link
+              href="/contact"
+              className="inline-block px-8 py-3 border border-midnight/20 text-midnight rounded-full font-medium hover:border-ocean hover:text-ocean transition-colors"
+            >
+              Contact Page
+            </Link>
+          </div>
         </div>
       </AnimatedSection>
     </div>
