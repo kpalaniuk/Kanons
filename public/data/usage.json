@@ -1,22 +1,22 @@
 {
-  "lastUpdated": "2026-02-20T23:00:31.290Z",
-  "period": "2026-02-19 to 2026-02-20",
+  "lastUpdated": "2026-02-21T05:00:24.887Z",
+  "period": "2026-02-19 to 2026-02-21",
   "providers": [
     {
       "name": "anthropic",
       "model": "claude-opus-4-6",
       "status": "active",
-      "calls": 613,
-      "tokensIn": 1139,
-      "tokensOut": 168142,
-      "estimatedCost": 116.4951345000001,
+      "calls": 758,
+      "tokensIn": 2181,
+      "tokensOut": 207633,
+      "estimatedCost": 134.8406537500002,
       "notes": "Primary reasoning model. Claude Sonnet 4.5 for most tasks, Opus 4 for complex thinking."
     },
     {
       "name": "openclaw",
       "model": "delivery-mirror",
       "status": "active",
-      "calls": 13,
+      "calls": 17,
       "tokensIn": 0,
       "tokensOut": 0,
       "estimatedCost": 0,
@@ -43,7 +43,7 @@
     {
       "date": "2026-02-20",
       "provider": "openclaw",
-      "calls": 7,
+      "calls": 8,
       "tokensIn": 0,
       "tokensOut": 0,
       "cost": 0
@@ -51,18 +51,34 @@
     {
       "date": "2026-02-20",
       "provider": "anthropic",
-      "calls": 354,
-      "tokensIn": 638,
-      "tokensOut": 106253,
-      "cost": 69.76980024999996
+      "calls": 402,
+      "tokensIn": 718,
+      "tokensOut": 127723,
+      "cost": 75.18374475
+    },
+    {
+      "date": "2026-02-21",
+      "provider": "openclaw",
+      "calls": 3,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "cost": 0
+    },
+    {
+      "date": "2026-02-21",
+      "provider": "anthropic",
+      "calls": 97,
+      "tokensIn": 962,
+      "tokensOut": 18021,
+      "cost": 12.931574750000003
     }
   ],
   "totals": {
-    "totalCalls": 626,
-    "totalTokensIn": 1139,
-    "totalTokensOut": 168142,
-    "totalCost": 116.4951345000001,
-    "avgCallsPerDay": 313,
-    "avgTokensPerCall": 270
+    "totalCalls": 775,
+    "totalTokensIn": 2181,
+    "totalTokensOut": 207633,
+    "totalCost": 134.8406537500002,
+    "avgCallsPerDay": 258,
+    "avgTokensPerCall": 271
   }
 }
