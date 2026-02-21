@@ -12,6 +12,7 @@ import {
   Loader2,
   ArrowDown,
   BookOpen,
+  Upload,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -31,16 +32,12 @@ interface Attachment {
   preview?: string
 }
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+interface KBFile {
+  filename: string
+  size: number
+}
 
-const KNOWLEDGE_BASE_FILES = [
-  { file: 'INSTRUCTIONS.md', label: 'Core Instructions' },
-  { file: 'FANNIE_MAE_QUICK_REFERENCE.md', label: 'Fannie Mae' },
-  { file: 'FHA_QUICK_REFERENCE.md', label: 'FHA Guidelines' },
-  { file: 'INCOME_CALCULATION_CHEATSHEET.md', label: 'Income Calculations' },
-  { file: 'DTI_AND_RESERVES_MATRIX.md', label: 'DTI & Reserves' },
-  { file: 'UWM_PINK_HELOC_COMPLETE_GUIDELINES.md', label: 'UWM Pink HELOC' },
-]
+// ─── Constants ───────────────────────────────────────────────────────────────
 
 const SUGGESTIONS = [
   "Review this borrower's paystubs and calculate qualifying income",
@@ -56,17 +53,20 @@ export default function UnderwritingChat() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [attachments, setAttachments] = useState<Attachment[]>([])
-  const [enabledKB, setEnabledKB] = useState<string[]>(
-    KNOWLEDGE_BASE_FILES.map((k) => k.file)
-  )
+  const [kbFiles, setKbFiles] = useState<KBFile[]>([])
+  const [enabledKB, setEnabledKB] = useState<string[]>([])
   const [showKBModal, setShowKBModal] = useState(false)
   const [showScrollBtn, setShowScrollBtn] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
+  const [uploadingKB, setUploadingKB] = useState(false)
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null)
+  const [kbDragOver, setKbDragOver] = useState(false)
 
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const kbFileInputRef = useRef<HTMLInputElement>(null)
 
   // ── Auto-scroll ──────────────────────────────────────────────────────────
 
@@ -105,6 +105,102 @@ export default function UnderwritingChat() {
   useEffect(() => {
     textareaRef.current?.focus()
   }, [])
+
+  // ── Load knowledge base files ───────────────────────────────────────────
+
+  const fetchKBFiles = useCallback(async () => {
+    try {
+      const response = await fetch('/api/knowledge-base/list')
+      if (response.ok) {
+        const files: KBFile[] = await response.json()
+        setKbFiles(files)
+        // Enable all files by default on first load
+        if (enabledKB.length === 0) {
+          setEnabledKB(files.map((f) => f.filename))
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch KB files:', error)
+    }
+  }, [enabledKB.length])
+
+  useEffect(() => {
+    fetchKBFiles()
+  }, [])
+
+  // ── Knowledge base file upload ──────────────────────────────────────────
+
+  const handleKBFileUpload = async (files: File[]) => {
+    for (const file of files) {
+      if (!file.name.endsWith('.md')) {
+        continue
+      }
+
+      setUploadingKB(true)
+      setUploadSuccess(null)
+
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const response = await fetch('/api/knowledge-base/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setKbFiles(data.files)
+          setUploadSuccess(data.filename)
+          setTimeout(() => setUploadSuccess(null), 3000)
+        } else {
+          const error = await response.json()
+          console.error('Upload failed:', error)
+        }
+      } catch (error) {
+        console.error('Upload error:', error)
+      } finally {
+        setUploadingKB(false)
+      }
+    }
+  }
+
+  const handleKBFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = Array.from(e.target.files || [])
+    await handleKBFileUpload(files)
+    if (kbFileInputRef.current) kbFileInputRef.current.value = ''
+  }
+
+  const handleKBDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setKbDragOver(true)
+  }, [])
+
+  const handleKBDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setKbDragOver(false)
+  }, [])
+
+  const handleKBDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setKbDragOver(false)
+      const files = Array.from(e.dataTransfer.files)
+      await handleKBFileUpload(files)
+    },
+    []
+  )
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
 
   // ── File handling ───────────────────────────────────────────────────────
 
@@ -642,13 +738,57 @@ export default function UnderwritingChat() {
               </button>
             </div>
 
-            <div className="p-3 space-y-1">
-              {KNOWLEDGE_BASE_FILES.map(({ file, label }) => {
-                const isEnabled = enabledKB.includes(file)
+            {/* ── Upload Section ────────────────────────────────────── */}
+            <div className="p-3 border-b border-paper/[0.08]">
+              <input
+                ref={kbFileInputRef}
+                type="file"
+                accept=".md"
+                multiple
+                onChange={handleKBFileChange}
+                className="hidden"
+              />
+              <div
+                onDragOver={handleKBDragOver}
+                onDragLeave={handleKBDragLeave}
+                onDrop={handleKBDrop}
+                onClick={() => kbFileInputRef.current?.click()}
+                className={`relative cursor-pointer rounded-xl border-2 border-dashed px-4 py-6 text-center transition-all ${
+                  kbDragOver
+                    ? 'border-royal/50 bg-royal/[0.08]'
+                    : 'border-paper/[0.15] hover:border-paper/30 hover:bg-paper/[0.03]'
+                }`}
+              >
+                <Upload
+                  size={24}
+                  className={`mx-auto mb-2 ${
+                    kbDragOver ? 'text-royal' : 'text-paper/40'
+                  }`}
+                />
+                <p className="text-sm font-medium text-paper/70 mb-1">
+                  {uploadingKB
+                    ? 'Uploading...'
+                    : 'Upload Guidelines'}
+                </p>
+                <p className="text-xs text-paper/40">
+                  Click or drop .md files here (max 5MB)
+                </p>
+                {uploadSuccess && (
+                  <p className="text-xs text-royal mt-2">
+                    Uploaded {uploadSuccess} successfully
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* ── File List ─────────────────────────────────────────── */}
+            <div className="p-3 space-y-1 max-h-[400px] overflow-y-auto">
+              {kbFiles.map((kbFile) => {
+                const isEnabled = enabledKB.includes(kbFile.filename)
                 return (
                   <button
-                    key={file}
-                    onClick={() => toggleKB(file)}
+                    key={kbFile.filename}
+                    onClick={() => toggleKB(kbFile.filename)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
                       isEnabled
                         ? 'bg-royal/10 text-paper/90'
@@ -680,12 +820,16 @@ export default function UnderwritingChat() {
                         </svg>
                       )}
                     </div>
+                    <FileText
+                      size={14}
+                      className={isEnabled ? 'text-royal' : 'text-paper/30'}
+                    />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
-                        {label}
+                        {kbFile.filename}
                       </p>
-                      <p className="text-[11px] text-paper/30 truncate">
-                        {file}
+                      <p className="text-[11px] text-paper/30">
+                        {formatFileSize(kbFile.size)}
                       </p>
                     </div>
                   </button>
@@ -695,20 +839,20 @@ export default function UnderwritingChat() {
 
             <div className="flex items-center justify-between px-5 py-3 border-t border-paper/[0.08]">
               <span className="text-xs text-paper/30">
-                {enabledKB.length} of {KNOWLEDGE_BASE_FILES.length} active
+                {enabledKB.length} of {kbFiles.length} active
               </span>
               <div className="flex gap-2">
                 <button
                   onClick={() =>
                     setEnabledKB(
-                      enabledKB.length === KNOWLEDGE_BASE_FILES.length
+                      enabledKB.length === kbFiles.length
                         ? []
-                        : KNOWLEDGE_BASE_FILES.map((k) => k.file)
+                        : kbFiles.map((k) => k.filename)
                     )
                   }
                   className="px-3 py-1.5 text-xs text-paper/50 hover:text-paper/80 rounded-lg hover:bg-paper/[0.06] transition-colors"
                 >
-                  {enabledKB.length === KNOWLEDGE_BASE_FILES.length
+                  {enabledKB.length === kbFiles.length
                     ? 'Disable All'
                     : 'Enable All'}
                 </button>
