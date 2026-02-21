@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -136,12 +136,28 @@ function LineItem({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DerekArmentaVAPage() {
+  // Address — persisted to localStorage
+  const [address, setAddress] = useState('')
+  useEffect(() => {
+    const saved = localStorage.getItem('va-armenta-address')
+    if (saved) setAddress(saved)
+  }, [])
+  const handleAddressChange = (val: string) => {
+    setAddress(val)
+    localStorage.setItem('va-armenta-address', val)
+  }
+
   // Scenario inputs
   const [purchasePrice, setPurchasePrice] = useState(625000)
   const [downPct, setDownPct] = useState(0)
   const [sellerCredit, setSellerCredit] = useState(15000)
   const [feeFinanced, setFeeFinanced] = useState(true)
   const [subsequentUse, setSubsequentUse] = useState(false)
+
+  // VA seller concession limit: 4% of purchase price
+  const maxSellerCredit = Math.round(purchasePrice * 0.04)
+  const effectiveSellerCredit = Math.min(sellerCredit, maxSellerCredit)
+  const sellerCreditPct = ((effectiveSellerCredit / purchasePrice) * 100).toFixed(2)
 
   // Editable monthly cost estimates
   const [monthlyInsurance, setMonthlyInsurance] = useState(100)
@@ -180,7 +196,7 @@ export default function DerekArmentaVAPage() {
     const feeInClosing = feeFinanced ? 0 : feeAmt
 
     const totalClosing = FIXED_TOTAL + prepaidTotal + reserveTotal + feeInClosing
-    const netAfterCredit = totalClosing - sellerCredit
+    const netAfterCredit = totalClosing - effectiveSellerCredit
     const excessCredit = Math.max(0, -netAfterCredit)
     const closingCashNeeded = Math.max(0, netAfterCredit)
     const totalCash = downPayment + closingCashNeeded
@@ -199,7 +215,7 @@ export default function DerekArmentaVAPage() {
   // Slider fills
   const priceFill = ((purchasePrice - 500000) / (800000 - 500000)) * 100
   const downFill = (downPct / 20) * 100
-  const creditFill = (sellerCredit / 25000) * 100
+  const creditFill = (effectiveSellerCredit / maxSellerCredit) * 100
 
   // PITIA bar shares
   const piShare = (c.monthlyPI / c.totalPITIA) * 100
@@ -231,6 +247,21 @@ export default function DerekArmentaVAPage() {
           <span>·</span>
           <span>No mortgage insurance</span>
         </div>
+      </div>
+
+      {/* ── Property Address ── */}
+      <div className="bg-[#f8f7f4] rounded-2xl border border-[#0a0a0a]/5 p-6 mb-5">
+        <p className="text-xs font-bold text-[#0a0a0a]/40 uppercase tracking-widest mb-3">Property Address</p>
+        <input
+          type="text"
+          placeholder="Enter property address…"
+          value={address}
+          onChange={e => handleAddressChange(e.target.value)}
+          className="w-full text-sm text-[#0a0a0a] bg-white border border-[#0a0a0a]/10 rounded-xl px-4 py-3 focus:outline-none focus:border-[#0066FF] transition-colors placeholder:text-[#0a0a0a]/30"
+        />
+        {address && (
+          <p className="text-xs text-[#0a0a0a]/40 mt-2">Saved automatically</p>
+        )}
       </div>
 
       {/* ── Scenario Controls ── */}
@@ -285,20 +316,26 @@ export default function DerekArmentaVAPage() {
         {/* Seller Credit */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-[#0a0a0a]">Seller Credit</label>
-            <span className="text-2xl font-bold text-emerald-600" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              {fmt(sellerCredit)}
-            </span>
+            <div>
+              <label className="text-sm font-medium text-[#0a0a0a]">Seller Credit</label>
+              <p className="text-xs text-[#0a0a0a]/40 mt-0.5">VA max: 4% of purchase price ({fmt(maxSellerCredit)})</p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-emerald-600" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                {fmt(effectiveSellerCredit)}
+              </p>
+              <p className="text-xs text-[#0a0a0a]/40 mt-0.5">{sellerCreditPct}% of price</p>
+            </div>
           </div>
           <input
-            type="range" min={0} max={25000} step={500}
-            value={sellerCredit}
+            type="range" min={0} max={maxSellerCredit} step={500}
+            value={Math.min(sellerCredit, maxSellerCredit)}
             onChange={e => setSellerCredit(Number(e.target.value))}
             className="w-full h-2 rounded-lg appearance-none cursor-pointer"
             style={{ background: sliderBg(creditFill) }}
           />
           <div className="flex justify-between text-xs text-[#0a0a0a]/40 mt-1">
-            <span>$0</span><span>$25,000</span>
+            <span>$0 (0%)</span><span>{fmt(maxSellerCredit)} (4%)</span>
           </div>
         </div>
 
@@ -494,8 +531,12 @@ export default function DerekArmentaVAPage() {
           <div className="pt-3 border-t border-[#0a0a0a]/10 space-y-2.5">
             <LineItem label="Total Closing Costs" value={fmt(c.totalClosing)} bold />
 
-            {sellerCredit > 0 && (
-              <LineItem label={`Seller Credit`} value={`– ${fmt(sellerCredit)}`} accent="green" />
+            {effectiveSellerCredit > 0 && (
+              <LineItem
+                label={`Seller Credit (${sellerCreditPct}% of price)`}
+                value={`– ${fmt(effectiveSellerCredit)}`}
+                accent="green"
+              />
             )}
 
             {c.excessCredit > 0 && (
