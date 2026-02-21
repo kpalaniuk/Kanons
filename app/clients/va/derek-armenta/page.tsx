@@ -7,21 +7,19 @@ import { useState, useMemo } from 'react'
 const LO = {
   name: 'Kyle Palaniuk',
   nmls: '984138',
-  phone: '(425) 753-3204',
+  license: '01932878',
+  phone: '(619) 777-5700',
   email: 'kyle@planpreparehome.com',
   company: 'Plan Prepare Home | Granada House Group',
   broker: 'C2 Financial Corporation | NMLS# 135622 | CA BRE# 01821025',
   web: 'planpreparehome.com',
 }
 
-const CLIENT = {
-  name: 'Derek & Kelsey Armenta',
-  program: 'VA Purchase Loan',
-}
+const CLIENT = { name: 'Derek & Kelsey Armenta' }
 
-const INTEREST_RATE = 6.625 // Locked rate per LO
+const RATE = 5.500 // Locked per LO fee worksheet
 
-// ─── VA Funding Fee ───────────────────────────────────────────────────────────
+// ─── VA Funding Fee Schedule ──────────────────────────────────────────────────
 
 function getVAFundingFeeRate(downPct: number, subsequent: boolean): number {
   if (subsequent) {
@@ -34,27 +32,29 @@ function getVAFundingFeeRate(downPct: number, subsequent: boolean): number {
   return 2.15
 }
 
-// ─── Closing Cost Line Items (Fixed) ──────────────────────────────────────────
+// ─── Fixed Closing Cost Line Items (from fee worksheet) ───────────────────────
 
-const CLOSING_COSTS = [
-  // Lender
-  { group: 'Lender Fees', label: 'Origination / Admin Fee', amount: 995 },
-  { group: 'Lender Fees', label: 'VA Appraisal', amount: 700 },
-  { group: 'Lender Fees', label: 'Credit Report', amount: 75 },
-  { group: 'Lender Fees', label: 'Flood Certification', amount: 25 },
-  { group: 'Lender Fees', label: 'Tax Service Fee', amount: 85 },
-  // Title & Escrow
-  { group: 'Title & Escrow', label: "Lender's Title Insurance", amount: 1195 },
-  { group: 'Title & Escrow', label: "Owner's Title Insurance", amount: 975 },
-  { group: 'Title & Escrow', label: 'Settlement / Escrow Fee', amount: 1395 },
-  { group: 'Title & Escrow', label: 'Wire Fee', amount: 35 },
-  { group: 'Title & Escrow', label: 'Notary', amount: 200 },
-  { group: 'Title & Escrow', label: 'Recording Fee', amount: 150 },
-  // HOA
-  { group: 'HOA', label: 'HOA Transfer / Resale Disclosure', amount: 350 },
+const CANNOT_SHOP = [
+  { label: 'Admin Fee', amount: 1014 },
+  { label: 'Appraisal Fee', amount: 700 },
+  { label: 'Credit Report Fee', amount: 65 },
+  { label: 'Flood Certificate Fee', amount: 9 },
+  { label: 'MERS Registration Fee', amount: 23.70 },
+  { label: 'Processing Fee (3rd Party)', amount: 995 },
+  { label: 'Tax Monitoring Fee', amount: 75 },
+  { label: 'Tax Service Fee', amount: 74 },
 ]
 
-const FIXED_TOTAL = CLOSING_COSTS.reduce((s, c) => s + c.amount, 0)
+const CAN_SHOP = [
+  { label: 'Title – Settlement Agent Fee', amount: 502 },
+]
+
+const GOVT_FEES = [
+  { label: 'Recording Fees – Mortgage', amount: 200 },
+]
+
+const FIXED_TOTAL =
+  [...CANNOT_SHOP, ...CAN_SHOP, ...GOVT_FEES].reduce((s, c) => s + c.amount, 0)
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
@@ -79,7 +79,7 @@ function sliderBg(pct: number): string {
   return `linear-gradient(to right, #0066FF 0%, #0066FF ${p}%, rgba(10,10,10,0.1) ${p}%, rgba(10,10,10,0.1) 100%)`
 }
 
-// ─── Toggle ───────────────────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -98,55 +98,57 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
   )
 }
 
-// ─── Section Heading ──────────────────────────────────────────────────────────
-
-function SectionHeading({ title }: { title: string }) {
+function GroupHeading({ label }: { label: string }) {
   return (
-    <p className="text-xs font-bold text-[#0a0a0a]/40 uppercase tracking-widest mb-4">{title}</p>
+    <p className="text-[10px] font-bold text-[#0a0a0a]/30 uppercase tracking-widest pt-2 pb-0.5">{label}</p>
   )
 }
 
-// ─── Row ──────────────────────────────────────────────────────────────────────
-
-function Row({ label, value, accent, muted, bold }: {
+function LineItem({
+  label, value, accent, muted, bold, large,
+}: {
   label: string
   value: string
-  accent?: boolean
+  accent?: 'green' | 'amber'
   muted?: boolean
   bold?: boolean
+  large?: boolean
 }) {
   return (
-    <div className="flex justify-between items-center text-sm">
-      <span className={muted ? 'text-[#0a0a0a]/50' : 'text-[#0a0a0a]/70'}>{label}</span>
-      <span
-        className={`font-medium ${
-          accent === true ? 'text-emerald-600' :
-          accent === false ? 'text-amber-600' :
-          bold ? 'font-bold text-[#0a0a0a]' : 'text-[#0a0a0a]'
-        }`}
-      >
+    <div className={`flex justify-between items-center ${large ? 'py-1' : ''}`}>
+      <span className={`${large ? 'text-base font-bold text-[#0a0a0a]' : muted ? 'text-sm text-[#0a0a0a]/50' : 'text-sm text-[#0a0a0a]/75'}`}>
+        {label}
+      </span>
+      <span className={`font-medium ${
+        large ? 'text-xl font-bold' :
+        bold ? 'font-bold text-[#0a0a0a]' : ''
+      } ${
+        accent === 'green' ? 'text-emerald-600' :
+        accent === 'amber' ? 'text-amber-600' :
+        'text-[#0a0a0a]'
+      }`}>
         {value}
       </span>
     </div>
   )
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DerekArmentaVAPage() {
-  // Adjustable inputs
+  // Scenario inputs
   const [purchasePrice, setPurchasePrice] = useState(625000)
   const [downPct, setDownPct] = useState(0)
   const [sellerCredit, setSellerCredit] = useState(15000)
   const [feeFinanced, setFeeFinanced] = useState(true)
   const [subsequentUse, setSubsequentUse] = useState(false)
 
-  // Editable monthly costs
-  const [monthlyInsurance, setMonthlyInsurance] = useState(150)
+  // Editable monthly cost estimates
+  const [monthlyInsurance, setMonthlyInsurance] = useState(100)
   const [monthlyHOA, setMonthlyHOA] = useState(450)
-  const [taxRatePct, setTaxRatePct] = useState(1.25)
+  const [taxRatePct, setTaxRatePct] = useState(1.22) // ~$635/mo on $625k
 
-  // ─── Calculations ───────────────────────────────────────────────────────────
+  // ─── Core math ─────────────────────────────────────────────────────────────
   const c = useMemo(() => {
     const downPayment = purchasePrice * (downPct / 100)
     const baseLoan = purchasePrice - downPayment
@@ -154,23 +156,30 @@ export default function DerekArmentaVAPage() {
 
     const feeRate = getVAFundingFeeRate(downPct, subsequentUse)
     const feeAmt = baseLoan * (feeRate / 100)
-
     const totalLoan = feeFinanced ? baseLoan + feeAmt : baseLoan
 
-    const monthlyPI = calcPI(totalLoan, INTEREST_RATE)
+    const monthlyPI = calcPI(totalLoan, RATE)
     const monthlyTax = (purchasePrice * taxRatePct / 100) / 12
     const totalPITIA = monthlyPI + monthlyTax + monthlyInsurance + monthlyHOA
 
-    // Closing costs
-    const prepaidInsurance = monthlyInsurance * 12
-    const prepaidInterest = totalLoan * INTEREST_RATE / 100 / 365 * 15
-    const reserveInsurance = monthlyInsurance * 3
-    const reserveTaxes = monthlyTax * 3
+    // Prepaids (matching fee sheet structure)
+    const prepaidInsurance12 = monthlyInsurance * 12   // 12 months
+    const prepaidInterest9 = totalLoan * RATE / 100 / 365 * 9  // 9 days
 
+    // Property tax prepaid: 6 months (per fee sheet)
+    const prepaidTax6 = monthlyTax * 6
+
+    // Escrow reserves
+    const reserveInsurance6 = monthlyInsurance * 6     // 6 months
+    const reserveTax3 = monthlyTax * 3                 // 3 months
+
+    const prepaidTotal = prepaidInsurance12 + prepaidInterest9 + prepaidTax6
+    const reserveTotal = reserveInsurance6 + reserveTax3
+
+    // VA fee in closing (only when NOT financed)
     const feeInClosing = feeFinanced ? 0 : feeAmt
-    const totalClosing =
-      FIXED_TOTAL + prepaidInsurance + prepaidInterest + reserveInsurance + reserveTaxes + feeInClosing
 
+    const totalClosing = FIXED_TOTAL + prepaidTotal + reserveTotal + feeInClosing
     const netAfterCredit = totalClosing - sellerCredit
     const excessCredit = Math.max(0, -netAfterCredit)
     const closingCashNeeded = Math.max(0, netAfterCredit)
@@ -179,18 +188,20 @@ export default function DerekArmentaVAPage() {
     return {
       downPayment, baseLoan, ltv, feeRate, feeAmt, totalLoan,
       monthlyPI, monthlyTax, totalPITIA,
-      prepaidInsurance, prepaidInterest, reserveInsurance, reserveTaxes,
+      prepaidInsurance12, prepaidInterest9, prepaidTax6,
+      reserveInsurance6, reserveTax3,
+      prepaidTotal, reserveTotal,
       feeInClosing, totalClosing,
       excessCredit, closingCashNeeded, totalCash,
     }
   }, [purchasePrice, downPct, sellerCredit, feeFinanced, subsequentUse, monthlyInsurance, monthlyHOA, taxRatePct])
 
-  // Slider fill percentages
+  // Slider fills
   const priceFill = ((purchasePrice - 500000) / (800000 - 500000)) * 100
   const downFill = (downPct / 20) * 100
   const creditFill = (sellerCredit / 25000) * 100
 
-  // Payment bar shares
+  // PITIA bar shares
   const piShare = (c.monthlyPI / c.totalPITIA) * 100
   const taxShare = (c.monthlyTax / c.totalPITIA) * 100
   const insShare = (monthlyInsurance / c.totalPITIA) * 100
@@ -202,33 +213,35 @@ export default function DerekArmentaVAPage() {
       {/* ── Header ── */}
       <div className="mb-8">
         <span className="inline-block bg-[#0066FF]/10 text-[#0066FF] text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-widest">
-          VA Purchase · No PMI
+          VA Purchase · No PMI · 30-Year Fixed
         </span>
         <h1
-          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           className="text-3xl md:text-4xl font-bold text-[#0a0a0a] leading-tight"
+          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         >
           Purchase Scenario
         </h1>
         <p className="text-[#0a0a0a]/60 text-lg mt-2">
           Prepared for <strong className="text-[#0a0a0a]">{CLIENT.name}</strong>
         </p>
-        <div className="flex flex-wrap gap-3 mt-3 text-sm text-[#0a0a0a]/50">
-          <span>Rate: <strong className="text-[#0a0a0a]">{INTEREST_RATE.toFixed(3)}%</strong> fixed 30yr</span>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-sm text-[#0a0a0a]/50">
+          <span>Rate: <strong className="text-[#0a0a0a]">{RATE.toFixed(3)}%</strong> fixed</span>
           <span>·</span>
-          <span>VA Loan — No PMI Required</span>
+          <span>APR: <strong className="text-[#0a0a0a]">5.746%</strong></span>
+          <span>·</span>
+          <span>No mortgage insurance</span>
         </div>
       </div>
 
       {/* ── Scenario Controls ── */}
       <div className="bg-[#f8f7f4] rounded-2xl border border-[#0a0a0a]/5 p-6 mb-5 space-y-8">
-        <SectionHeading title="Adjust Your Scenario" />
+        <p className="text-xs font-bold text-[#0a0a0a]/40 uppercase tracking-widest">Adjust Your Scenario</p>
 
         {/* Purchase Price */}
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-[#0a0a0a]">Purchase Price</label>
-            <span className="text-xl font-bold text-[#0a0a0a]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span className="text-2xl font-bold text-[#0a0a0a]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               {fmt(purchasePrice)}
             </span>
           </div>
@@ -249,9 +262,9 @@ export default function DerekArmentaVAPage() {
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-[#0a0a0a]">Down Payment</label>
             <div className="text-right">
-              <span className="text-xl font-bold text-[#0a0a0a]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                {downPct === 0 ? '$0 (0%)' : `${downPct.toFixed(1)}%`}
-              </span>
+              <p className="text-2xl font-bold text-[#0a0a0a]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                {downPct === 0 ? '$0 down' : `${downPct.toFixed(1)}%`}
+              </p>
               {downPct > 0 && (
                 <p className="text-xs text-[#0a0a0a]/50 mt-0.5">{fmt(c.downPayment)}</p>
               )}
@@ -273,7 +286,7 @@ export default function DerekArmentaVAPage() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-[#0a0a0a]">Seller Credit</label>
-            <span className="text-xl font-bold text-emerald-600" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span className="text-2xl font-bold text-emerald-600" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               {fmt(sellerCredit)}
             </span>
           </div>
@@ -285,35 +298,33 @@ export default function DerekArmentaVAPage() {
             style={{ background: sliderBg(creditFill) }}
           />
           <div className="flex justify-between text-xs text-[#0a0a0a]/40 mt-1">
-            <span>$0 (no credit)</span><span>$25,000</span>
+            <span>$0</span><span>$25,000</span>
           </div>
         </div>
 
         {/* Toggles */}
         <div className="space-y-5 pt-4 border-t border-[#0a0a0a]/5">
 
-          {/* Finance VA Fee */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <p className="text-sm font-semibold text-[#0a0a0a]">Finance VA Funding Fee</p>
+              <p className="text-sm font-semibold text-[#0a0a0a]">Finance VA Funding Fee into Loan</p>
               <p className="text-xs text-[#0a0a0a]/50 mt-0.5">
                 {feeFinanced
-                  ? `${fmt(c.feeAmt)} added to loan — nothing due at closing`
+                  ? `${fmt(c.feeAmt)} added to loan — $0 due at closing`
                   : `${fmt(c.feeAmt)} due at closing`}
-                {' '}({c.feeRate}%)
+                {' '}· {c.feeRate}% of base loan
               </p>
             </div>
             <Toggle value={feeFinanced} onChange={setFeeFinanced} />
           </div>
 
-          {/* Subsequent Use */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <p className="text-sm font-semibold text-[#0a0a0a]">Subsequent VA Loan Use</p>
               <p className="text-xs text-[#0a0a0a]/50 mt-0.5">
                 {subsequentUse
-                  ? 'Higher funding fee applies (3.30% at 0% down)'
-                  : 'First-time VA use (2.15% at 0% down)'}
+                  ? 'Funding fee: 3.30% at 0% down'
+                  : 'First-time VA use: 2.15% at 0% down'}
               </p>
             </div>
             <Toggle value={subsequentUse} onChange={setSubsequentUse} />
@@ -324,27 +335,29 @@ export default function DerekArmentaVAPage() {
 
       {/* ── Monthly Payment ── */}
       <div className="bg-[#f8f7f4] rounded-2xl border border-[#0a0a0a]/5 p-6 mb-5">
-        <SectionHeading title="Monthly Payment" />
+        <p className="text-xs font-bold text-[#0a0a0a]/40 uppercase tracking-widest mb-4">Monthly Payment</p>
 
-        {/* Big number */}
         <div className="text-center mb-6">
-          <p className="text-[#0a0a0a]/50 text-sm mb-1">Estimated Monthly PITIA</p>
-          <p className="text-5xl font-bold text-[#0a0a0a]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+          <p className="text-[#0a0a0a]/50 text-sm mb-1">Estimated Monthly Total (PITIA)</p>
+          <p
+            className="text-5xl font-bold text-[#0a0a0a]"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
             {fmt(c.totalPITIA)}
           </p>
-          <p className="text-xs text-[#0a0a0a]/40 mt-1">Principal · Interest · Taxes · Insurance · HOA</p>
+          <p className="text-xs text-[#0a0a0a]/40 mt-1.5">Principal · Interest · Taxes · Insurance · HOA</p>
         </div>
 
-        {/* Visual breakdown bar */}
-        <div className="h-4 rounded-full overflow-hidden flex mb-6">
+        {/* Color bar */}
+        <div className="h-4 rounded-full overflow-hidden flex mb-5">
           <div className="h-full bg-[#0066FF] transition-all duration-300" style={{ width: `${piShare}%` }} />
           <div className="h-full bg-[#FFBA00] transition-all duration-300" style={{ width: `${taxShare}%` }} />
           <div className="h-full bg-[#22E8E8] transition-all duration-300" style={{ width: `${insShare}%` }} />
           <div className="h-full bg-[#FFB366] transition-all duration-300" style={{ width: `${hoaShare}%` }} />
         </div>
 
-        {/* Line items */}
         <div className="space-y-3">
+          {/* P&I */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-3 h-3 rounded-full shrink-0 bg-[#0066FF]" />
@@ -353,16 +366,12 @@ export default function DerekArmentaVAPage() {
             <span className="text-sm font-semibold text-[#0a0a0a]">{fmt(c.monthlyPI, 2)}</span>
           </div>
 
+          {/* Property Tax */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-3 h-3 rounded-full shrink-0 bg-[#FFBA00]" />
               <span className="text-sm text-[#0a0a0a]">Property Taxes</span>
-              <button
-                className="text-xs text-[#0a0a0a]/30 hover:text-[#0066FF] transition-colors"
-                title="Click to edit tax rate"
-              >
-                <span>{taxRatePct}%/yr</span>
-              </button>
+              <span className="text-xs text-[#0a0a0a]/35">({taxRatePct}%/yr est.)</span>
             </div>
             <span className="text-sm font-semibold text-[#0a0a0a]">{fmt(c.monthlyTax, 2)}</span>
           </div>
@@ -414,99 +423,106 @@ export default function DerekArmentaVAPage() {
 
       {/* ── Loan Summary ── */}
       <div className="bg-[#f8f7f4] rounded-2xl border border-[#0a0a0a]/5 p-6 mb-5">
-        <SectionHeading title="Loan Summary" />
-        <div className="space-y-2.5">
-          <Row label="Purchase Price" value={fmt(purchasePrice)} />
+        <p className="text-xs font-bold text-[#0a0a0a]/40 uppercase tracking-widest mb-4">Loan Summary</p>
+        <div className="space-y-2.5 text-sm">
+          <LineItem label="Purchase Price" value={fmt(purchasePrice)} />
           {c.downPayment > 0 && (
-            <Row label={`Down Payment (${downPct.toFixed(1)}%)`} value={`– ${fmt(c.downPayment)}`} />
+            <LineItem label={`Down Payment (${downPct.toFixed(1)}%)`} value={`– ${fmt(c.downPayment)}`} />
           )}
-          <Row label="Base VA Loan Amount" value={fmt(c.baseLoan)} />
-          <Row
-            label={`VA Funding Fee (${c.feeRate}% · ${feeFinanced ? 'financed into loan' : 'paid at closing'})`}
+          <LineItem label="Base VA Loan Amount" value={fmt(c.baseLoan)} />
+          <LineItem
+            label={`VA Funding Fee (${c.feeRate}% · ${feeFinanced ? 'financed' : 'at closing'})`}
             value={`+ ${fmt(c.feeAmt)}`}
-            accent={feeFinanced ? undefined : false}
+            accent={feeFinanced ? undefined : 'amber'}
           />
           <div className="pt-2 border-t border-[#0a0a0a]/10">
-            <Row label="Total Loan Amount" value={fmt(c.totalLoan)} bold />
+            <LineItem label="Total Loan Amount" value={fmt(c.totalLoan)} bold />
           </div>
-          <Row
-            label="Loan-to-Value (LTV)"
-            value={`${((c.baseLoan / purchasePrice) * 100).toFixed(1)}% · No PMI`}
-            muted
-          />
+          <LineItem label="LTV · No PMI Required" value={`${((c.baseLoan / purchasePrice) * 100).toFixed(1)}%`} muted />
+          <LineItem label="Condominium · Primary Residence" value="30-Year Fixed" muted />
         </div>
       </div>
 
       {/* ── Cash to Close ── */}
       <div className="bg-[#f8f7f4] rounded-2xl border border-[#0a0a0a]/5 p-6 mb-5">
-        <SectionHeading title="Estimated Cash to Close" />
+        <p className="text-xs font-bold text-[#0a0a0a]/40 uppercase tracking-widest mb-4">Estimated Cash to Close</p>
 
-        <div className="space-y-2.5 text-sm">
+        <div className="space-y-2 text-sm">
 
-          {/* Lender Fees */}
-          <p className="text-xs font-bold text-[#0a0a0a]/30 uppercase tracking-widest pt-1">Lender Fees</p>
-          {CLOSING_COSTS.filter(c => c.group === 'Lender Fees').map(item => (
-            <Row key={item.label} label={item.label} value={fmt(item.amount)} muted />
+          {/* Lender fees */}
+          <GroupHeading label="Lender & 3rd Party Fees" />
+          {CANNOT_SHOP.map(item => (
+            <LineItem key={item.label} label={item.label} value={fmt(item.amount, 2)} muted />
           ))}
 
-          {/* Title & Escrow */}
-          <p className="text-xs font-bold text-[#0a0a0a]/30 uppercase tracking-widest pt-3">Title & Escrow</p>
-          {CLOSING_COSTS.filter(c => c.group === 'Title & Escrow').map(item => (
-            <Row key={item.label} label={item.label} value={fmt(item.amount)} muted />
+          {/* Title */}
+          <GroupHeading label="Title & Settlement" />
+          {CAN_SHOP.map(item => (
+            <LineItem key={item.label} label={item.label} value={fmt(item.amount, 2)} muted />
           ))}
 
-          {/* HOA */}
-          <p className="text-xs font-bold text-[#0a0a0a]/30 uppercase tracking-widest pt-3">HOA</p>
-          {CLOSING_COSTS.filter(c => c.group === 'HOA').map(item => (
-            <Row key={item.label} label={item.label} value={fmt(item.amount)} muted />
+          {/* Govt */}
+          <GroupHeading label="Taxes & Government" />
+          {GOVT_FEES.map(item => (
+            <LineItem key={item.label} label={item.label} value={fmt(item.amount, 2)} muted />
           ))}
 
-          {/* VA Funding Fee (if not financed) */}
+          {/* VA fee if not financed */}
           {!feeFinanced && (
             <>
-              <p className="text-xs font-bold text-[#0a0a0a]/30 uppercase tracking-widest pt-3">VA Funding Fee</p>
-              <Row label={`VA Funding Fee (${c.feeRate}%)`} value={fmt(c.feeInClosing)} accent={false} />
+              <GroupHeading label="VA Funding Fee" />
+              <LineItem
+                label={`VA Funding Fee (${c.feeRate}%)`}
+                value={fmt(c.feeInClosing, 2)}
+                accent="amber"
+              />
             </>
           )}
 
           {/* Prepaids */}
-          <p className="text-xs font-bold text-[#0a0a0a]/30 uppercase tracking-widest pt-3">Prepaids</p>
-          <Row label="12 Months Homeowner's Insurance" value={fmt(c.prepaidInsurance)} muted />
-          <Row label="Prepaid Mortgage Interest (15 days)" value={fmt(c.prepaidInterest)} muted />
+          <GroupHeading label="Prepaids" />
+          <LineItem label="Hazard Insurance Premium (12 months)" value={fmt(c.prepaidInsurance12, 2)} muted />
+          <LineItem label="Prepaid Mortgage Interest (9 days)" value={fmt(c.prepaidInterest9, 2)} muted />
+          <LineItem label="Property Taxes (6 months)" value={fmt(c.prepaidTax6, 2)} muted />
 
           {/* Reserves */}
-          <p className="text-xs font-bold text-[#0a0a0a]/30 uppercase tracking-widest pt-3">Escrow Reserves</p>
-          <Row label="3 Months Insurance" value={fmt(c.reserveInsurance)} muted />
-          <Row label="3 Months Property Taxes" value={fmt(c.reserveTaxes)} muted />
+          <GroupHeading label="Initial Escrow Reserves" />
+          <LineItem label="Hazard Insurance Reserve (6 months)" value={fmt(c.reserveInsurance6, 2)} muted />
+          <LineItem label="Property Tax Reserve (3 months)" value={fmt(c.reserveTax3, 2)} muted />
 
-          {/* Subtotals */}
+          {/* Subtotal */}
           <div className="pt-3 border-t border-[#0a0a0a]/10 space-y-2.5">
-            <Row label="Total Closing Costs" value={fmt(c.totalClosing)} bold />
+            <LineItem label="Total Closing Costs" value={fmt(c.totalClosing)} bold />
 
             {sellerCredit > 0 && (
-              <Row label="Seller Credit" value={`– ${fmt(sellerCredit)}`} accent />
+              <LineItem label={`Seller Credit`} value={`– ${fmt(sellerCredit)}`} accent="green" />
             )}
 
             {c.excessCredit > 0 && (
               <div className="bg-emerald-50 rounded-xl px-3 py-2 text-xs text-emerald-700">
-                Seller credit exceeds closing costs by <strong>{fmt(c.excessCredit)}</strong>. Excess may reduce the purchase price or be re-negotiated with the seller.
+                🎉 Credits exceed closing costs by <strong>{fmt(c.excessCredit)}</strong>. Excess may be applied to reduce the purchase price or returned per lender guidelines.
               </div>
             )}
 
             {c.downPayment > 0 && (
-              <Row label="Down Payment" value={fmt(c.downPayment)} />
+              <LineItem label={`Down Payment (${downPct.toFixed(1)}%)`} value={fmt(c.downPayment)} />
             )}
           </div>
 
-          {/* Final Cash to Close */}
-          <div className="flex justify-between items-center pt-3 border-t-2 border-[#0a0a0a]/10">
-            <span className="font-bold text-base text-[#0a0a0a]">Total Cash to Close</span>
-            <span
-              className={`font-bold text-xl ${c.totalCash === 0 ? 'text-emerald-600' : 'text-[#0a0a0a]'}`}
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              {c.totalCash === 0 ? '$0 — Fully Covered' : fmt(c.totalCash)}
-            </span>
+          {/* Final */}
+          <div className="pt-3 border-t-2 border-[#0a0a0a]/10">
+            <div className="flex justify-between items-center">
+              <span className="text-base font-bold text-[#0a0a0a]">Total Cash to Close</span>
+              <span
+                className={`text-2xl font-bold ${c.totalCash === 0 ? 'text-emerald-600' : 'text-[#0a0a0a]'}`}
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                {c.totalCash === 0 ? '$0 ✓' : fmt(c.totalCash)}
+              </span>
+            </div>
+            {c.totalCash === 0 && (
+              <p className="text-xs text-emerald-600 mt-1 text-right">Closing costs fully covered by credits</p>
+            )}
           </div>
 
         </div>
@@ -516,18 +532,17 @@ export default function DerekArmentaVAPage() {
       <div className="bg-[#0a0a0a]/[0.03] rounded-xl p-5 text-xs text-[#0a0a0a]/50 mb-8 space-y-2">
         <p className="font-semibold text-[#0a0a0a]/60">Important Disclosures</p>
         <p>
-          Interest rate of {INTEREST_RATE}% is based on current market conditions and is subject to change.
-          This is not a loan commitment, rate lock, or Good Faith Estimate.
+          This estimate is provided for illustrative and informational purposes only based on the initial basic loan scenario presented. This is not a loan approval or commitment to lend.
         </p>
         <p>
-          Closing costs are estimates and will vary based on final loan terms, title company, and closing date.
-          Property taxes estimated at {taxRatePct}% annually; actual taxes are determined by the county assessor.
+          Rate of {RATE.toFixed(3)}% / APR 5.746% is based on conditions as of 02/21/2026 and subject to change. Until a rate lock is confirmed, rates are subject to change or may not be available at commitment or closing.
         </p>
         <p>
-          VA Funding Fee shown for {subsequentUse ? 'subsequent' : 'first-time'} VA loan use.
-          Veterans with a service-connected disability rating of 10% or greater may be exempt from the VA Funding Fee — confirm eligibility with your lender.
+          Property taxes estimated at {taxRatePct}% annually. Actual taxes determined by county assessor.
+          VA Funding Fee rate shown for {subsequentUse ? 'subsequent' : 'first-time'} VA loan use at {downPct.toFixed(1)}% down ({c.feeRate}%).
+          Veterans with a service-connected disability rating of 10%+ may be exempt — confirm eligibility with your lender.
         </p>
-        <p>This tool is for educational discussion purposes only and does not constitute legal or financial advice.</p>
+        <p>Annual Percentage Rate (APR) is an estimate based on criteria provided.</p>
       </div>
 
       {/* ── LO Footer ── */}
@@ -535,7 +550,7 @@ export default function DerekArmentaVAPage() {
         <div className="inline-flex items-center gap-4 bg-[#f8f7f4] rounded-2xl px-6 py-5 border border-[#0a0a0a]/5">
           <div className="text-left">
             <p className="font-bold text-[#0a0a0a]">{LO.name}</p>
-            <p className="text-xs text-[#0a0a0a]/60">NMLS# {LO.nmls}</p>
+            <p className="text-xs text-[#0a0a0a]/60">NMLS# {LO.nmls} · LIC# {LO.license}</p>
             <p className="text-xs text-[#0a0a0a]/60">{LO.phone} · {LO.email}</p>
             <p className="text-xs text-[#0a0a0a]/50 mt-1">{LO.company}</p>
           </div>
