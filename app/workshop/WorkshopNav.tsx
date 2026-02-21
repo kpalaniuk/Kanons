@@ -15,7 +15,8 @@ import {
   LayoutDashboard,
   Music,
   BookOpen,
-  MessageSquare
+  MessageSquare,
+  Settings
 } from 'lucide-react'
 
 const workLinks = [
@@ -36,10 +37,15 @@ const personalLinks = [
   { href: '/workshop/personal/lyrics', label: 'Lyrics', icon: Music },
 ]
 
+const adminLinks = [
+  { href: '/workshop/admin/dscr-clients', label: 'DSCR Clients', icon: Settings },
+]
+
 export default function WorkshopNav() {
   const pathname = usePathname()
   const isWorkActive = pathname?.startsWith('/workshop/work')
   const isPersonalActive = pathname?.startsWith('/workshop/personal')
+  const isAdminActive = pathname?.startsWith('/workshop/admin')
   const isKBActive = pathname?.startsWith('/workshop/kb')
 
   return (
@@ -106,6 +112,34 @@ export default function WorkshopNav() {
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
                   isActive
                     ? 'bg-terracotta text-cream'
+                    : 'text-midnight/50 hover:text-midnight hover:bg-sand'
+                }`}
+              >
+                <Icon size={14} />
+                {link.label}
+              </Link>
+            )
+          })}
+
+          <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
+
+          {/* Admin section label */}
+          <span className={`text-xs font-bold uppercase tracking-wider px-2 flex-shrink-0 ${
+            isAdminActive ? 'text-amber' : 'text-midnight/30'
+          }`}>
+            Admin
+          </span>
+
+          {adminLinks.map((link) => {
+            const Icon = link.icon
+            const isActive = pathname === link.href
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                  isActive
+                    ? 'bg-amber text-midnight'
                     : 'text-midnight/50 hover:text-midnight hover:bg-sand'
                 }`}
               >
