@@ -14,8 +14,8 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
   const pathname = usePathname()
 
-  // Hide footer on client portal pages
-  if (pathname?.startsWith('/clients')) return null
+  // Hide footer on client portal and underwriting pages
+  if (pathname?.startsWith('/clients') || pathname?.startsWith('/underwriting')) return null
 
   return (
     <footer className="bg-midnight text-cream py-16">

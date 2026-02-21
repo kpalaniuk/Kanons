@@ -34,8 +34,8 @@ export default function Navigation() {
     setIsMobileMenuOpen(false)
   }, [pathname])
 
-  // Hide navigation on client portal pages
-  if (pathname?.startsWith('/clients')) return null
+  // Hide navigation on client portal and underwriting pages
+  if (pathname?.startsWith('/clients') || pathname?.startsWith('/underwriting')) return null
 
   return (
     <>
