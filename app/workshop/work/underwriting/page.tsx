@@ -298,7 +298,7 @@ export default function UnderwritingChat() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] bg-midnight">
+    <div className="flex flex-col h-screen bg-midnight">
       {/* Knowledge Base Panel */}
       {showKnowledgeBase && (
         <div className="w-80 bg-cream border-r border-midnight/10 flex flex-col">
