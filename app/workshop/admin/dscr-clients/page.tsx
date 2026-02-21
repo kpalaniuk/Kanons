@@ -18,42 +18,6 @@ interface DSCRClient {
   created_at: string
 }
 
-function parseCSVRateSheet(csvText: string): any {
-  const lines = csvText.trim().split('\n')
-  if (lines.length < 2) {
-    throw new Error('CSV must have at least a header row and one data row')
-  }
-
-  const rates = []
-  
-  // Skip header row, parse data rows
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim()
-    if (!line) continue
-    
-    // Split by comma, handle quoted values
-    const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''))
-    
-    // Expected format: ltv_min, ltv_max, fico_min, fico_max, standard_rate, io_adjustment
-    if (values.length >= 5) {
-      rates.push({
-        ltv_min: parseFloat(values[0]) || 0,
-        ltv_max: parseFloat(values[1]) || 100,
-        fico_min: parseFloat(values[2]) || 300,
-        fico_max: parseFloat(values[3]) || 850,
-        standard_rate: parseFloat(values[4]) || 0,
-        io_adjustment: parseFloat(values[5]) || 0.125,
-      })
-    }
-  }
-
-  if (rates.length === 0) {
-    throw new Error('No valid rate data found in CSV')
-  }
-
-  return { rates }
-}
-
 export default function DSCRClientsAdmin() {
   const [clients, setClients] = useState<DSCRClient[]>([])
   const [loading, setLoading] = useState(true)
@@ -88,29 +52,54 @@ export default function DSCRClientsAdmin() {
 
     setUploadedFile(file)
 
-    const reader = new FileReader()
-    reader.onload = async (event) => {
-      const text = event.target?.result as string
-
-      try {
-        if (file.name.endsWith('.csv')) {
-          const parsed = parseCSVRateSheet(text)
-          setRateSheetJSON(JSON.stringify(parsed, null, 2))
-          alert('✅ CSV parsed successfully! Review the JSON below.')
-        } else if (file.name.endsWith('.json')) {
+    // Handle JSON files directly
+    if (file.name.endsWith('.json')) {
+      const reader = new FileReader()
+      reader.onload = async (event) => {
+        const text = event.target?.result as string
+        try {
           const parsed = JSON.parse(text)
           setRateSheetJSON(JSON.stringify(parsed, null, 2))
           alert('✅ JSON loaded successfully!')
-        } else {
-          alert('⚠️ Unsupported file type. Upload CSV or JSON.')
+        } catch (err) {
+          alert('❌ Invalid JSON file')
         }
-      } catch (err) {
-        console.error('Parse error:', err)
-        alert(`❌ Failed to parse file: ${err instanceof Error ? err.message : 'Unknown error'}`)
       }
+      reader.readAsText(file)
+      return
     }
 
-    reader.readAsText(file)
+    // Handle images and PDFs with vision AI
+    if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        alert('📸 Analyzing rate sheet image with AI...')
+
+        const response = await fetch('/api/dscr/parse-rate-sheet', {
+          method: 'POST',
+          body: formData,
+        })
+
+        const result = await response.json()
+
+        if (!response.ok || result.error) {
+          throw new Error(result.error || 'Failed to parse rate sheet')
+        }
+
+        setRateSheetJSON(JSON.stringify(result, null, 2))
+        alert('✅ Rate sheet parsed successfully! Review the JSON below and adjust if needed.')
+      } catch (err) {
+        console.error('Parse error:', err)
+        alert(`❌ Failed to parse rate sheet: ${err instanceof Error ? err.message : 'Unknown error'}`)
+        setUploadedFile(null)
+      }
+      return
+    }
+
+    alert('⚠️ Unsupported file type. Upload an image (PNG/JPG), PDF, or JSON file.')
+    setUploadedFile(null)
   }
 
   async function fetchClients() {
@@ -305,14 +294,14 @@ export default function DSCRClientsAdmin() {
                       Upload Rate Sheet
                     </h3>
                     <p className="text-sm text-steel mb-3">
-                      Drop a CSV file with your rate sheet. Format: ltv_min, ltv_max, fico_min, fico_max, standard_rate, io_adjustment
+                      Upload a screenshot or PDF of your rate sheet. AI will extract the rates automatically.
                     </p>
                     <label className="inline-flex items-center gap-2 px-4 py-2 bg-ocean text-cream rounded-lg font-semibold cursor-pointer hover:bg-opacity-90 transition">
                       <FileText size={18} />
                       Choose File
                       <input
                         type="file"
-                        accept=".csv,.json"
+                        accept="image/*,.pdf,.json"
                         onChange={handleFileUpload}
                         className="hidden"
                       />
@@ -327,14 +316,14 @@ export default function DSCRClientsAdmin() {
 
                 <div className="bg-white rounded-lg p-4 border border-gray-200">
                   <p className="text-xs font-semibold text-midnight/60 mb-2 uppercase tracking-wide">
-                    Example CSV Format:
+                    How It Works:
                   </p>
-                  <pre className="text-xs font-mono text-midnight/80 whitespace-pre-wrap">
-{`ltv_min,ltv_max,fico_min,fico_max,standard_rate,io_adjustment
-0,70,720,739,7.125,0.125
-70,75,720,739,7.25,0.125
-75,80,720,739,7.375,0.125`}
-                  </pre>
+                  <ul className="text-xs text-midnight/80 space-y-1 list-disc list-inside">
+                    <li>Upload a screenshot or PDF of your rate sheet</li>
+                    <li>AI extracts the LTV ranges, FICO ranges, and rates</li>
+                    <li>Review the parsed JSON below and adjust if needed</li>
+                    <li>The rate sheet serves as both data and documentation</li>
+                  </ul>
                 </div>
               </div>
 
