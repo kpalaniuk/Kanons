@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     
     const { data, error } = await supabase
       .from('dscr_client_configs')
