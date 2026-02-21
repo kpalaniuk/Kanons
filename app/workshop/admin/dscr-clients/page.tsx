@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getSupabase } from '@/lib/supabase'
+import { Upload, FileText } from 'lucide-react'
 
 interface DSCRClient {
   id: string
@@ -17,10 +18,47 @@ interface DSCRClient {
   created_at: string
 }
 
+function parseCSVRateSheet(csvText: string): any {
+  const lines = csvText.trim().split('\n')
+  if (lines.length < 2) {
+    throw new Error('CSV must have at least a header row and one data row')
+  }
+
+  const rates = []
+  
+  // Skip header row, parse data rows
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim()
+    if (!line) continue
+    
+    // Split by comma, handle quoted values
+    const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''))
+    
+    // Expected format: ltv_min, ltv_max, fico_min, fico_max, standard_rate, io_adjustment
+    if (values.length >= 5) {
+      rates.push({
+        ltv_min: parseFloat(values[0]) || 0,
+        ltv_max: parseFloat(values[1]) || 100,
+        fico_min: parseFloat(values[2]) || 300,
+        fico_max: parseFloat(values[3]) || 850,
+        standard_rate: parseFloat(values[4]) || 0,
+        io_adjustment: parseFloat(values[5]) || 0.125,
+      })
+    }
+  }
+
+  if (rates.length === 0) {
+    throw new Error('No valid rate data found in CSV')
+  }
+
+  return { rates }
+}
+
 export default function DSCRClientsAdmin() {
   const [clients, setClients] = useState<DSCRClient[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [formData, setFormData] = useState({
     client_name: '',
     client_slug: '',
@@ -43,6 +81,37 @@ export default function DSCRClientsAdmin() {
   useEffect(() => {
     fetchClients()
   }, [])
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadedFile(file)
+
+    const reader = new FileReader()
+    reader.onload = async (event) => {
+      const text = event.target?.result as string
+
+      try {
+        if (file.name.endsWith('.csv')) {
+          const parsed = parseCSVRateSheet(text)
+          setRateSheetJSON(JSON.stringify(parsed, null, 2))
+          alert('✅ CSV parsed successfully! Review the JSON below.')
+        } else if (file.name.endsWith('.json')) {
+          const parsed = JSON.parse(text)
+          setRateSheetJSON(JSON.stringify(parsed, null, 2))
+          alert('✅ JSON loaded successfully!')
+        } else {
+          alert('⚠️ Unsupported file type. Upload CSV or JSON.')
+        }
+      } catch (err) {
+        console.error('Parse error:', err)
+        alert(`❌ Failed to parse file: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      }
+    }
+
+    reader.readAsText(file)
+  }
 
   async function fetchClients() {
     try {
@@ -89,6 +158,7 @@ export default function DSCRClientsAdmin() {
 
       alert('Client created successfully!')
       setShowForm(false)
+      setUploadedFile(null)
       setFormData({
         client_name: '',
         client_slug: '',
@@ -225,21 +295,60 @@ export default function DSCRClientsAdmin() {
                 </div>
               </div>
 
+              <div className="border-2 border-dashed border-ocean/30 rounded-xl p-6 bg-ocean/5">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-ocean/10 rounded-lg flex items-center justify-center">
+                    <Upload className="w-6 h-6 text-ocean" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-display text-lg font-bold text-midnight mb-1">
+                      Upload Rate Sheet
+                    </h3>
+                    <p className="text-sm text-steel mb-3">
+                      Drop a CSV file with your rate sheet. Format: ltv_min, ltv_max, fico_min, fico_max, standard_rate, io_adjustment
+                    </p>
+                    <label className="inline-flex items-center gap-2 px-4 py-2 bg-ocean text-cream rounded-lg font-semibold cursor-pointer hover:bg-opacity-90 transition">
+                      <FileText size={18} />
+                      Choose File
+                      <input
+                        type="file"
+                        accept=".csv,.json"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+                    {uploadedFile && (
+                      <p className="text-sm text-green-600 mt-2 font-medium">
+                        ✅ Uploaded: {uploadedFile.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <p className="text-xs font-semibold text-midnight/60 mb-2 uppercase tracking-wide">
+                    Example CSV Format:
+                  </p>
+                  <pre className="text-xs font-mono text-midnight/80 whitespace-pre-wrap">
+{`ltv_min,ltv_max,fico_min,fico_max,standard_rate,io_adjustment
+0,70,720,739,7.125,0.125
+70,75,720,739,7.25,0.125
+75,80,720,739,7.375,0.125`}
+                  </pre>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-semibold text-midnight mb-2">
-                  Rate Sheet Data (JSON)
+                  Rate Sheet JSON (auto-populated from upload, or edit manually)
                 </label>
                 <textarea
                   value={rateSheetJSON}
                   onChange={(e) => setRateSheetJSON(e.target.value)}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-ocean outline-none font-mono text-sm"
-                  rows={12}
-                  placeholder="Paste rate sheet JSON"
+                  rows={10}
+                  placeholder="Paste rate sheet JSON or upload CSV above"
                 />
-                <p className="text-xs text-steel mt-1">
-                  Format: rates array with ltv_min, ltv_max, fico_min, fico_max,
-                  standard_rate, io_adjustment
-                </p>
               </div>
 
               <div className="border-t-2 border-gray-200 pt-6">
@@ -318,7 +427,10 @@ export default function DSCRClientsAdmin() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={() => {
+                    setShowForm(false)
+                    setUploadedFile(null)
+                  }}
                   className="px-8 py-3 bg-gray-200 text-midnight rounded-lg font-semibold hover:bg-gray-300 transition"
                 >
                   Cancel
