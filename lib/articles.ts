@@ -11,6 +11,15 @@ export interface Article {
 export const articles: Article[] = [
   // === NEWEST FIRST ===
   {
+    title: 'AIRSTEP + AUM Trumpet Rig Setup',
+    description: 'Step-by-step setup for XSONIC AIRSTEP Bluetooth MIDI, M-Audio expression pedal, Scarlett interface, and AUM on iPad. Includes delay toggle, volume pedal, signal chain, and reverb plugin recommendations.',
+    href: '/workshop/personal/airstep-setup',
+    category: 'Music & Gear',
+    date: 'Feb 23, 2026',
+    published: true,
+    type: 'guide',
+  },
+  {
     title: 'LO Buddy Phase 3: Portals, Scenarios & Communication',
     description: 'Realtor purchasing kits, client portals, scenario engine merger, team communication, and mobile app roadmap.',
     category: 'LO Buddy',
