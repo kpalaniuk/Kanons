@@ -7,17 +7,6 @@ import { Send, Sparkles, FileText, RotateCcw, Copy, Check, ChevronDown } from 'l
 
 const TOPICS = [
   {
-    id: 'team-selection',
-    label: 'FC Balboa — Team Selection',
-    emoji: '⚽',
-    placeholder: 'Tell me about a player you evaluated today...',
-    systemPrompt: `You are Kyle's coaching assistant helping him plan FC Balboa U10 team selection. Kyle is the head coach of an under-10 youth soccer team (born Aug 2016–Jul 2017). You're helping him evaluate tryout observations, think through roster composition, balance positions, and prepare for the Thursday coaches meeting.
-
-Ask good follow-up questions to draw out his observations on each player. Help him think about: technical skills, athleticism, attitude/coachability, positional fit, how players connect with each other, team balance, and any borderline decisions.
-
-Be concise and practical. When he asks you to generate the artifact, produce a structured Team Selection Document with: player summaries, position recommendations, roster decisions (in/borderline/not yet), key talking points for the coaches meeting, and any notes Kyle wants to remember.`,
-  },
-  {
     id: 'planning',
     label: 'Project Planning',
     emoji: '🗂️',
@@ -236,7 +225,7 @@ export default function FocusChatPage() {
 
           {/* Model badge */}
           <span className="text-xs font-mono text-[#7A8F9E] bg-[#f8f7f4] border border-[#e8e6e1] px-2 py-1 rounded-full hidden sm:block">
-            GPT-4o
+            Claude Sonnet
           </span>
 
           {/* View toggle + reset */}
@@ -377,7 +366,7 @@ export default function FocusChatPage() {
           </div>
 
           <p className="text-center text-xs text-[#7A8F9E]">
-            Enter to send · Shift+Enter for new line · GPT-4o
+            Enter to send · Shift+Enter for new line · Claude Sonnet
           </p>
         </div>
       </div>

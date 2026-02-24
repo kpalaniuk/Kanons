@@ -3,8 +3,8 @@ import { auth } from '@clerk/nextjs/server'
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 
-// Default model for Focus Chat — GPT-4o: great at structured artifact generation
-const DEFAULT_MODEL = 'openai/gpt-4o'
+// Default model for Focus Chat — Claude Sonnet 4.5: better conversational depth + artifact quality
+const DEFAULT_MODEL = 'anthropic/claude-sonnet-4-5'
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
