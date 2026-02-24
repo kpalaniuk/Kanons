@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { BookOpen, Mic, Cpu, FileText, ExternalLink, Users, Brain, MessageSquare, Inbox, BookMarked, ClipboardCheck, Search, X, Music2, Rocket, Trophy } from 'lucide-react'
 import { articles } from '@/lib/articles'
 import type { Article } from '@/lib/articles'
@@ -51,10 +52,12 @@ const typeLabels: Record<string, { label: string; color: string }> = {
 
 const ALL_CATEGORIES = [
   'All',
+  'Work',
+  'Personal',
   ...Array.from(new Set([
     ...articles.map(a => a.category),
     ...articles.flatMap(a => a.tags || []),
-  ])),
+  ])).filter(c => c !== 'Work' && c !== 'Personal'),
 ]
 
 function isInternal(href: string) {
@@ -111,13 +114,23 @@ function ArticleCard({ item }: { item: Article }) {
 }
 
 export default function KnowledgeBasePage() {
+  const searchParams = useSearchParams()
   const [query, setQuery] = useState('')
-  const [activeCategory, setActiveCategory] = useState('All')
+  const [activeCategory, setActiveCategory] = useState(() => searchParams?.get('cat') || 'All')
+
+  // Sync when URL param changes (e.g. clicking KB Work vs KB Personal in nav)
+  useEffect(() => {
+    const cat = searchParams?.get('cat')
+    if (cat) setActiveCategory(cat)
+  }, [searchParams])
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim()
     return articles.filter(a => {
-      const matchesCategory = activeCategory === 'All' ||
+      const matchesCategory =
+        activeCategory === 'All' ||
+        (activeCategory === 'Work' && a.section === 'work') ||
+        (activeCategory === 'Personal' && a.section === 'personal') ||
         a.category === activeCategory ||
         (a.tags || []).includes(activeCategory)
       const matchesQuery = !q ||
