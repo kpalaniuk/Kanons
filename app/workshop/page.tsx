@@ -12,7 +12,8 @@ import {
   Music,
   ExternalLink,
   BookOpen,
-  FileText
+  FileText,
+  Sparkles
 } from 'lucide-react'
 
 const workTools = [
@@ -54,6 +55,13 @@ const workTools = [
 ]
 
 const personalTools = [
+  {
+    href: '/workshop/personal/focus',
+    title: 'Focus Chat',
+    description: 'Scoped AI sessions that produce clean artifacts',
+    icon: Sparkles,
+    color: 'terracotta'
+  },
   {
     href: '/workshop/personal/lo-buddy-brief',
     title: 'LO Buddy Brief',
