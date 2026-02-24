@@ -11,7 +11,8 @@ import {
   DollarSign,
   Music,
   ExternalLink,
-  BookOpen
+  BookOpen,
+  FileText
 } from 'lucide-react'
 
 const workTools = [
@@ -53,6 +54,13 @@ const workTools = [
 ]
 
 const personalTools = [
+  {
+    href: '/workshop/personal/lo-buddy-brief',
+    title: 'LO Buddy Brief',
+    description: 'Feb 24 — Integration recap, roadmap & GH Group go-live plan',
+    icon: FileText,
+    color: 'terracotta'
+  },
   { 
     href: '/workshop/personal/tasks', 
     title: 'Tasks', 
