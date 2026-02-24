@@ -3,10 +3,19 @@
 import Link from 'next/link'
 import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { BookOpen, Mic, Cpu, FileText, ExternalLink, Users, Brain, MessageSquare, Inbox, BookMarked, ClipboardCheck, Search, X, Music2, Rocket, Trophy } from 'lucide-react'
+import { BookOpen, Mic, Cpu, FileText, ExternalLink, Users, Brain, MessageSquare, Inbox, BookMarked, ClipboardCheck, Search, X, Music2, Rocket, Trophy, Globe, Lock, Copy, Check } from 'lucide-react'
 import { articles } from '@/lib/articles'
 import type { Article } from '@/lib/articles'
 import type { LucideIcon } from 'lucide-react'
+
+// Slugs that have a public /view/[slug] component registered
+const SHAREABLE_SLUGS = new Set(['lo-buddy-brief', 'fc-balboa', 'airstep-setup'])
+
+function getSlug(href: string): string | null {
+  if (!href.startsWith('/workshop/')) return null
+  const slug = href.split('/').pop() || null
+  return slug && SHAREABLE_SLUGS.has(slug) ? slug : null
+}
 
 const iconMap: Record<string, LucideIcon> = {
   '/workshop/personal/fc-balboa': Trophy,
@@ -64,10 +73,20 @@ function isInternal(href: string) {
   return href.startsWith('/workshop/') || href.startsWith('/family/')
 }
 
-function ArticleCard({ item }: { item: Article }) {
+interface ArticleCardProps {
+  item: Article
+  isPublic?: boolean
+  isCopied?: boolean
+  onToggle?: (slug: string, enabled: boolean) => void
+  onCopy?: (slug: string) => void
+}
+
+function ArticleCard({ item, isPublic, isCopied, onToggle, onCopy }: ArticleCardProps) {
   const Icon = iconMap[item.href] || FileText
   const typeInfo = typeLabels[item.type || 'article']
   const internal = isInternal(item.href)
+  const slug = getSlug(item.href)
+  const canShare = !!slug && !!onToggle
 
   const inner = (
     <div className="group bg-cream rounded-xl p-6 border border-midnight/5 hover:border-cyan-500/30 transition-all hover:shadow-lg h-full">
@@ -99,6 +118,34 @@ function ArticleCard({ item }: { item: Article }) {
           ))}
         </div>
       )}
+
+      {/* Share toggle — only shown for pages with a registered /view/[slug] */}
+      {canShare && (
+        <div className="mt-3 pt-3 border-t border-midnight/5 flex items-center gap-2" onClick={e => e.preventDefault()}>
+          <button
+            onClick={() => onToggle!(slug!, !isPublic)}
+            title={isPublic ? 'Make private' : 'Make public'}
+            className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${
+              isPublic
+                ? 'bg-green-100 text-green-700 hover:bg-red-100 hover:text-red-600'
+                : 'bg-midnight/5 text-midnight/40 hover:bg-green-100 hover:text-green-700'
+            }`}
+          >
+            {isPublic ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+            {isPublic ? 'Public' : 'Private'}
+          </button>
+          {isPublic && (
+            <button
+              onClick={() => onCopy?.(slug!)}
+              title="Copy shareable link"
+              className="flex items-center gap-1 text-xs text-midnight/40 hover:text-cyan-500 transition-colors"
+            >
+              {isCopied ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
+              {isCopied ? 'Copied!' : 'Copy link'}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 
@@ -113,16 +160,61 @@ function ArticleCard({ item }: { item: Article }) {
   )
 }
 
+const BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://kyle.palaniuk.net'
+
 export default function KnowledgeBasePage() {
   const searchParams = useSearchParams()
   const [query, setQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState(() => searchParams?.get('cat') || 'All')
+  const [publicPages, setPublicPages] = useState<Record<string, boolean>>({})
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null)
+  const [toggling, setToggling] = useState<string | null>(null)
 
   // Sync when URL param changes (e.g. clicking KB Work vs KB Personal in nav)
   useEffect(() => {
     const cat = searchParams?.get('cat')
     if (cat) setActiveCategory(cat)
   }, [searchParams])
+
+  // Load public pages state on mount
+  useEffect(() => {
+    fetch('/api/admin/publish')
+      .then(r => r.ok ? r.json() : {})
+      .then(map => setPublicPages(map))
+      .catch(() => {})
+  }, [])
+
+  async function handleToggle(slug: string, enabled: boolean) {
+    if (toggling) return
+    const article = articles.find(a => getSlug(a.href) === slug)
+    if (!article) return
+
+    setToggling(slug)
+    try {
+      const res = await fetch('/api/admin/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, title: article.title, href: article.href, enabled }),
+      })
+      if (res.ok) {
+        setPublicPages(prev => ({ ...prev, [slug]: enabled }))
+        if (enabled) {
+          // Auto-copy the link on publish
+          await navigator.clipboard.writeText(`${BASE_URL}/view/${slug}`)
+          setCopiedSlug(slug)
+          setTimeout(() => setCopiedSlug(null), 3000)
+        }
+      }
+    } finally {
+      setToggling(null)
+    }
+  }
+
+  async function handleCopy(slug: string) {
+    await navigator.clipboard.writeText(`${BASE_URL}/view/${slug}`)
+    setCopiedSlug(slug)
+    setTimeout(() => setCopiedSlug(null), 3000)
+  }
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim()
@@ -226,7 +318,10 @@ export default function KnowledgeBasePage() {
           </div>
           <p className="text-midnight/50 text-sm mb-6">Reports and deliverables — read these first.</p>
           <div className="grid gap-4 md:grid-cols-2">
-            {reports.map(item => <ArticleCard key={item.href} item={item} />)}
+            {reports.map(item => {
+              const slug = getSlug(item.href)
+              return <ArticleCard key={item.href} item={item} isPublic={slug ? publicPages[slug] : undefined} isCopied={slug === copiedSlug} onToggle={handleToggle} onCopy={handleCopy} />
+            })}
           </div>
         </section>
       )}
@@ -240,7 +335,10 @@ export default function KnowledgeBasePage() {
             <h2 className="font-display text-2xl text-midnight">Guides</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            {guides.map(item => <ArticleCard key={item.href} item={item} />)}
+            {guides.map(item => {
+              const slug = getSlug(item.href)
+              return <ArticleCard key={item.href} item={item} isPublic={slug ? publicPages[slug] : undefined} isCopied={slug === copiedSlug} onToggle={handleToggle} onCopy={handleCopy} />
+            })}
           </div>
         </section>
       )}
@@ -254,7 +352,10 @@ export default function KnowledgeBasePage() {
             <h2 className="font-display text-2xl text-midnight">Articles</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            {regularArticles.map(item => <ArticleCard key={item.href} item={item} />)}
+            {regularArticles.map(item => {
+              const slug = getSlug(item.href)
+              return <ArticleCard key={item.href} item={item} isPublic={slug ? publicPages[slug] : undefined} isCopied={slug === copiedSlug} onToggle={handleToggle} onCopy={handleCopy} />
+            })}
           </div>
         </section>
       )}
