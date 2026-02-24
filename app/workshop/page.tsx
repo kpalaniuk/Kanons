@@ -1,117 +1,27 @@
 import Link from 'next/link'
 import { 
-  ClipboardList, 
-  Target, 
-  Calculator, 
-  Building2, 
-  Home, 
+  ClipboardList,
+  Wrench,
+  Users,
   CheckSquare, 
-  House, 
-  BarChart3, 
-  DollarSign,
-  Music,
+  Sparkles,
+  Trophy,
+  Leaf,
   ExternalLink,
   BookOpen,
-  FileText,
-  Sparkles,
-  Trophy
 } from 'lucide-react'
 
 const workTools = [
-  { 
-    href: '/workshop/work/pipeline', 
-    title: 'Pipeline', 
-    description: 'Track and manage client opportunities',
-    icon: ClipboardList,
-    color: 'ocean' 
-  },
-  { 
-    href: '/workshop/work/scenarios', 
-    title: 'Scenarios', 
-    description: 'Financial modeling hub',
-    icon: Target,
-    color: 'ocean' 
-  },
-  { 
-    href: '/workshop/work/dscr-calculator', 
-    title: 'DSCR Calculator', 
-    description: 'Debt service coverage ratio analysis',
-    icon: Calculator,
-    color: 'ocean' 
-  },
-  { 
-    href: '/workshop/work/refi-builder', 
-    title: 'Refi Builder', 
-    description: 'Refinance scenario modeling',
-    icon: Building2,
-    color: 'ocean' 
-  },
-  { 
-    href: '/workshop/work/purchase-builder', 
-    title: 'Purchase Builder', 
-    description: 'Purchase analysis & projections',
-    icon: Home,
-    color: 'ocean' 
-  },
+  { href: '/workshop/work/pipeline', title: 'Pipeline',  description: 'Track and manage client opportunities', icon: ClipboardList, color: 'ocean' },
+  { href: '/workshop/work/tools',    title: 'Tools',     description: 'Scenario builders, DSCR calc, underwriting chat', icon: Wrench, color: 'ocean' },
+  { href: '/workshop/work/clients',  title: 'Clients',   description: 'Saved scenario pages for individual clients', icon: Users, color: 'ocean' },
 ]
 
 const personalTools = [
-  {
-    href: '/workshop/personal/focus',
-    title: 'Focus Chat',
-    description: 'Scoped AI sessions that produce clean artifacts',
-    icon: Sparkles,
-    color: 'terracotta'
-  },
-  {
-    href: '/workshop/personal/lo-buddy-brief',
-    title: 'LO Buddy Brief',
-    description: 'Feb 24 — Integration recap, roadmap & GH Group go-live plan',
-    icon: FileText,
-    color: 'terracotta'
-  },
-  { 
-    href: '/workshop/personal/tasks', 
-    title: 'Tasks', 
-    description: 'Personal task tracking',
-    icon: CheckSquare,
-    color: 'terracotta' 
-  },
-  { 
-    href: '/workshop/personal/adu', 
-    title: 'ADU Cash Flow', 
-    description: "Mike's property management ledger",
-    icon: House,
-    color: 'terracotta' 
-  },
-  { 
-    href: '/workshop/personal/usage', 
-    title: 'Usage Tracker', 
-    description: 'Resource and time usage analytics',
-    icon: BarChart3,
-    color: 'terracotta' 
-  },
-  { 
-    href: '/workshop/personal/events', 
-    title: 'Event Splitter', 
-    description: 'Expense splitting calculator',
-    icon: DollarSign,
-    color: 'terracotta' 
-  },
-  { 
-    href: '/workshop/personal/lyrics', 
-    title: 'Lyrics', 
-    description: 'Music lyrics database',
-    icon: Music,
-    color: 'terracotta' 
-  },
-  {
-    href: '/workshop/personal/fc-balboa',
-    title: 'FC Balboa',
-    description: 'U10 coaching hub — roster, practice plans, game log',
-    icon: Trophy,
-    color: 'terracotta'
-  },
+  { href: '/workshop/personal/tasks',     title: 'Tasks',     description: 'Personal task tracking',                           icon: CheckSquare, color: 'terracotta' },
+  { href: '/workshop/personal/focus',     title: 'Focus',     description: 'Scoped AI sessions that produce clean artifacts',   icon: Sparkles,   color: 'terracotta' },
+  { href: '/workshop/personal/fc-balboa', title: 'FC Balboa', description: 'U10 coaching hub — roster, practice plans, log',    icon: Trophy,     color: 'terracotta' },
+  { href: '/workshop/personal/life',      title: 'Life',      description: 'ADU ledger, event splitter, usage, lyrics',         icon: Leaf,       color: 'terracotta' },
 ]
 
 // Knowledge Base articles imported from shared data (published only, newest 6)
