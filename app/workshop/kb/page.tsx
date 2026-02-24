@@ -8,13 +8,11 @@ import { articles } from '@/lib/articles'
 import type { Article } from '@/lib/articles'
 import type { LucideIcon } from 'lucide-react'
 
-// Slugs that have a public /view/[slug] component registered
-const SHAREABLE_SLUGS = new Set(['lo-buddy-brief', 'fc-balboa', 'airstep-setup'])
-
+// Derive a stable slug from any article href
 function getSlug(href: string): string | null {
-  if (!href.startsWith('/workshop/')) return null
-  const slug = href.split('/').pop() || null
-  return slug && SHAREABLE_SLUGS.has(slug) ? slug : null
+  const last = href.split('/').pop()
+  if (!last) return null
+  return last.replace(/\.(html?|md)$/i, '').replace(/_/g, '-').toLowerCase() || null
 }
 
 const iconMap: Record<string, LucideIcon> = {
