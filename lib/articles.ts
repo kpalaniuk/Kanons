@@ -3,6 +3,7 @@ export interface Article {
   description: string
   href: string
   category: string
+  tags?: string[]
   date: string
   published: boolean
   type?: 'report' | 'article' | 'guide'
@@ -11,10 +12,21 @@ export interface Article {
 export const articles: Article[] = [
   // === NEWEST FIRST ===
   {
+    title: 'LO Buddy — Full Product Brief (Feb 24)',
+    description: 'GHL bidirectional sync shipped, approval queue live, AI drafts in production. Covers what shipped, what to fix before going live, full feature roadmap, GH Group go-live plan, and new team onboarding wizard spec.',
+    href: '/workshop/personal/lo-buddy-brief',
+    category: 'Personal',
+    tags: ['LO Buddy'],
+    date: 'Feb 24, 2026',
+    published: true,
+    type: 'report',
+  },
+  {
     title: 'AIRSTEP + AUM Trumpet Rig Setup',
     description: 'Step-by-step setup for XSONIC AIRSTEP Bluetooth MIDI, M-Audio expression pedal, Scarlett interface, and AUM on iPad. Includes delay toggle, volume pedal, signal chain, and reverb plugin recommendations.',
     href: '/workshop/personal/airstep-setup',
     category: 'Music & Gear',
+    tags: ['Personal'],
     date: 'Feb 23, 2026',
     published: true,
     type: 'guide',

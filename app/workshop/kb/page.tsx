@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { useState, useMemo } from 'react'
-import { BookOpen, Mic, Cpu, FileText, ExternalLink, Users, Brain, MessageSquare, Inbox, BookMarked, ClipboardCheck, Search, X, Music2 } from 'lucide-react'
+import { BookOpen, Mic, Cpu, FileText, ExternalLink, Users, Brain, MessageSquare, Inbox, BookMarked, ClipboardCheck, Search, X, Music2, Rocket } from 'lucide-react'
 import { articles } from '@/lib/articles'
 import type { Article } from '@/lib/articles'
 import type { LucideIcon } from 'lucide-react'
 
 const iconMap: Record<string, LucideIcon> = {
+  '/workshop/personal/lo-buddy-brief': Rocket,
   '/artifacts/trumpet-mic-comparison.html': Mic,
   '/artifacts/lo-buddy-openclaw-architecture.html': Cpu,
   '/artifacts/paige-daniel-summary': Users,
@@ -27,6 +28,15 @@ const categoryColors: Record<string, string> = {
   'Technology': 'bg-ocean/10 text-ocean',
   'Business': 'bg-sunset/10 text-amber-600',
   'project': 'bg-cyan-500/10 text-cyan-600',
+  'Personal': 'bg-cyan-500/10 text-cyan-600',
+  'FC Balboa': 'bg-green-100 text-green-700',
+}
+
+const tagColors: Record<string, string> = {
+  'LO Buddy': 'bg-ocean/10 text-ocean',
+  'Personal': 'bg-cyan-500/10 text-cyan-600',
+  'FC Balboa': 'bg-green-100 text-green-700',
+  'Music': 'bg-terracotta/10 text-terracotta',
 }
 
 const typeLabels: Record<string, { label: string; color: string }> = {
@@ -35,7 +45,13 @@ const typeLabels: Record<string, { label: string; color: string }> = {
   'article': { label: 'Article', color: 'bg-midnight/10 text-midnight/60' },
 }
 
-const ALL_CATEGORIES = ['All', ...Array.from(new Set(articles.map(a => a.category)))]
+const ALL_CATEGORIES = [
+  'All',
+  ...Array.from(new Set([
+    ...articles.map(a => a.category),
+    ...articles.flatMap(a => a.tags || []),
+  ])),
+]
 
 function isInternal(href: string) {
   return href.startsWith('/workshop/') || href.startsWith('/family/')
@@ -67,6 +83,15 @@ function ArticleCard({ item }: { item: Article }) {
         {item.title}
       </h3>
       <p className="text-sm text-midnight/60">{item.description}</p>
+      {item.tags && item.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-midnight/5">
+          {item.tags.map(tag => (
+            <span key={tag} className={`text-xs px-2 py-0.5 rounded-full font-medium ${tagColors[tag] || 'bg-midnight/5 text-midnight/40'}`}>
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   )
 
@@ -88,11 +113,14 @@ export default function KnowledgeBasePage() {
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim()
     return articles.filter(a => {
-      const matchesCategory = activeCategory === 'All' || a.category === activeCategory
+      const matchesCategory = activeCategory === 'All' ||
+        a.category === activeCategory ||
+        (a.tags || []).includes(activeCategory)
       const matchesQuery = !q ||
         a.title.toLowerCase().includes(q) ||
         a.description.toLowerCase().includes(q) ||
-        a.category.toLowerCase().includes(q)
+        a.category.toLowerCase().includes(q) ||
+        (a.tags || []).some(t => t.toLowerCase().includes(q))
       return matchesCategory && matchesQuery
     })
   }, [query, activeCategory])
