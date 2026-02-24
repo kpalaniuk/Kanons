@@ -2,13 +2,16 @@
 
 import Link from 'next/link'
 import { useState, useMemo } from 'react'
-import { BookOpen, Mic, Cpu, FileText, ExternalLink, Users, Brain, MessageSquare, Inbox, BookMarked, ClipboardCheck, Search, X, Music2, Rocket } from 'lucide-react'
+import { BookOpen, Mic, Cpu, FileText, ExternalLink, Users, Brain, MessageSquare, Inbox, BookMarked, ClipboardCheck, Search, X, Music2, Rocket, Trophy } from 'lucide-react'
 import { articles } from '@/lib/articles'
 import type { Article } from '@/lib/articles'
 import type { LucideIcon } from 'lucide-react'
 
 const iconMap: Record<string, LucideIcon> = {
+  '/workshop/personal/fc-balboa': Trophy,
   '/workshop/personal/lo-buddy-brief': Rocket,
+  '/underwriting': Cpu,
+  '/artifacts/lo-buddy-meeting-prep.md': MessageSquare,
   '/artifacts/trumpet-mic-comparison.html': Mic,
   '/artifacts/lo-buddy-openclaw-architecture.html': Cpu,
   '/artifacts/paige-daniel-summary': Users,
@@ -30,6 +33,7 @@ const categoryColors: Record<string, string> = {
   'project': 'bg-cyan-500/10 text-cyan-600',
   'Personal': 'bg-cyan-500/10 text-cyan-600',
   'FC Balboa': 'bg-green-100 text-green-700',
+  'Work': 'bg-ocean/10 text-ocean',
 }
 
 const tagColors: Record<string, string> = {

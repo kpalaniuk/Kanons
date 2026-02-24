@@ -12,6 +12,16 @@ export interface Article {
 export const articles: Article[] = [
   // === NEWEST FIRST ===
   {
+    title: 'FC Balboa — Coaching Hub',
+    description: 'U10 coaching reference: season overview, roster, practice plans, and game log. Born Aug 2016–Jul 2017.',
+    href: '/workshop/personal/fc-balboa',
+    category: 'Personal',
+    tags: ['FC Balboa'],
+    date: 'Feb 24, 2026',
+    published: true,
+    type: 'guide',
+  },
+  {
     title: 'LO Buddy — Full Product Brief (Feb 24)',
     description: 'GHL bidirectional sync shipped, approval queue live, AI drafts in production. Covers what shipped, what to fix before going live, full feature roadmap, GH Group go-live plan, and new team onboarding wizard spec.',
     href: '/workshop/personal/lo-buddy-brief',
@@ -111,6 +121,26 @@ export const articles: Article[] = [
     date: 'Feb 19, 2026',
     published: false,
     type: 'article',
+  },
+  {
+    title: 'LO Buddy Meeting Prep',
+    description: 'Pre-meeting context and talking points for LO Buddy stakeholder discussions.',
+    href: '/artifacts/lo-buddy-meeting-prep.md',
+    category: 'LO Buddy',
+    tags: ['LO Buddy'],
+    date: 'Feb 2026',
+    published: true,
+    type: 'article',
+  },
+  {
+    title: 'Underwriting Chat',
+    description: 'Live AI underwriting assistant. Ask questions about guidelines, overlays, and loan scenarios. Powered by OpenRouter + PPH knowledge base.',
+    href: '/underwriting',
+    category: 'Work',
+    tags: ['LO Buddy'],
+    date: 'Feb 2026',
+    published: true,
+    type: 'guide',
   },
   {
     title: 'Designer-Contractor Partnership Guide',

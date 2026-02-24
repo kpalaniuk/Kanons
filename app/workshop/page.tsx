@@ -13,7 +13,8 @@ import {
   ExternalLink,
   BookOpen,
   FileText,
-  Sparkles
+  Sparkles,
+  Trophy
 } from 'lucide-react'
 
 const workTools = [
@@ -104,10 +105,18 @@ const personalTools = [
     icon: Music,
     color: 'terracotta' 
   },
+  {
+    href: '/workshop/personal/fc-balboa',
+    title: 'FC Balboa',
+    description: 'U10 coaching hub — roster, practice plans, game log',
+    icon: Trophy,
+    color: 'terracotta'
+  },
 ]
 
-// Knowledge Base articles imported from shared data
-import { articles as kbArticles } from '@/lib/articles'
+// Knowledge Base articles imported from shared data (published only, newest 6)
+import { articles as allKbArticles } from '@/lib/articles'
+const kbArticles = allKbArticles.filter(a => a.published).slice(0, 6)
 
 const quickLinks = [
   {
