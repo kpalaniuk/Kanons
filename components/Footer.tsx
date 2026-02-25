@@ -15,7 +15,7 @@ export default function Footer() {
   const pathname = usePathname()
 
   // Hide footer on client portal and underwriting pages
-  if (pathname?.startsWith('/clients') || pathname?.startsWith('/underwriting') || pathname?.startsWith('/view/')) return null
+  if (pathname?.startsWith('/clients') || pathname?.startsWith('/underwriting') || pathname?.startsWith('/view/') || pathname?.startsWith('/sign-in') || pathname?.startsWith('/sign-up')) return null
 
   return (
     <footer className="bg-midnight text-cream py-16">
