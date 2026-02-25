@@ -1,25 +1,25 @@
 {
-  "lastUpdated": "2026-02-25T05:03:40.143Z",
+  "lastUpdated": "2026-02-25T11:03:40.366Z",
   "period": "2026-02-21 to 2026-02-25",
   "providers": [
     {
       "name": "anthropic",
       "model": "claude-sonnet-4-6",
       "status": "active",
-      "calls": 1012,
-      "tokensIn": 8366,
-      "tokensOut": 607967,
-      "estimatedCost": 94.11110860000004,
+      "calls": 1270,
+      "tokensIn": 10468,
+      "tokensOut": 750922,
+      "estimatedCost": 125.4087928,
       "notes": "Primary reasoning model. Claude Sonnet 4.5 for most tasks, Opus 4 for complex thinking."
     },
     {
       "name": "google",
       "model": "gemini-3-flash-preview",
       "status": "active",
-      "calls": 11,
-      "tokensIn": 1097112,
-      "tokensOut": 4030,
-      "estimatedCost": 0.58704685,
+      "calls": 19,
+      "tokensIn": 1957186,
+      "tokensOut": 5101,
+      "estimatedCost": 1.0520154,
       "notes": "Gemini models for cost-effective fallback and high-throughput tasks."
     },
     {
@@ -100,19 +100,27 @@
     },
     {
       "date": "2026-02-25",
+      "provider": "google",
+      "calls": 8,
+      "tokensIn": 860074,
+      "tokensOut": 1071,
+      "cost": 0.46496855
+    },
+    {
+      "date": "2026-02-25",
       "provider": "anthropic",
-      "calls": 68,
-      "tokensIn": 570,
-      "tokensOut": 35923,
-      "cost": 7.48119495
+      "calls": 326,
+      "tokensIn": 2672,
+      "tokensOut": 178878,
+      "cost": 38.77887914999999
     }
   ],
   "totals": {
-    "totalCalls": 1036,
-    "totalTokensIn": 1105478,
-    "totalTokensOut": 611997,
-    "totalCost": 94.69815545000003,
-    "avgCallsPerDay": 207,
-    "avgTokensPerCall": 1658
+    "totalCalls": 1302,
+    "totalTokensIn": 1967654,
+    "totalTokensOut": 756023,
+    "totalCost": 126.4608082,
+    "avgCallsPerDay": 260,
+    "avgTokensPerCall": 2092
   }
 }
