@@ -15,6 +15,17 @@ export const articles: Article[] = [
 
   // ── Personal ──────────────────────────────────────────────────────────────
   {
+    title: 'FC Balboa — Team Selection 2026–27',
+    description: 'Two-part planning document: internal coaching notes (Kyle, Andy, Angie) and club proposal (Chhem). Two-team approach, no-cuts philosophy, field time and gear requests for the 2026–27 U10 season.',
+    href: '/workshop/personal/fc-balboa/team-selection',
+    category: 'Personal',
+    tags: ['FC Balboa', 'Personal'],
+    section: 'personal',
+    date: 'Feb 24, 2026',
+    published: true,
+    type: 'report',
+  },
+  {
     title: 'FC Balboa — Coaching Hub',
     description: 'U10 coaching reference: season overview, roster, practice plans, and game log. Born Aug 2016–Jul 2017.',
     href: '/workshop/personal/fc-balboa',
