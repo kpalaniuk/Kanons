@@ -57,20 +57,47 @@ export default async function PublicViewPage({ params }: { params: { slug: strin
   if (PageComponent) {
     return (
       <div className="min-h-screen bg-sand">
-        <div className="bg-midnight text-cream text-xs px-6 py-2.5 flex items-center justify-between">
-          <span className="text-cream/60">Shared by <span className="text-cream font-medium">Kyle Palaniuk</span></span>
-          <a
-            href="https://kyle.palaniuk.net"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-cream/40 hover:text-cream transition-colors"
-          >
-            kyle.palaniuk.net <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-        <div className="max-w-7xl mx-auto px-6 py-10">
+
+        {/* Public header — professional branded bar */}
+        <header className="bg-midnight border-b border-cream/10">
+          <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+            {/* Left: branding */}
+            <div className="flex items-center gap-3">
+              <a
+                href="https://kyle.palaniuk.net"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-display text-lg text-cream hover:text-terracotta transition-colors"
+              >
+                Kyle Palaniuk
+              </a>
+              <span className="text-cream/20 text-sm">·</span>
+              <span className="text-cream/50 text-sm">Document & Knowledge Base</span>
+            </div>
+
+            {/* Right: visit site link */}
+            <a
+              href="https://kyle.palaniuk.net"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs text-cream/40 hover:text-cream transition-colors border border-cream/10 hover:border-cream/30 px-3 py-1.5 rounded-lg"
+            >
+              Visit website <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        </header>
+
+        {/* Document content */}
+        <div className="max-w-5xl mx-auto px-6 py-10">
           <PageComponent />
         </div>
+
+        {/* Footer */}
+        <footer className="border-t border-midnight/10 mt-16 py-8 text-center text-xs text-midnight/30">
+          Shared by Kyle Palaniuk via{' '}
+          <a href="https://kyle.palaniuk.net" className="hover:text-midnight transition-colors">kyle.palaniuk.net</a>
+        </footer>
+
       </div>
     )
   }

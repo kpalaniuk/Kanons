@@ -35,7 +35,7 @@ export default function Navigation() {
   }, [pathname])
 
   // Hide navigation on client portal and underwriting pages
-  if (pathname?.startsWith('/clients') || pathname?.startsWith('/underwriting')) return null
+  if (pathname?.startsWith('/clients') || pathname?.startsWith('/underwriting') || pathname?.startsWith('/view/')) return null
 
   return (
     <>
