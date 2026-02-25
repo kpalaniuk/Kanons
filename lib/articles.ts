@@ -15,13 +15,24 @@ export const articles: Article[] = [
 
   // ── Personal ──────────────────────────────────────────────────────────────
   {
-    title: 'FC Balboa — Team Selection 2026–27',
-    description: 'Two-part planning document: internal coaching notes (Kyle, Andy, Angie) and club proposal (Chhem). Two-team approach, no-cuts philosophy, field time and gear requests for the 2026–27 U10 season.',
-    href: '/workshop/personal/fc-balboa/team-selection',
+    title: 'FC Balboa — Club Proposal 2026–27',
+    description: 'Club-facing proposal from Kyle Palaniuk and Coach Andy Laub: two-team structure, no-cuts philosophy, Jefferson Elementary field request, equipment allocation, and administrative support needed. For Chhem, Theo, Michelle, and FC Balboa boys program staff.',
+    href: '/workshop/personal/fc-balboa/team-selection-club',
     category: 'Personal',
     tags: ['FC Balboa', 'Personal'],
     section: 'personal',
-    date: 'Feb 24, 2026',
+    date: 'Feb 2026',
+    published: true,
+    type: 'report',
+  },
+  {
+    title: 'FC Balboa — Internal Planning Notes 2026–27',
+    description: 'Internal coaching notes for Kyle Palaniuk, Coach Andy Laub, and Angie Nielson. Two-team approach, coaching pipeline (Max\'s dad, Derrick\'s dad), player philosophy, field times, gear request, and Thursday meeting checklist.',
+    href: '/workshop/personal/fc-balboa/team-selection-internal',
+    category: 'Personal',
+    tags: ['FC Balboa', 'Personal'],
+    section: 'personal',
+    date: 'Feb 2026',
     published: true,
     type: 'report',
   },
