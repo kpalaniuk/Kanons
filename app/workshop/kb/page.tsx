@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { BookOpen, Mic, Cpu, FileText, ExternalLink, Users, Brain, MessageSquare, Inbox, BookMarked, ClipboardCheck, Search, X, Music2, Rocket, Trophy, Globe, Lock, Copy, Check } from 'lucide-react'
+import { BookOpen, Mic, Cpu, FileText, ExternalLink, Users, Brain, MessageSquare, BookMarked, ClipboardCheck, Search, X, Music2, Rocket, Trophy, Globe, Lock, Copy, Check } from 'lucide-react'
 import { articles } from '@/lib/articles'
 import type { Article } from '@/lib/articles'
 import type { LucideIcon } from 'lucide-react'
@@ -233,9 +233,6 @@ export default function KnowledgeBasePage() {
   }, [query, activeCategory])
 
   const isSearching = query.trim().length > 0 || activeCategory !== 'All'
-  const reports = filtered.filter(a => a.type === 'report')
-  const guides = filtered.filter(a => a.type === 'guide')
-  const regularArticles = filtered.filter(a => a.type !== 'report' && a.type !== 'guide')
 
   return (
     <div className="space-y-10">
@@ -302,60 +299,27 @@ export default function KnowledgeBasePage() {
         <div className="text-center py-16 text-midnight/40">
           <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="font-medium">No results found</p>
-          <p className="text-sm mt-1">Try a different search or category</p>
+          <p className="text-sm mt-1">Try a different search or filter</p>
         </div>
       )}
 
-      {/* Reports */}
-      {reports.length > 0 && (
-        <section>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-1 h-8 bg-cyan-500 rounded-full" />
-            <Inbox className="w-6 h-6 text-cyan-500" />
-            <h2 className="font-display text-2xl text-midnight">From Jasper</h2>
-          </div>
-          <p className="text-midnight/50 text-sm mb-6">Reports and deliverables — read these first.</p>
-          <div className="grid gap-4 md:grid-cols-2">
-            {reports.map(item => {
-              const slug = getSlug(item.href)
-              return <ArticleCard key={item.href} item={item} isPublic={slug ? publicPages[slug] : undefined} isCopied={slug === copiedSlug} onToggle={handleToggle} onCopy={handleCopy} />
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Guides */}
-      {guides.length > 0 && (
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-1 h-8 bg-ocean rounded-full" />
-            <BookMarked className="w-6 h-6 text-ocean" />
-            <h2 className="font-display text-2xl text-midnight">Guides</h2>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            {guides.map(item => {
-              const slug = getSlug(item.href)
-              return <ArticleCard key={item.href} item={item} isPublic={slug ? publicPages[slug] : undefined} isCopied={slug === copiedSlug} onToggle={handleToggle} onCopy={handleCopy} />
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Articles */}
-      {regularArticles.length > 0 && (
-        <section>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-1 h-8 bg-terracotta rounded-full" />
-            <FileText className="w-6 h-6 text-terracotta" />
-            <h2 className="font-display text-2xl text-midnight">Articles</h2>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            {regularArticles.map(item => {
-              const slug = getSlug(item.href)
-              return <ArticleCard key={item.href} item={item} isPublic={slug ? publicPages[slug] : undefined} isCopied={slug === copiedSlug} onToggle={handleToggle} onCopy={handleCopy} />
-            })}
-          </div>
-        </section>
+      {/* All articles — flat grid, tag/search filtered */}
+      {filtered.length > 0 && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {filtered.map(item => {
+            const slug = getSlug(item.href)
+            return (
+              <ArticleCard
+                key={item.href}
+                item={item}
+                isPublic={slug ? publicPages[slug] : undefined}
+                isCopied={slug === copiedSlug}
+                onToggle={handleToggle}
+                onCopy={handleCopy}
+              />
+            )
+          })}
+        </div>
       )}
     </div>
   )
