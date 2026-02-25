@@ -9,11 +9,15 @@ import { articles } from '@/lib/articles'
 import LOBuddyBriefPage from '@/app/workshop/personal/lo-buddy-brief/page'
 import FCBalboapage from '@/app/workshop/personal/fc-balboa/page'
 import AirstepSetupPage from '@/app/workshop/personal/airstep-setup/page'
+import FCBalbaoTeamSelectionInternalPage from '@/app/workshop/personal/fc-balboa/team-selection-internal/page'
+import FCBalbaoTeamSelectionClubPage from '@/app/workshop/personal/fc-balboa/team-selection-club/page'
 
 const componentRegistry: Record<string, React.ComponentType> = {
   'lo-buddy-brief': LOBuddyBriefPage,
   'fc-balboa': FCBalboapage,
   'airstep-setup': AirstepSetupPage,
+  'team-selection-internal': FCBalbaoTeamSelectionInternalPage,
+  'team-selection-club': FCBalbaoTeamSelectionClubPage,
 }
 
 // Derive slug from href (must match the logic in kb/page.tsx)

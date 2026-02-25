@@ -8,8 +8,10 @@ import type { Article } from '@/lib/articles'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function getSlug(href: string) {
-  return href.replace(/^\/+|\/+$/g, '').replace(/\//g, '-')
+// Must match deriveSlug in /view/[slug]/page.tsx and getSlug in kb/page.tsx
+function getSlug(href: string): string {
+  const last = href.split('/').pop() || ''
+  return last.replace(/\.(html?|md)$/i, '').replace(/_/g, '-').toLowerCase()
 }
 
 const typeLabels: Record<string, { label: string; color: string }> = {
