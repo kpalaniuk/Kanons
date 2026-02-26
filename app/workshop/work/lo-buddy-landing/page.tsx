@@ -109,7 +109,12 @@ function CharacterPlaceholder() {
 
       <div className="char-body">
         <div className="char-head">
+          <div className="char-eyes">
+            <div className="char-eye" />
+            <div className="char-eye" />
+          </div>
           <div className="char-shades" />
+          <div className="char-nose" />
         </div>
         <div className="char-torso">
           <div className="char-chest-plate">
@@ -289,15 +294,45 @@ export default function LOBuddyLanding() {
         @keyframes charFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 
         .char-head {
-          width: 64px; height: 64px; border-radius: 50%;
-          background: linear-gradient(135deg, #1A2D4A, #2A4060);
+          width: 68px; height: 72px; border-radius: 50%;
+          background: radial-gradient(ellipse at 40% 35%, #C07840 0%, #8B4E22 45%, #5C2F0E 100%);
           border: 2px solid var(--lb-gold); position: relative;
+          box-shadow: inset -4px -4px 12px rgba(0,0,0,0.35), inset 2px 2px 8px rgba(255,200,140,0.15);
+        }
+        /* Eyes — peeking above the shades */
+        .char-eyes {
+          position: absolute; top: 26%; left: 50%; transform: translateX(-50%);
+          display: flex; gap: 12px; align-items: center;
+        }
+        .char-eye {
+          width: 9px; height: 9px; border-radius: 50%;
+          background: #1A0A02;
+          border: 1px solid rgba(255,180,100,0.3);
+          position: relative;
+          animation: eyeBlink 5s ease-in-out infinite;
+        }
+        .char-eye::after {
+          content: '';
+          position: absolute; top: 1px; left: 1px;
+          width: 3px; height: 3px; border-radius: 50%;
+          background: rgba(255,255,255,0.55);
+        }
+        @keyframes eyeBlink {
+          0%,94%,100% { transform: scaleY(1); }
+          96%          { transform: scaleY(0.08); }
         }
         .char-shades {
-          position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-          width: 50px; height: 16px;
-          background: var(--lb-gold); border-radius: 4px;
-          box-shadow: 0 0 12px rgba(201,168,76,0.6);
+          position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
+          width: 54px; height: 15px;
+          background: linear-gradient(135deg, #D4A843, #B8902E);
+          border-radius: 4px;
+          box-shadow: 0 0 14px rgba(201,168,76,0.55), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        /* Nose bridge suggestion */
+        .char-nose {
+          position: absolute; top: 60%; left: 50%; transform: translateX(-50%);
+          width: 6px; height: 6px; border-radius: 50%;
+          background: rgba(80,35,5,0.5);
         }
         .char-torso {
           width: 80px; height: 90px;
