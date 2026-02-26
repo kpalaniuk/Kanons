@@ -72,21 +72,61 @@ const PRICING = [
   },
 ]
 
+const THOUGHTS = [
+  { text: 'Rate lock expires in 4d ⚠️', delay: 0 },
+  { text: 'Follow up: Marcus T. →', delay: 1.4 },
+  { text: 'DSCR scenario ready ✓', delay: 2.8 },
+  { text: 'Deal going cold: Priya K.', delay: 4.2 },
+  { text: 'New lead from GHL 🔔', delay: 5.6 },
+  { text: '3 borrowers need docs', delay: 7.0 },
+  { text: 'Pipeline health: 87% 📊', delay: 8.4 },
+  { text: 'Refi window opening →', delay: 9.8 },
+  { text: 'Pre-approval: 2 hrs left', delay: 11.2 },
+  { text: 'Smart nudge sent ✓', delay: 12.6 },
+]
+
 function CharacterPlaceholder() {
   return (
     <div className="character-wrap" aria-hidden="true">
       <div className="char-glow" />
+
+      {/* Floating thought chips */}
+      <div className="char-thoughts">
+        {THOUGHTS.map((t, i) => (
+          <div
+            key={i}
+            className="char-thought"
+            style={{
+              animationDelay: `${t.delay}s`,
+              left: i % 2 === 0 ? '105%' : '-10%',
+              bottom: `${12 + (i % 5) * 18}%`,
+            }}
+          >
+            {t.text}
+          </div>
+        ))}
+      </div>
+
       <div className="char-body">
         <div className="char-head">
           <div className="char-shades" />
         </div>
         <div className="char-torso">
-          <div className="char-chest-plate" />
+          <div className="char-chest-plate">
+            {/* Scanning line on chest — shows he's "thinking" */}
+            <div className="char-scan-line" />
+          </div>
           <div className="char-shoulder left" />
           <div className="char-shoulder right" />
         </div>
         <div className="char-scroll-wrap">
-          <div className="char-scroll" />
+          {/* Scroll is now a live feed of glowing lines */}
+          <div className="char-scroll">
+            <div className="char-scroll-line l1" />
+            <div className="char-scroll-line l2" />
+            <div className="char-scroll-line l3" />
+            <div className="char-scroll-line l4" />
+          </div>
         </div>
       </div>
       <div className="char-pulse-ring r1" />
@@ -280,15 +320,84 @@ export default function LOBuddyLanding() {
         }
         .char-shoulder.left { left: -20px; }
         .char-shoulder.right { right: -20px; }
+        /* Thought chips */
+        .char-thoughts { position: absolute; inset: 0; pointer-events: none; }
+        .char-thought {
+          position: absolute;
+          background: rgba(233,30,140,0.12);
+          border: 1px solid rgba(233,30,140,0.45);
+          border-radius: 100px;
+          padding: 5px 12px;
+          font-size: 0.68rem;
+          font-weight: 600;
+          color: var(--lb-pink);
+          white-space: nowrap;
+          letter-spacing: 0.02em;
+          opacity: 0;
+          animation: thoughtFloat 14s ease-in-out infinite;
+          box-shadow: 0 0 12px rgba(233,30,140,0.15);
+          backdrop-filter: blur(4px);
+        }
+        @keyframes thoughtFloat {
+          0%   { opacity: 0; transform: translateY(0) scale(0.85); }
+          8%   { opacity: 1; transform: translateY(-10px) scale(1); }
+          70%  { opacity: 0.9; transform: translateY(-55px) scale(1); }
+          88%  { opacity: 0; transform: translateY(-80px) scale(0.9); }
+          100% { opacity: 0; transform: translateY(-80px) scale(0.9); }
+        }
+
+        /* Live scroll / data feed */
         .char-scroll-wrap { display: flex; gap: 0; }
         .char-scroll {
-          width: 12px; height: 70px;
-          background: linear-gradient(180deg, var(--lb-gold) 0%, var(--lb-gold-dim) 100%);
-          border-radius: 6px;
-          box-shadow: 0 0 16px rgba(201,168,76,0.5);
+          width: 14px; height: 78px;
+          background: linear-gradient(180deg, rgba(233,30,140,0.15) 0%, rgba(233,30,140,0.05) 100%);
+          border: 1px solid rgba(233,30,140,0.4);
+          border-radius: 7px;
+          box-shadow: 0 0 18px rgba(233,30,140,0.3);
+          position: relative;
+          overflow: hidden;
           animation: scrollGlow 2s ease-in-out infinite alternate;
         }
-        @keyframes scrollGlow { from { box-shadow: 0 0 8px rgba(233,30,140,0.4); } to { box-shadow: 0 0 24px rgba(233,30,140,0.8), 0 0 8px rgba(201,168,76,0.5); } }
+        @keyframes scrollGlow {
+          from { box-shadow: 0 0 10px rgba(233,30,140,0.3); }
+          to   { box-shadow: 0 0 28px rgba(233,30,140,0.7), 0 0 6px rgba(201,168,76,0.3); }
+        }
+        .char-scroll-line {
+          position: absolute;
+          left: 2px; right: 2px;
+          height: 2px;
+          border-radius: 2px;
+          background: var(--lb-pink);
+          opacity: 0;
+          animation: dataLine 3s ease-in-out infinite;
+        }
+        .char-scroll-line.l1 { animation-delay: 0s; }
+        .char-scroll-line.l2 { animation-delay: 0.75s; }
+        .char-scroll-line.l3 { animation-delay: 1.5s; }
+        .char-scroll-line.l4 { animation-delay: 2.25s; }
+        @keyframes dataLine {
+          0%   { opacity: 0;   top: 0%; width: 60%; left: 20%; }
+          15%  { opacity: 0.9; width: 80%; left: 10%; }
+          50%  { opacity: 0.6; top: 85%; width: 50%; left: 25%; }
+          80%  { opacity: 0.2; }
+          100% { opacity: 0;   top: 100%; }
+        }
+
+        /* Chest scan line */
+        .char-scan-line {
+          position: absolute;
+          left: 0; right: 0;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, rgba(233,30,140,0.8), transparent);
+          animation: chestScan 2.4s ease-in-out infinite;
+          top: 0;
+        }
+        @keyframes chestScan {
+          0%   { top: 0%; opacity: 0; }
+          10%  { opacity: 1; }
+          90%  { opacity: 0.8; }
+          100% { top: 100%; opacity: 0; }
+        }
 
         .char-pulse-ring {
           position: absolute; border-radius: 50%; border: 1px solid rgba(233,30,140,0.3);
