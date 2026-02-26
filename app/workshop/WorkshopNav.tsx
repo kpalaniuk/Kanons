@@ -12,10 +12,12 @@ import {
   Leaf,
   LayoutDashboard,
   BookOpen,
+  Inbox,
 } from 'lucide-react'
 
 const workLinks = [
   { href: '/workshop/work/pipeline',  label: 'Pipeline', icon: ClipboardList },
+  { href: '/workshop/work/hopper',    label: 'Hopper',   icon: Inbox },
   { href: '/workshop/work/tools',     label: 'Tools',    icon: Wrench },
   { href: '/workshop/work/clients',   label: 'Clients',  icon: Users },
 ]
