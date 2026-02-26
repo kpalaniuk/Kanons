@@ -96,29 +96,46 @@ and that `navigateTo` is in the API response.
 
 ---
 
-## Part 2: Voice UI Reconciliation
+## Part 2: Chat UI Reconciliation
 
-**Problem:** There are two chat interfaces:
-1. Pink floating blob (corner button)
-2. Standard chat interface
+> ⚠️ **Clarification (updated 2026-02-26):** This task is NOT about voice calling,
+> phone integration, or voice dictation. It is purely about resolving two competing
+> **chat UI components** that both exist in the codebase and do overlapping things.
+> Voice dictation (speaking to LO Buddy) and call transcription are separate features
+> — see notes below and Part 5.
 
-These need to be reconciled into **one unified interface**. Kyle's intent is
-voice-first — the LO should be able to dictate to LO Buddy naturally.
+**Problem:** There are two chat interfaces in the codebase right now:
+1. **Pink floating blob** — corner button / bubble-style chat
+2. **Standard chat interface** — inline chat component
+
+Both are partially built. Both make API calls. Neither is complete. Having two
+competing UIs creates confusion, tech debt, and bugs. We need one.
+
+**This task is UI cleanup, not a new feature build.**
 
 **What to do:**
-- Audit both components: what does each do, what APIs does each call?
-- Determine which is more complete and battle-tested
-- Merge the best of both into a single voice-first chat UI
-- The pink blob UI should be the primary entry point OR it should go away entirely
-- Document your finding before merging — ask Kyle which direction if unclear
+1. Audit both components — what does each one do? What APIs does it call? How far along is it?
+2. Determine which is more complete, more stable, and better fits the mobile-first vision
+3. Present your finding to Kyle with a clear recommendation: "Keep X, remove Y because..."
+4. **Wait for Kyle's approval before writing any code**
+5. After approval: consolidate into one interface, remove the other, verify nothing breaks
 
 **Files to audit:**
 - `components/voice/` (all files)
-- `app/(auth)/voice-test/` 
+- `app/(auth)/voice-test/`
 - `app/(auth)/chat/`
 - `app/api/voice/chat/route.ts` vs any other chat route
 
-**Acceptance:** One chat interface, voice-first, no duplicate entry points.
+**Use Superpowers brainstorming skill** before touching anything — it will walk you
+through the right questions and produce a design doc for Kyle to approve.
+
+**Acceptance:** One chat interface, no duplicate entry points, Kyle has approved the direction.
+
+---
+
+> **Note on voice features:**
+> - **Voice dictation** (LO speaks to LO Buddy via microphone) → Separate feature, planned but not this sprint
+> - **Call transcription** (LO Ninja recordings → Whisper → context) → Post-MVP per Kyle. See Part 5 for the architecture doc but **do not build this sprint**.
 
 ---
 
@@ -270,7 +287,12 @@ This document becomes the source of truth for Sprint 2 prioritization.
 
 ---
 
-## Part 5: Call Transcription from LO Ninja (New Build — Sprint 1)
+## Part 5: Call Transcription from LO Ninja (Architecture Reference — Post-MVP)
+
+> ⚠️ **Updated 2026-02-26:** Kyle confirmed call transcription from recorded conversations
+> is **post-MVP**. Do NOT build this sprint. This section is kept as architecture
+> reference for when GHL API is confirmed working and the team is ready.
+> Also has a hard dependency on Part 3C (GHL audit) being complete first.
 
 This is a new feature Kyle confirmed in the hopper. Not currently in any plan.
 
@@ -331,10 +353,10 @@ call recordings and auto-transcribe them in the background.
 - [ ] Bug 2 fixed: realtor fuzzy match requires both first + last name
 - [ ] Bug 3 fixed: AI prompts for realtor referral after lead creation
 - [ ] Bug 4 confirmed/fixed: navigation works after lead creation
-- [ ] One unified voice chat UI (pink blob reconciled)
+- [ ] One unified chat UI (two competing UIs reconciled — direction approved by Kyle before build)
 - [ ] Audit document produced with definitive status of all major systems
 - [ ] GHL webhook endpoint exists and receiving events (or confirmed not yet built)
-- [ ] Call transcription service built and wired to GHL (if GHL API confirmed working)
+- [ ] ~~Call transcription service~~ → Post-MVP, removed from Sprint 1 scope
 - [ ] No regressions on confirmed-working features (scenarios, context retention, DTI)
 
 ---
