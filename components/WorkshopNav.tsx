@@ -12,12 +12,14 @@ import {
   Leaf,
   LayoutDashboard,
   BookOpen,
+  Sword,
 } from 'lucide-react'
 
 const workLinks = [
-  { href: '/workshop/work/pipeline',  label: 'Pipeline', icon: ClipboardList },
-  { href: '/workshop/work/tools',     label: 'Tools',    icon: Wrench },
-  { href: '/workshop/work/clients',   label: 'Clients',  icon: Users },
+  { href: '/workshop/work/pipeline',       label: 'Pipeline',  icon: ClipboardList },
+  { href: '/workshop/work/tools',          label: 'Tools',     icon: Wrench },
+  { href: '/workshop/work/clients',        label: 'Clients',   icon: Users },
+  { href: '/workshop/work/lo-buddy-landing', label: 'LO Buddy', icon: Sword },
 ]
 
 const personalLinks = [
