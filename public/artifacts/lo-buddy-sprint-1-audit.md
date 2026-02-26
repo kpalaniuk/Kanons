@@ -96,46 +96,72 @@ and that `navigateTo` is in the API response.
 
 ---
 
-## Part 2: Chat UI Reconciliation
+## Part 2: Chat UI Reconciliation — DIRECTION APPROVED ✅
 
-> ⚠️ **Clarification (updated 2026-02-26):** This task is NOT about voice calling,
-> phone integration, or voice dictation. It is purely about resolving two competing
-> **chat UI components** that both exist in the codebase and do overlapping things.
-> Voice dictation (speaking to LO Buddy) and call transcription are separate features
-> — see notes below and Part 5.
+> ✅ **Direction locked by Kyle (2026-02-26).** No more auditing — build to this spec.
 
-**Problem:** There are two chat interfaces in the codebase right now:
-1. **Pink floating blob** — corner button / bubble-style chat
-2. **Standard chat interface** — inline chat component
+**Decision:** Keep the floating voice overlay (`components/voice/`). Retire the `/chat` page (`app/(auth)/chat/`).
 
-Both are partially built. Both make API calls. Neither is complete. Having two
-competing UIs creates confusion, tech debt, and bugs. We need one.
+The overlay has working voice, context awareness, conversation persistence, and disambiguation.
+The chat page has a dead mic button, no persistence, no context awareness. It loses.
 
-**This task is UI cleanup, not a new feature build.**
+---
 
-**What to do:**
-1. Audit both components — what does each one do? What APIs does it call? How far along is it?
-2. Determine which is more complete, more stable, and better fits the mobile-first vision
-3. Present your finding to Kyle with a clear recommendation: "Keep X, remove Y because..."
-4. **Wait for Kyle's approval before writing any code**
-5. After approval: consolidate into one interface, remove the other, verify nothing breaks
+### Build Scope (this sprint):
 
-**Files to audit:**
-- `components/voice/` (all files)
-- `app/(auth)/voice-test/`
-- `app/(auth)/chat/`
-- `app/api/voice/chat/route.ts` vs any other chat route
+**Step 1 — Port these 5 things from the chat page into the overlay:**
+1. Full scrollable conversation history
+2. Module hint buttons (New Lead, Log Call, etc.)
+3. Query param deep-links (`?q=`)
+4. Inline suggestion chips
+5. Tool action result badges
 
-**Use Superpowers brainstorming skill** before touching anything — it will walk you
-through the right questions and produce a design doc for Kyle to approve.
+**Step 2 — Replace the orb with a character placeholder:**
+- The pulsating orb is gone. Replace with a proper character placeholder.
+- CSS/SVG element that reads as a character, not an abstract blob.
+- **Design it to be swapped 1:1 for the LO Buddy 3D GLTF model later** — same component slot.
+- Placeholder only. Clean and intentional, not a rough hack.
 
-**Acceptance:** One chat interface, no duplicate entry points, Kyle has approved the direction.
+**Step 3 — Add suggested action chips (REQUIRED):**
+- When the overlay opens, show a greeting + action chips immediately:
+  > *"What are we working on?"*
+  - **[New Lead]** **[Check Pipeline]** **[Build Scenario]** **[Log a Call]**
+- Tapping a chip triggers the corresponding flow (same as typing/speaking it).
+- Chips persist until conversation starts, then move to a bottom rail.
+- This is the intake experience. It must feel immediate and obvious.
+
+**Step 4 — Retire the chat page:**
+- Once 5 features are ported and verified, delete `app/(auth)/chat/`.
+- Remove all nav links pointing to it.
+- Confirm nothing else references the old chat route.
+
+---
+
+### Overlay Layout (expanded state):
+- **Character area:** LO Buddy placeholder (left or center, tap to speak)
+- **Conversation:** Scrollable history above/beside character
+- **Bottom:** Action chips / module hint buttons
+- **Top right:** Close / minimize
+
+---
+
+### What this is NOT:
+- ❌ Not voice calling or voice dictation (separate future feature)
+- ❌ Not the final 3D character (that's Blender — separate project)
+- ❌ Not a full redesign — improve the overlay, retire the dead page
+
+**Files:**
+- `components/voice/` — primary build target
+- `app/(auth)/chat/` — retire after porting
+- `app/api/voice/chat/route.ts` — stays as-is
+
+**Acceptance:** One overlay UI, character placeholder visible, action chips on open, 5 features ported, chat page deleted.
 
 ---
 
 > **Note on voice features:**
-> - **Voice dictation** (LO speaks to LO Buddy via microphone) → Separate feature, planned but not this sprint
-> - **Call transcription** (LO Ninja recordings → Whisper → context) → Post-MVP per Kyle. See Part 5 for the architecture doc but **do not build this sprint**.
+> - **Voice dictation** → Separate future feature, not this sprint
+> - **Call transcription** → Post-MVP per Kyle. See Part 5 — do not build this sprint.
 
 ---
 
