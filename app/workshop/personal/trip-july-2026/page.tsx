@@ -31,30 +31,30 @@ const STOPS = [
     name: 'East Lothian, Scotland',
     emoji: '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
     nights: 8,
-    dates: 'Jun 30–Jul 18',
+    dates: 'Dates TBD — see routing note',
     type: 'home-exchange',
     status: 'pursuing',
     color: 'bg-indigo-50 border-indigo-200',
     dotColor: 'bg-indigo-500',
     who: 'Core family',
-    details: 'Home exchange near Edinburgh — the Scotland base. Used in two stints: arrival + Paige-solo period (Jul 1–6 + Jul 7–11) and return from Highlands (Jul 17–18). Slow base for culture, Edinburgh day trips, and Kyle working. Paige departs from Edinburgh airport July 7.',
+    details: '⚠️ ROUTING ORDER TBD — two options below. East Lothian is the Scotland home base (~8 nights total). One hard constraint: Paige must be at Edinburgh airport July 7 to fly to Athens.\n\n🅐 Highlands FIRST: Arrive Edinburgh → drive straight to Highlands (Skye + Eagle Bray, ~5 nights) → return Edinburgh by Jul 6 → Paige flies Jul 7 → Kyle solo at East Lothian → Paige returns Jul 10.\n\n🅑 East Lothian FIRST (recommended): Arrive Edinburgh → settle East Lothian → Paige flies Jul 7 → Kyle solo with kids at base → Paige returns Jul 10 → do Highlands loop → return East Lothian → Ireland.',
     highlights: ['Edinburgh (25 min)', 'Dirleton & Tantallon castles', 'East Lothian beaches', 'Kyle work days', 'Scottish culture soak'],
-    action: 'Negotiate HX offer from 10 → 8 nights. Confirm credit balance and book.',
-    accommodation: 'HomeExchange (pursuing — 10-night min, negotiating)',
-    alert: 'Paige departs Edinburgh airport Jul 7 → Athens (returns Jul 10)'
+    action: '1) Decide Highlands-first or East Lothian-first. 2) Negotiate HX from 10→8 nights and book.',
+    accommodation: 'HomeExchange (pursuing — 10-night min, negotiating to 8)',
+    alert: 'ONE HARD CONSTRAINT: Paige at Edinburgh airport Jul 7 → Athens (returns Jul 10). Everything else is fluid.'
   },
   {
     id: 'skye',
     name: 'Isle of Skye',
     emoji: '🏔️',
     nights: 2,
-    dates: 'Jul 12–14',
+    dates: 'Dates TBD (part of Highlands loop)',
     type: 'airbnb',
     status: 'open',
     color: 'bg-emerald-50 border-emerald-200',
     dotColor: 'bg-emerald-500',
     who: 'Core family',
-    details: "5–6 hour drive from East Lothian. Leave early, stop for lunch en route. Paige has an Airbnb saved — check availability. Guest houses are a solid backup. The most dramatic landscape in Scotland.",
+    details: "5–6 hour drive from Edinburgh/East Lothian. Leave early, stop for lunch en route. Paige has an Airbnb saved — check availability. Guest houses are a solid backup. Part of the Highlands loop (Skye → Eagle Bray → back to Edinburgh). Timing shifts depending on whether Highlands are done before or after Jul 7.",
     highlights: ['Old Man of Storr', 'Fairy Pools', 'Neist Point', 'Dunvegan Castle', 'Portree village'],
     action: "Check Paige's saved Airbnb listing ASAP. Book soon — July is peak season.",
     accommodation: 'Airbnb (Paige has one saved) or guest house — open',
@@ -64,15 +64,15 @@ const STOPS = [
     name: 'Eagle Bray Log Cabins',
     emoji: '🪵',
     nights: 2,
-    dates: 'Jul 14–16',
+    dates: 'Dates TBD (part of Highlands loop)',
     type: 'cabin',
     status: 'open',
     color: 'bg-amber-50 border-amber-200',
     dotColor: 'bg-amber-500',
     who: 'Core family',
-    details: 'Luxury log cabins Paige found. After Skye — a proper Highland splurge before heading back south. Likely hot tubs, forest setting, self-catering. Kids will love it.',
+    details: 'Luxury log cabins Paige found — next stop after Isle of Skye. A proper Highland splurge before heading back south to Edinburgh. Likely hot tubs, forest setting, self-catering. Part of the same Highlands loop as Skye.',
     highlights: ['Luxury Highland cabin', 'Hot tubs', 'Forest/mountain setting', 'Self-catering', 'Family-friendly'],
-    action: 'Check Jul 14–16 availability: eaglebray.co.uk',
+    action: 'Check availability once Highlands routing dates are decided: eaglebray.co.uk',
     accommodation: 'Eagle Bray Luxury Log Cabins — open',
   },
   {
@@ -212,6 +212,7 @@ const STATUS_BADGE: Record<string, { label: string; color: string }> = {
 }
 
 const OPEN_ITEMS = [
+  { urgent: true,  text: 'DECIDE: Highlands first or East Lothian first? (Only hard constraint: Paige at Edinburgh airport Jul 7)' },
   { urgent: true,  text: 'Reply to Bairbre: where are parents staying in Galway?' },
   { urgent: true,  text: 'East Lothian HX — negotiate 10→8 nights and confirm booking' },
   { urgent: true,  text: "Isle of Skye — check Paige's saved Airbnb + book backup (peak season)" },
@@ -369,6 +370,10 @@ export default function TripPage() {
         {/* ── CALENDAR VIEW ── */}
         {view === 'calendar' && (
           <div className="space-y-1.5">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800 flex items-start gap-2">
+              <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
+              <span><strong>Scotland dates are illustrative</strong> — Highlands-first vs East Lothian-first is still TBD. Only hard constraint: Paige at Edinburgh airport Jul 7. Ireland dates (Jul 20+) are fixed.</span>
+            </div>
             <div className="flex flex-wrap gap-1.5 pb-3">
               {(Object.entries(DAY_STYLES) as [DayType, typeof DAY_STYLES[DayType]][]).map(([type, style]) => (
                 <span key={type} className={`text-xs px-2 py-1 rounded-lg flex items-center gap-1 ${style.bg} ${style.text}`}>
