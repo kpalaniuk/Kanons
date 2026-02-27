@@ -4,24 +4,38 @@ import { useState } from 'react'
 import { Palette, X, ChevronLeft, ChevronRight, Download } from 'lucide-react'
 import Link from 'next/link'
 
-// All generated concept images — stored in /public/workshop/lo-buddy-character/
-const CONCEPTS = [
+// v8 — Pixar caricature head (current round)
+const V8 = [
+  { id: 'v8-001', label: 'v8.1 — Straight on · big smile', model: 'Imagen 4' },
+  { id: 'v8-002', label: 'v8.2 — 3/4 angle · knowing smirk', model: 'Imagen 4' },
+  { id: 'v8-003', label: 'v8.3 — Enthusiastic grin · chin up', model: 'Imagen 4' },
+  { id: 'v8-004', label: 'v8.4 — Calm pro · just solved it ⭐', model: 'Imagen 4' },
+  { id: 'v8-005', label: 'v8.5 — White bg · Meshy pick ⭐⭐', model: 'Imagen 4' },
+  { id: 'v8-006', label: 'v8.6 — Warmer skin · confident', model: 'Imagen 4' },
+  { id: 'v8-007', label: 'v8.7 — Calm trustworthy · dark bg', model: 'Imagen 4' },
+  { id: 'v8-008', label: 'v8.8 — Tortoiseshell detail · cinematic', model: 'Imagen 4' },
+  { id: 'v8-009', label: 'v8.9 — Mid-laugh · celebrate with client', model: 'Imagen 4' },
+  { id: 'v8-010', label: 'v8.10 — Icon style · white bg', model: 'Imagen 4' },
+]
+
+// v7 — No-armor casual round
+const V7 = [
   { id: 'v7-001', label: 'v7.1 — Navy crewneck · wireframe', model: 'Imagen 4' },
   { id: 'v7-002', label: 'v7.2 — Button-down · tortoiseshell', model: 'Imagen 4' },
   { id: 'v7-003', label: 'v7.3 — White tee · gold wireframe', model: 'Imagen 4' },
   { id: 'v7-004', label: 'v7.4 — Charcoal hoodie · round wire', model: 'Imagen 4' },
-  { id: 'v7-005', label: 'v7.5 — Casual blazer · tortoiseshell rect', model: 'Imagen 4' },
-  { id: 'v7-006', label: 'v7.6 — Cinematic · silver wire · pink rim', model: 'Imagen 4' },
-  { id: 'v7-007', label: 'v7.7 — Tight portrait · half-rim · Spider-Verse', model: 'Imagen 4' },
-  { id: 'v7-008', label: 'v7.8 — Navy crew · chromatic aberration', model: 'Gemini Flash' },
-  { id: 'v7-009', label: 'v7.9 — 3/4 body · blazer · cool advisor', model: 'Gemini Flash' },
-  { id: 'v7-010', label: 'v7.10 — Symmetric · model sheet · brand icon', model: 'Gemini Flash' },
+  { id: 'v7-005', label: 'v7.5 — Casual blazer · tortoiseshell', model: 'Imagen 4' },
+  { id: 'v7-006', label: 'v7.6 — Cinematic · silver wire', model: 'Imagen 4' },
+  { id: 'v7-007', label: 'v7.7 — Tight portrait · Spider-Verse', model: 'Imagen 4' },
+  { id: 'v7-008', label: 'v7.8 — Navy crew · chromatic', model: 'Gemini Flash' },
+  { id: 'v7-009', label: 'v7.9 — 3/4 body · blazer', model: 'Gemini Flash' },
+  { id: 'v7-010', label: 'v7.10 — Model sheet · icon', model: 'Gemini Flash' },
 ]
 
-// Older rounds (archived reference)
+// v6 — Armor round (archived)
 const ARCHIVED = [
   { id: 'flash-full-body-confident', label: 'v6 Flash — Full body (armor)', model: 'Gemini Flash', folder: 'lo-buddy-concepts' },
-  { id: 'flash-face-closeup', label: 'v6 Flash — Face closeup (armor)', model: 'Gemini Flash', folder: 'lo-buddy-concepts' },
+  { id: 'flash-face-closeup', label: 'v6 Flash — Face closeup', model: 'Gemini Flash', folder: 'lo-buddy-concepts' },
   { id: 'flash-scroll-action', label: 'v6 Flash — Scroll action', model: 'Gemini Flash', folder: 'lo-buddy-concepts' },
   { id: 'flash-spider-verse-flat', label: 'v6 Flash — Spider-Verse flat', model: 'Gemini Flash', folder: 'lo-buddy-concepts' },
   { id: 'imagen4-full-body-confident', label: 'v6 Imagen4 — Full body', model: 'Imagen 4', folder: 'lo-buddy-concepts' },
@@ -35,14 +49,13 @@ function imgUrl(concept: { id: string; folder?: string }) {
   return `/assets/${folder}/${concept.id}.png`
 }
 
-type Concept = typeof CONCEPTS[number] & { folder?: string }
+type Concept = { id: string; label: string; model: string; folder?: string }
 
 export default function LOBuddyCharacterPage() {
   const [lightbox, setLightbox] = useState<number | null>(null)
-  const [tab, setTab] = useState<'v7' | 'archived'>('v7')
+  const [tab, setTab] = useState<'v8' | 'v7' | 'archived'>('v8')
 
-  const active = tab === 'v7' ? CONCEPTS : ARCHIVED
-  const all = [...CONCEPTS, ...ARCHIVED] as Concept[]
+  const active: Concept[] = tab === 'v8' ? V8 : tab === 'v7' ? V7 : ARCHIVED
 
   const openIdx = lightbox !== null ? lightbox : -1
 
@@ -57,13 +70,13 @@ export default function LOBuddyCharacterPage() {
           <Palette className="w-7 h-7 text-terracotta" />
           <h1 className="font-display text-3xl text-midnight">LO Buddy — Character Concepts</h1>
         </div>
-        <p className="text-midnight/50 text-sm">AI-generated concept art · Spider-Verse 2D style · Select your direction for Grease Pencil build</p>
+        <p className="text-midnight/50 text-sm">AI-generated concept art · Pixar caricature style · v8-005 selected for Meshy 3D generation</p>
       </div>
 
       {/* Brief card */}
       <div className="bg-midnight rounded-2xl p-5 text-cream/80 text-sm space-y-2">
-        <p className="text-cream font-semibold text-base">v7 Brief</p>
-        <p>No armor. Casual professional. Warm medium-dark brown skin, mixed-race. Nerdier glasses — wireframe or tortoiseshell, not flashy. Same character energy: smart, approachable, slightly nerdy but cool.</p>
+        <p className="text-cream font-semibold text-base">v8 Brief — Pixar Caricature Head</p>
+        <p>Pixar/Disney 3D render style. Caricature proportions — big head, large expressive eyes, warm brown mixed-race skin. Thick dark glasses. Trustworthy warm smile. Navy blazer. Just the head — body/animations come later. v8-005 → Meshy AI → Blender rig → GLB.</p>
         <div className="flex flex-wrap gap-3 pt-1 text-xs text-cream/50">
           <span>Models: Imagen 4 · Gemini 3.1 Flash</span>
           <span>·</span>
@@ -74,14 +87,14 @@ export default function LOBuddyCharacterPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2">
-        {(['v7', 'archived'] as const).map(t => (
+      <div className="flex gap-2 flex-wrap">
+        {([['v8', '✦ v8 — Pixar Head'], ['v7', 'v7 — No Armor'], ['archived', 'v6 — Armor']] as const).map(([t, label]) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === t ? 'bg-midnight text-cream' : 'bg-sand text-midnight/50 hover:bg-midnight/10'}`}
           >
-            {t === 'v7' ? '✦ v7 — No Armor' : 'Archive — v6 (Armor)'}
+            {label}
           </button>
         ))}
       </div>
