@@ -2,15 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react'
 import {
-  Music, Search, ChevronDown, ChevronRight, Loader2, Tag,
-  FileText, BookOpen, Settings2, Edit3, Check, X
+  Music, Search, ChevronDown, ChevronRight, Loader2,
+  FileText, Edit3, Check, X
 } from 'lucide-react'
 
 interface Song {
   id: string
   title: string
-  source: string
-  sourceId: string
+  band: string
 }
 
 interface SongMeta {
@@ -23,12 +22,37 @@ interface SongMeta {
   timeSig?: string
 }
 
-// ── Chord line detection ─────────────────────────────────────────────────────
+const BANDS = ['Neo Somatic', 'StronGnome', 'Personal', 'Well Well Well', 'Tu Lengua', 'Covers'] as const
+type Band = typeof BANDS[number]
+
+const BAND_COLORS: Record<Band, string> = {
+  'Neo Somatic':   'bg-cyan/10 text-cyan border-cyan/30',
+  'StronGnome':    'bg-amber-100 text-amber-700 border-amber-200',
+  'Personal':      'bg-terracotta/10 text-terracotta border-terracotta/30',
+  'Well Well Well':'bg-purple-100 text-purple-600 border-purple-200',
+  'Tu Lengua':     'bg-green-100 text-green-700 border-green-200',
+  'Covers':        'bg-midnight/5 text-midnight/50 border-midnight/10',
+}
+
+// ── Chord line detection ──────────────────────────────────────────────────────
 const CHORD_RE = /^[A-G][#b]?(maj|min|m|M|dim|aug|sus|add|dom)?[0-9]*(\/[A-G][#b]?)?$/
 function isChordToken(t: string) { return CHORD_RE.test(t.trim()) }
 function isChordLine(line: string) {
   const tokens = line.trim().split(/\s+/)
-  return tokens.length > 0 && tokens.every(isChordToken)
+  return tokens.length >= 1 && tokens.length <= 8 && tokens.every(isChordToken)
+}
+
+// Section header detection — only lines starting with # OR lines like "CHORUS", "VERSE 1", "BRIDGE"
+// NOT every all-caps line (lyric lines in all-caps should NOT be treated as headers)
+const SECTION_LABELS = /^(verse|chorus|bridge|pre-chorus|hook|intro|outro|interlude|breakdown|solo|refrain|tag|coda|turn|vamp|groove|feel|section)\b/i
+function isSectionHeader(line: string): boolean {
+  const t = line.trim()
+  if (t.startsWith('#')) return true
+  // Explicit section label patterns only — must be short and match known section words
+  if (t.length < 40 && SECTION_LABELS.test(t)) return true
+  // Bracketed labels [VERSE], [CHORUS] etc.
+  if (/^\[.{1,30}\]$/.test(t)) return true
+  return false
 }
 
 // ── Inline [Chord]word parser ─────────────────────────────────────────────────
@@ -57,7 +81,7 @@ function LyricsBlock({ text }: { text: string }) {
     const line = lines[i]
     const trimmed = line.trim()
 
-    // Inline chord format
+    // Inline chord format [G]word [Em]here
     if (hasInlineChords(trimmed)) {
       const segs = parseInlineChords(trimmed)
       rendered.push(
@@ -77,10 +101,8 @@ function LyricsBlock({ text }: { text: string }) {
     }
 
     // Chord-only line followed by lyric line
-    if (isChordLine(trimmed) && i + 1 < lines.length && !isChordLine(lines[i + 1].trim()) && lines[i + 1].trim()) {
-      const chords = trimmed.split(/\s+/)
+    if (isChordLine(trimmed) && i + 1 < lines.length && !isChordLine(lines[i + 1].trim()) && lines[i + 1].trim() && !isSectionHeader(lines[i + 1])) {
       const lyricLine = lines[i + 1]
-      // Pair chords with positions roughly
       rendered.push(
         <div key={i} className="mb-4">
           <div className="font-mono text-xs text-ocean font-bold tracking-wider whitespace-pre">{trimmed}</div>
@@ -100,9 +122,9 @@ function LyricsBlock({ text }: { text: string }) {
       continue
     }
 
-    // Section header (##, # headings or ALL CAPS short labels)
-    if (trimmed.startsWith('#') || (trimmed === trimmed.toUpperCase() && trimmed.length < 30 && trimmed.length > 0 && /[A-Z]/.test(trimmed))) {
-      const label = trimmed.replace(/^#+\s*/, '')
+    // Section header (explicit only — not every all-caps line)
+    if (isSectionHeader(trimmed)) {
+      const label = trimmed.replace(/^#+\s*/, '').replace(/^\[|\]$/g, '')
       rendered.push(
         <div key={i} className="mt-6 mb-2">
           <span className="text-xs font-bold uppercase tracking-widest text-terracotta border-b border-terracotta/30 pb-0.5">{label}</span>
@@ -119,7 +141,7 @@ function LyricsBlock({ text }: { text: string }) {
       continue
     }
 
-    // Normal lyric line
+    // Normal lyric line (including all-caps lines — they're just lyrics)
     rendered.push(
       <div key={i} className="text-sm text-midnight/80 whitespace-pre-wrap leading-relaxed mb-1">{trimmed}</div>
     )
@@ -134,7 +156,6 @@ function extractMeta(content: string): { meta: SongMeta; body: string } {
   const meta: SongMeta = {}
   const lines = content.split('\n')
   const bodyLines: string[] = []
-  const metaKeys = ['band','key','feel','type','status','bpm','time','timesig']
 
   for (const line of lines) {
     const m = line.match(/^(band|key|feel|type|status|bpm|time|timesig)\s*:\s*(.+)$/i)
@@ -212,6 +233,21 @@ function EditableNotes({ label, songId, field }: { label: string; songId: string
   )
 }
 
+// ── Tu Lengua inline notice ───────────────────────────────────────────────────
+function TuLenguaNotice({ title }: { title: string }) {
+  return (
+    <div className="border-t border-midnight/6 px-5 py-6">
+      <p className="text-sm text-midnight/50 italic">
+        "{title}" is tracked in the Tu Lengua set list. Lyrics not yet in Notion — add them to the page to see them here.
+      </p>
+      <div className="mt-4 grid sm:grid-cols-2 gap-6">
+        <EditableNotes label="Performance Notes" songId={title} field="performance" />
+        <EditableNotes label="Arrangement Notes" songId={title} field="arrangement" />
+      </div>
+    </div>
+  )
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function LyricsPage() {
   const [songs, setSongs] = useState<Song[]>([])
@@ -221,7 +257,7 @@ export default function LyricsPage() {
   const [expandedSong, setExpandedSong] = useState<string | null>(null)
   const [songContent, setSongContent] = useState<Record<string, string>>({})
   const [loadingContent, setLoadingContent] = useState<string | null>(null)
-  const [sourceFilter, setSourceFilter] = useState<string | null>(null)
+  const [bandFilter, setBandFilter] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/lyrics')
@@ -234,6 +270,8 @@ export default function LyricsPage() {
   const toggleSong = async (songId: string) => {
     if (expandedSong === songId) { setExpandedSong(null); return }
     setExpandedSong(songId)
+    // Tu Lengua songs have synthetic IDs — no Notion page to fetch
+    if (songId.startsWith('tu-lengua-')) return
     if (!songContent[songId]) {
       setLoadingContent(songId)
       try {
@@ -247,11 +285,25 @@ export default function LyricsPage() {
     }
   }
 
-  const sources = Array.from(new Set(songs.map(s => s.source))).sort()
+  // Band counts
+  const bandCounts = BANDS.reduce((acc, b) => {
+    acc[b] = songs.filter(s => s.band === b).length
+    return acc
+  }, {} as Record<Band, number>)
+
   const filtered = songs.filter(s =>
     s.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (!sourceFilter || s.source === sourceFilter)
+    (!bandFilter || s.band === bandFilter)
   )
+
+  // Group by band for display when no filter
+  const grouped = bandFilter
+    ? { [bandFilter]: filtered }
+    : BANDS.reduce((acc, b) => {
+        const inBand = filtered.filter(s => s.band === b)
+        if (inBand.length > 0) acc[b] = inBand
+        return acc
+      }, {} as Record<string, Song[]>)
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -269,33 +321,40 @@ export default function LyricsPage() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-midnight/30" />
         <input
           type="text"
-          placeholder="Search by title, band, or lyric…"
+          placeholder="Search by title…"
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           className="w-full pl-11 pr-4 py-3 bg-cream border border-midnight/10 rounded-xl focus:outline-none focus:border-ocean text-midnight text-sm"
         />
       </div>
 
-      {/* Source filter chips */}
+      {/* Band filter chips */}
       <div className="flex flex-wrap gap-2">
         <button
-          onClick={() => setSourceFilter(null)}
-          className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${!sourceFilter ? 'bg-midnight text-cream' : 'bg-sand text-midnight/50 hover:bg-midnight/10'}`}
+          onClick={() => setBandFilter(null)}
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${!bandFilter ? 'bg-midnight text-cream' : 'bg-sand text-midnight/50 hover:bg-midnight/10'}`}
         >
-          All Collections
+          All Bands
         </button>
-        {sources.map(src => (
+        {BANDS.map(band => (
           <button
-            key={src}
-            onClick={() => setSourceFilter(sourceFilter === src ? null : src)}
-            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-colors ${sourceFilter === src ? 'bg-ocean text-cream' : 'bg-sand text-midnight/50 hover:bg-midnight/10'}`}
+            key={band}
+            onClick={() => setBandFilter(bandFilter === band ? null : band)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+              bandFilter === band
+                ? BAND_COLORS[band as Band] + ' ring-2 ring-offset-1 ring-ocean/30'
+                : BAND_COLORS[band as Band] + ' opacity-60 hover:opacity-100'
+            }`}
           >
-            <Tag className="w-3 h-3" />{src}
+            {band}
+            {bandCounts[band as Band] > 0 && (
+              <span className="ml-1.5 opacity-60">({bandCounts[band as Band]})</span>
+            )}
           </button>
         ))}
       </div>
 
-      {/* List */}
+      {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 text-terracotta animate-spin" /></div>
       ) : error ? (
@@ -308,81 +367,107 @@ export default function LyricsPage() {
           <p className="text-midnight/50 text-sm">{searchQuery ? 'No matches found' : 'No songs yet'}</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map(song => {
-            const isOpen = expandedSong === song.id
-            const isLoadingThis = loadingContent === song.id
-            const raw = songContent[song.id] ?? ''
-            const { meta, body } = isOpen && raw ? extractMeta(raw) : { meta: {}, body: raw }
+        <div className="space-y-10">
+          {Object.entries(grouped).map(([band, bandSongs]) => (
+            <div key={band}>
+              {/* Band section header */}
+              {!bandFilter && (
+                <div className="flex items-center gap-3 mb-3">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold border ${BAND_COLORS[band as Band] ?? ''}`}>{band}</span>
+                  <span className="text-xs text-midnight/30">{bandSongs.length} songs</span>
+                </div>
+              )}
 
-            return (
-              <div key={song.id} className="bg-cream border border-midnight/8 rounded-xl overflow-hidden">
-                {/* Song row */}
-                <button
-                  onClick={() => toggleSong(song.id)}
-                  className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-sand/60 transition-colors"
-                >
-                  {isOpen
-                    ? <ChevronDown className="w-4 h-4 text-terracotta flex-shrink-0" />
-                    : <ChevronRight className="w-4 h-4 text-midnight/30 flex-shrink-0" />
-                  }
-                  <span className="font-semibold text-midnight flex-1 text-sm">{song.title}</span>
-                  {meta.key && (
-                    <span className="text-xs font-mono bg-midnight/5 text-midnight/50 px-2 py-0.5 rounded font-bold">{meta.key}</span>
-                  )}
-                  {meta.feel && (
-                    <span className="text-xs text-midnight/40 hidden sm:inline">{meta.feel}</span>
-                  )}
-                  <StatusBadge status={meta.status} />
-                  <span className="text-xs text-midnight/30 bg-sand/80 px-2 py-0.5 rounded-full ml-1">{song.source}</span>
-                </button>
+              <div className="space-y-2">
+                {bandSongs.map(song => {
+                  const isOpen = expandedSong === song.id
+                  const isLoadingThis = loadingContent === song.id
+                  const raw = songContent[song.id] ?? ''
+                  const { meta, body } = isOpen && raw ? extractMeta(raw) : { meta: {}, body: raw }
+                  const isTuLengua = song.id.startsWith('tu-lengua-')
 
-                {/* Expanded song detail */}
-                {isOpen && (
-                  <div className="border-t border-midnight/6 px-5 pb-6">
-                    {isLoadingThis ? (
-                      <div className="flex items-center justify-center py-10"><Loader2 className="w-5 h-5 text-terracotta animate-spin" /></div>
-                    ) : (
-                      <>
-                        {/* Metadata strip */}
-                        {(meta.band || meta.key || meta.feel || meta.type || meta.bpm || meta.timeSig) && (
-                          <div className="flex flex-wrap gap-3 pt-4 pb-4 border-b border-midnight/6 text-xs">
-                            {meta.band    && <span className="flex items-center gap-1 text-midnight/60"><Music className="w-3 h-3" />{meta.band}</span>}
-                            {meta.key     && <span className="flex items-center gap-1 text-ocean font-bold"><span>Key of {meta.key}</span></span>}
-                            {meta.feel    && <span className="text-midnight/50">{meta.feel}</span>}
-                            {meta.type    && <span className="text-midnight/40">{meta.type}</span>}
-                            {meta.bpm     && <span className="text-midnight/40">{meta.bpm} BPM</span>}
-                            {meta.timeSig && <span className="font-mono text-midnight/40">{meta.timeSig}</span>}
-                          </div>
+                  return (
+                    <div key={song.id} className="bg-cream border border-midnight/8 rounded-xl overflow-hidden">
+                      {/* Song row */}
+                      <button
+                        onClick={() => toggleSong(song.id)}
+                        className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-sand/60 transition-colors"
+                      >
+                        {isOpen
+                          ? <ChevronDown className="w-4 h-4 text-terracotta flex-shrink-0" />
+                          : <ChevronRight className="w-4 h-4 text-midnight/30 flex-shrink-0" />
+                        }
+                        <span className="font-semibold text-midnight flex-1 text-sm">{song.title}</span>
+                        {meta.key && (
+                          <span className="text-xs font-mono bg-midnight/5 text-midnight/50 px-2 py-0.5 rounded font-bold">{meta.key}</span>
                         )}
+                        {meta.feel && (
+                          <span className="text-xs text-midnight/40 hidden sm:inline">{meta.feel}</span>
+                        )}
+                        <StatusBadge status={meta.status} />
+                        {bandFilter && (
+                          <span className={`text-xs px-2 py-0.5 rounded-full border ml-1 ${BAND_COLORS[band as Band] ?? ''}`}>{song.band}</span>
+                        )}
+                      </button>
 
-                        {/* Lyrics/Chords body */}
-                        <div className="mt-5">
-                          <div className="flex items-center gap-2 mb-3">
-                            <FileText className="w-3.5 h-3.5 text-midnight/30" />
-                            <span className="text-xs font-bold uppercase tracking-widest text-midnight/30">Lyrics & Chords</span>
+                      {/* Expanded song detail */}
+                      {isOpen && (
+                        isTuLengua ? (
+                          <TuLenguaNotice title={song.title} />
+                        ) : (
+                          <div className="border-t border-midnight/6 px-5 pb-6">
+                            {isLoadingThis ? (
+                              <div className="flex items-center justify-center py-10"><Loader2 className="w-5 h-5 text-terracotta animate-spin" /></div>
+                            ) : (
+                              <>
+                                {/* Metadata strip */}
+                                {(meta.band || meta.key || meta.feel || meta.type || meta.bpm || meta.timeSig) && (
+                                  <div className="flex flex-wrap gap-3 pt-4 pb-4 border-b border-midnight/6 text-xs">
+                                    {meta.band    && <span className="flex items-center gap-1 text-midnight/60"><Music className="w-3 h-3" />{meta.band}</span>}
+                                    {meta.key     && <span className="flex items-center gap-1 text-ocean font-bold">Key of {meta.key}</span>}
+                                    {meta.feel    && <span className="text-midnight/50">{meta.feel}</span>}
+                                    {meta.type    && <span className="text-midnight/40">{meta.type}</span>}
+                                    {meta.bpm     && <span className="text-midnight/40">{meta.bpm} BPM</span>}
+                                    {meta.timeSig && <span className="font-mono text-midnight/40">{meta.timeSig}</span>}
+                                  </div>
+                                )}
+                                {/* Lyrics/Chords body */}
+                                <div className="mt-5">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <FileText className="w-3.5 h-3.5 text-midnight/30" />
+                                    <span className="text-xs font-bold uppercase tracking-widest text-midnight/30">Lyrics & Chords</span>
+                                  </div>
+                                  {body ? (
+                                    <div className="bg-sand/60 rounded-lg p-4">
+                                      <LyricsBlock text={body} />
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm text-midnight/30 italic">No lyrics content yet</p>
+                                  )}
+                                </div>
+                                {/* Editable notes */}
+                                <div className="mt-6 pt-5 border-t border-midnight/6 grid sm:grid-cols-2 gap-6">
+                                  <EditableNotes label="Band Notes" songId={song.id} field="band" />
+                                  <EditableNotes label="Arrangement Notes" songId={song.id} field="arrangement" />
+                                </div>
+                              </>
+                            )}
                           </div>
-                          {body ? (
-                            <div className="bg-sand/60 rounded-lg p-4">
-                              <LyricsBlock text={body} />
-                            </div>
-                          ) : (
-                            <p className="text-sm text-midnight/30 italic">No lyrics content yet</p>
-                          )}
-                        </div>
-
-                        {/* Editable notes */}
-                        <div className="mt-6 pt-5 border-t border-midnight/6 grid sm:grid-cols-2 gap-6">
-                          <EditableNotes label="Band Notes" songId={song.id} field="band" />
-                          <EditableNotes label="Arrangement Notes" songId={song.id} field="arrangement" />
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
+                        )
+                      )}
+                    </div>
+                  )
+                })}
               </div>
-            )
-          })}
+            </div>
+          ))}
+
+          {/* Empty bands notice */}
+          {!bandFilter && (
+            <div className="text-xs text-midnight/30 text-center py-2">
+              Well Well Well · Neo Somatic songs will appear here once added to Notion
+            </div>
+          )}
         </div>
       )}
     </div>

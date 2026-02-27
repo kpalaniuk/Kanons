@@ -1,22 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Client } from '@notionhq/client'
 
-const notion = new Client({
-  auth: process.env.NOTION_API_KEY,
-})
+const notion = new Client({ auth: process.env.NOTION_API_KEY })
 
-const LYRICS_PAGE_IDS = [
-  '925f7b39e66042c7ac8e5a5a37716778', // Lyrics & Songs (setlist)
-  '7558f0d737694d20bf9a587cbe5bf23f', // Kyle's Lyrics
-  'ce6c6396e72f4ec199df3ddbf76a3388', // Tu Lengua
+// ── Band definitions ──────────────────────────────────────────────────────────
+export const BANDS = ['Neo Somatic', 'StronGnome', 'Personal', 'Well Well Well', 'Tu Lengua', 'Covers'] as const
+export type Band = typeof BANDS[number]
+
+// ── Source config ─────────────────────────────────────────────────────────────
+// Each source maps child pages of a Notion parent to a band
+const CHILD_SOURCES: {
+  parentId: string
+  band: Band
+  skipTitlePatterns: RegExp[]
+}[] = [
+  {
+    // "Lyrics & Songs" parent — jazz standards / covers
+    parentId: '925f7b39e66042c7ac8e5a5a37716778',
+    band: 'Covers',
+    skipTitlePatterns: [
+      /^set list/i,
+      /^master song list/i,
+      /tidal wave/i,   // cover of Tom Misch song — could change to Covers later
+    ],
+  },
+  {
+    // "Kyle's Lyrics" parent — personal originals
+    parentId: '7558f0d737694d20bf9a587cbe5bf23f',
+    band: 'Personal',
+    skipTitlePatterns: [],
+  },
+  {
+    // StronGnome Songs/Notes — StronGnome originals
+    parentId: '7d441e88bac44371aca9a5851b0bfbc3',
+    band: 'StronGnome',
+    skipTitlePatterns: [
+      /^song template$/i,
+      /^chords$/i,
+      /^$/, // empty title
+    ],
+  },
 ]
 
-// Individual song pages (fetched as direct entries, not children)
-const INDIVIDUAL_SONG_IDS = [
-  { id: '234b8111-a67d-4d62-a8da-bf56fe26d495', title: 'There Will Never Be Another You', source: 'Jazz Standards' },
-  { id: '90456ab2-5509-4a06-89f0-087c92160389', title: 'The Christmas Song',               source: 'Covers' },
+// Individual songs that don't live under a standard parent
+const INDIVIDUAL_SONGS: { id: string; title: string; band: Band }[] = [
+  { id: '90456ab2-5509-4a06-89f0-087c92160389', title: 'The Christmas Song', band: 'Covers' },
+  // "There Will Never Be Another You" already exists in Lyrics & Songs child pages — skip the individual entry
 ]
 
+// Tu Lengua is a text-list format — songs parsed directly from page content
+const TU_LENGUA_PAGE_ID = 'ce6c6396e72f4ec199df3ddbf76a3388'
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function blockToText(block: any): string {
   const type = block.type
   const content = block[type]
@@ -27,7 +62,7 @@ function blockToText(block: any): string {
     if (type === 'heading_2') return `## ${text}`
     if (type === 'heading_3') return `### ${text}`
     if (type === 'bulleted_list_item') return `• ${text}`
-    if (type === 'numbered_list_item') return `1. ${text}`
+    if (type === 'numbered_list_item') return `${text}`
     if (type === 'quote') return `> ${text}`
     return text
   }
@@ -35,12 +70,32 @@ function blockToText(block: any): string {
   return ''
 }
 
+// Normalize title for dedup: lowercase, trim, collapse spaces
+function normalizeTitle(t: string) {
+  return t.toLowerCase().trim().replace(/\s+/g, ' ').replace(/[^a-z0-9 ]/g, '')
+}
+
+// Title-case a song name (ALL CAPS → Title Case)
+function normalizeDisplay(title: string): string {
+  // If already mixed case, leave it
+  if (title !== title.toUpperCase()) return title.trim()
+  // ALL CAPS → Title Case
+  const minorWords = new Set(['a','an','the','and','but','or','for','nor','on','at','to','by','of','in','is'])
+  return title
+    .toLowerCase()
+    .trim()
+    .split(' ')
+    .map((w, i) => (i === 0 || !minorWords.has(w)) ? w.charAt(0).toUpperCase() + w.slice(1) : w)
+    .join(' ')
+}
+
+// ── GET /api/lyrics ───────────────────────────────────────────────────────────
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const pageId = searchParams.get('id')
 
-    // Fetch content for a specific song
+    // ── Fetch content for a specific song page ────────────────────────────────
     if (pageId) {
       const blocks = await notion.blocks.children.list({
         block_id: pageId,
@@ -50,51 +105,88 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ content: lines.join('\n') })
     }
 
-    // List all songs from all lyrics sources
-    const allPages: any[] = []
+    // ── List all songs ────────────────────────────────────────────────────────
+    const seen = new Set<string>()  // dedup by normalized title
+    const allSongs: { id: string; title: string; band: Band }[] = []
 
-    for (const parentId of LYRICS_PAGE_IDS) {
+    const addSong = (id: string, rawTitle: string, band: Band) => {
+      const title = normalizeDisplay(rawTitle)
+      const key = normalizeTitle(title)
+      if (!key || seen.has(key)) return
+      seen.add(key)
+      allSongs.push({ id, title, band })
+    }
+
+    // 1. Child-page sources
+    for (const source of CHILD_SOURCES) {
       try {
-        const response = await notion.blocks.children.list({
-          block_id: parentId,
+        const resp = await notion.blocks.children.list({
+          block_id: source.parentId,
           page_size: 100,
         })
 
-        const parentPage = await notion.pages.retrieve({ page_id: parentId })
-        const parentTitle = (parentPage as any).properties?.title?.title?.[0]?.plain_text
-          || (parentPage as any).properties?.Name?.title?.[0]?.plain_text
-          || 'Untitled'
-
-        const childPages = response.results
-          .filter((block: any) => block.type === 'child_page')
-          .map((block: any) => ({
-            id: block.id,
-            title: block.child_page?.title || 'Untitled',
-            source: parentTitle,
-            sourceId: parentId,
-          }))
-
-        allPages.push(...childPages)
+        for (const block of resp.results) {
+          const b = block as any
+          if (b.type !== 'child_page') continue
+          const rawTitle = b.child_page?.title || ''
+          if (!rawTitle.trim()) continue
+          if (source.skipTitlePatterns.some(p => p.test(rawTitle))) continue
+          addSong(b.id.replace(/-/g, ''), rawTitle, source.band)
+        }
       } catch (err) {
-        console.error(`Error fetching children for ${parentId}:`, err)
+        console.error(`Failed to fetch children for ${source.parentId}:`, err)
       }
     }
 
-    // Add individual song pages
-    allPages.push(...INDIVIDUAL_SONG_IDS.map(s => ({
-      id: s.id.replace(/-/g, ''),
-      title: s.title,
-      source: s.source,
-      sourceId: s.id,
-    })))
+    // 2. Individual songs
+    for (const song of INDIVIDUAL_SONGS) {
+      addSong(song.id.replace(/-/g, ''), song.title, song.band)
+    }
 
-    allPages.sort((a, b) => a.title.localeCompare(b.title))
-    return NextResponse.json({ results: allPages })
+    // 3. Tu Lengua — parse the set list text from the page content
+    try {
+      const tuResp = await notion.blocks.children.list({
+        block_id: TU_LENGUA_PAGE_ID,
+        page_size: 100,
+      })
+      for (const block of tuResp.results) {
+        const b = block as any
+        const type = b.type
+        if (!['paragraph', 'bulleted_list_item', 'numbered_list_item'].includes(type)) continue
+        const rawText = (b[type]?.rich_text || []).map((t: any) => t.plain_text).join('').trim()
+        if (!rawText) continue
+
+        // Multi-song blocks (separated by newlines) — split them
+        const lines = rawText.split('\n')
+        for (const line of lines) {
+          const cleaned = line
+            .replace(/- Kyle.*$/i, '') // strip " - Kyle free jam" etc.
+            .replace(/^SET LIST.*/i, '') // skip set list header
+            .replace(/BLOODLUST/i, '')
+            .trim()
+          if (!cleaned || cleaned.length < 2) continue
+          // Skip lines that are clearly headers
+          if (/^set\s+list/i.test(cleaned)) continue
+          addSong(`tu-lengua-${normalizeTitle(cleaned).replace(/ /g,'-')}`, cleaned, 'Tu Lengua')
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch Tu Lengua:', err)
+    }
+
+    // Sort alphabetically within each band, then order by band
+    const bandOrder: Record<Band, number> = {
+      'Neo Somatic': 0, 'StronGnome': 1, 'Personal': 2, 'Well Well Well': 3, 'Tu Lengua': 4, 'Covers': 5
+    }
+    allSongs.sort((a, b) => {
+      const bo = bandOrder[a.band] - bandOrder[b.band]
+      if (bo !== 0) return bo
+      return a.title.localeCompare(b.title)
+    })
+
+    return NextResponse.json({ results: allSongs, bands: BANDS })
   } catch (error: any) {
     console.error('Notion API error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch lyrics' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message || 'Failed to fetch lyrics' }, { status: 500 })
   }
 }

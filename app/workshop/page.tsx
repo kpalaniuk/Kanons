@@ -11,21 +11,24 @@ import {
   ExternalLink,
   BookOpen,
   Music,
+  Palette,
 } from 'lucide-react'
 
 const workTools = [
-  { href: '/workshop/work/pipeline', title: 'Pipeline',  description: 'Track and manage client opportunities', icon: ClipboardList, color: 'ocean' },
-  { href: '/workshop/work/tools',    title: 'Tools',     description: 'Scenario builders, DSCR calc, underwriting chat', icon: Wrench, color: 'ocean' },
-  { href: '/workshop/work/clients',  title: 'Clients',   description: 'Saved scenario pages for individual clients', icon: Users, color: 'ocean' },
+  { href: '/workshop/work/pipeline',          title: 'Pipeline',        description: 'Track and manage client opportunities',                     icon: ClipboardList, color: 'ocean' },
+  { href: '/workshop/work/tools',             title: 'Tools',           description: 'Scenario builders, DSCR calc, underwriting chat',           icon: Wrench,        color: 'ocean' },
+  { href: '/workshop/work/clients',           title: 'Clients',         description: 'Saved scenario pages for individual clients',               icon: Users,         color: 'ocean' },
+  { href: '/workshop/work/lo-buddy-character',title: 'LO Buddy Art',    description: 'Character concept gallery — v7 no-armor + archived rounds', icon: Palette,       color: 'ocean' },
 ]
 
 const personalTools = [
   { href: '/workshop/personal/morning',   title: 'Morning Brief', description: 'Daily priorities, weather, trip countdown',              icon: Sun,        color: 'terracotta' },
-  { href: '/workshop/personal/tasks',     title: 'Tasks',         description: 'Personal task tracking',                               icon: CheckSquare, color: 'terracotta' },
-  { href: '/workshop/personal/music',     title: 'Music Habit',   description: '30-min daily habit — trumpet + production, streak log', icon: Music,      color: 'terracotta' },
-  { href: '/workshop/personal/focus',     title: 'Focus',         description: 'Scoped AI sessions that produce clean artifacts',        icon: Sparkles,   color: 'terracotta' },
-  { href: '/workshop/personal/fc-balboa', title: 'FC Balboa',     description: 'U10 coaching hub — roster, practice plans, log',         icon: Trophy,     color: 'terracotta' },
-  { href: '/workshop/personal/life',      title: 'Life',          description: 'ADU ledger, event splitter, usage, lyrics',              icon: Leaf,       color: 'terracotta' },
+  { href: '/workshop/personal/tasks',     title: 'Tasks',         description: 'Personal task tracking',                                icon: CheckSquare, color: 'terracotta' },
+  { href: '/workshop/personal/music',     title: 'Music Habit',   description: '30-min daily habit — trumpet + production, streak log', icon: Music,       color: 'terracotta' },
+  { href: '/workshop/personal/focus',     title: 'Focus',         description: 'Scoped AI sessions that produce clean artifacts',        icon: Sparkles,    color: 'terracotta' },
+  { href: '/workshop/personal/fc-balboa', title: 'FC Balboa',     description: 'U10 coaching hub — roster, practice plans, log',         icon: Trophy,      color: 'terracotta' },
+  { href: '/workshop/personal/lyrics',    title: 'Songs',         description: 'Song library — lyrics, chords, arrangements by band',   icon: Music,       color: 'terracotta' },
+  { href: '/workshop/personal/life',      title: 'Life',          description: 'ADU ledger, event splitter, usage',                     icon: Leaf,        color: 'terracotta' },
 ]
 
 // Knowledge Base articles imported from shared data (published only, newest 6)
