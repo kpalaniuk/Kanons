@@ -6,9 +6,15 @@ const notion = new Client({
 })
 
 const LYRICS_PAGE_IDS = [
-  '925f7b39e66042c7ac8e5a5a37716778', // Lyrics & Songs
+  '925f7b39e66042c7ac8e5a5a37716778', // Lyrics & Songs (setlist)
   '7558f0d737694d20bf9a587cbe5bf23f', // Kyle's Lyrics
   'ce6c6396e72f4ec199df3ddbf76a3388', // Tu Lengua
+]
+
+// Individual song pages (fetched as direct entries, not children)
+const INDIVIDUAL_SONG_IDS = [
+  { id: '234b8111-a67d-4d62-a8da-bf56fe26d495', title: 'There Will Never Be Another You', source: 'Jazz Standards' },
+  { id: '90456ab2-5509-4a06-89f0-087c92160389', title: 'The Christmas Song',               source: 'Covers' },
 ]
 
 function blockToText(block: any): string {
@@ -73,6 +79,14 @@ export async function GET(request: NextRequest) {
         console.error(`Error fetching children for ${parentId}:`, err)
       }
     }
+
+    // Add individual song pages
+    allPages.push(...INDIVIDUAL_SONG_IDS.map(s => ({
+      id: s.id.replace(/-/g, ''),
+      title: s.title,
+      source: s.source,
+      sourceId: s.id,
+    })))
 
     allPages.sort((a, b) => a.title.localeCompare(b.title))
     return NextResponse.json({ results: allPages })

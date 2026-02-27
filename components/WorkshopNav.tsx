@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   BookOpen,
   Sword,
+  Music,
 } from 'lucide-react'
 
 const workLinks = [
@@ -27,6 +28,7 @@ const personalLinks = [
   { href: '/workshop/personal/focus',      label: 'Focus',    icon: Sparkles },
   { href: '/workshop/personal/fc-balboa',  label: 'FC Balboa',icon: Trophy },
   { href: '/workshop/personal/life',       label: 'Life',     icon: Leaf },
+  { href: '/workshop/personal/lyrics',     label: 'Songs',    icon: Music },
 ]
 
 export default function WorkshopNav() {
