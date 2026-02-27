@@ -14,6 +14,7 @@ import {
   BookOpen,
   Inbox,
   Map,
+  Music,
 } from 'lucide-react'
 
 const workLinks = [
@@ -25,6 +26,7 @@ const workLinks = [
 
 const personalLinks = [
   { href: '/workshop/personal/tasks',           label: 'Tasks',    icon: CheckSquare },
+  { href: '/workshop/personal/music',           label: 'Music',    icon: Music },
   { href: '/workshop/personal/trip-july-2026',  label: 'July Trip',icon: Map },
   { href: '/workshop/personal/focus',           label: 'Focus',    icon: Sparkles },
   { href: '/workshop/personal/fc-balboa',       label: 'FC Balboa',icon: Trophy },
