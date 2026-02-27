@@ -4,7 +4,7 @@ import { Client } from '@notionhq/client'
 const notion = new Client({ auth: process.env.NOTION_API_KEY })
 
 // ── Band definitions ──────────────────────────────────────────────────────────
-export const BANDS = ['Neo Somatic', 'StronGnome', 'Personal', 'Well Well Well', 'Tu Lengua', 'Covers'] as const
+export const BANDS = ['Neo-Somatic', 'StronGnome', 'Personal', 'Well Well Well', 'Tu Lengua', 'Covers'] as const
 export type Band = typeof BANDS[number]
 
 // ── Source config ─────────────────────────────────────────────────────────────
@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
 
     // Sort alphabetically within each band, then order by band
     const bandOrder: Record<Band, number> = {
-      'Neo Somatic': 0, 'StronGnome': 1, 'Personal': 2, 'Well Well Well': 3, 'Tu Lengua': 4, 'Covers': 5
+      'Neo-Somatic': 0, 'StronGnome': 1, 'Personal': 2, 'Well Well Well': 3, 'Tu Lengua': 4, 'Covers': 5
     }
     allSongs.sort((a, b) => {
       const bo = bandOrder[a.band] - bandOrder[b.band]

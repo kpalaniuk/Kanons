@@ -23,7 +23,7 @@ const tools = [
   {
     href: '/workshop/personal/lyrics',
     title: 'Lyrics',
-    description: 'Music lyrics database for StronGnome, Neo Somatic, and other projects.',
+    description: 'Music lyrics database for StronGnome, Neo-Somatic, and other projects.',
     icon: Music,
   },
 ]

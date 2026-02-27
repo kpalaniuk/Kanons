@@ -20,7 +20,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   Other: '📌',
   'Granada House': '🏡',
   'StronGnome': '🎸',
-  'Neo Somatic': '🧠',
+  'Neo-Somatic': '🧠',
 }
 
 export default function AddTaskForm({ onAdd, defaultDueDate = '', onCancel, inline = false }: AddTaskFormProps) {

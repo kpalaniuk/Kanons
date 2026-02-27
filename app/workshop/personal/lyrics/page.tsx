@@ -22,11 +22,11 @@ interface SongMeta {
   timeSig?: string
 }
 
-const BANDS = ['Neo Somatic', 'StronGnome', 'Personal', 'Well Well Well', 'Tu Lengua', 'Covers'] as const
+const BANDS = ['Neo-Somatic', 'StronGnome', 'Personal', 'Well Well Well', 'Tu Lengua', 'Covers'] as const
 type Band = typeof BANDS[number]
 
 const BAND_COLORS: Record<Band, string> = {
-  'Neo Somatic':   'bg-cyan/10 text-cyan border-cyan/30',
+  'Neo-Somatic':   'bg-cyan/10 text-cyan border-cyan/30',
   'StronGnome':    'bg-amber-100 text-amber-700 border-amber-200',
   'Personal':      'bg-terracotta/10 text-terracotta border-terracotta/30',
   'Well Well Well':'bg-purple-100 text-purple-600 border-purple-200',
@@ -465,7 +465,7 @@ export default function LyricsPage() {
           {/* Empty bands notice */}
           {!bandFilter && (
             <div className="text-xs text-midnight/30 text-center py-2">
-              Well Well Well · Neo Somatic songs will appear here once added to Notion
+              Well Well Well · Neo-Somatic songs will appear here once added to Notion
             </div>
           )}
         </div>

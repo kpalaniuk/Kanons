@@ -32,7 +32,7 @@ const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> 
   Other: { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' },
 }
 
-const CONTEXTS = ['All', 'LO Buddy', 'Granada House', 'Music', 'Finance', 'StronGnome', 'Neo Somatic', 'Life Org', 'Other']
+const CONTEXTS = ['All', 'LO Buddy', 'Granada House', 'Music', 'Finance', 'StronGnome', 'Neo-Somatic', 'Life Org', 'Other']
 const TYPES = ['All', 'Briefings', 'Calculators', 'Research', 'Prototypes', 'Other']
 
 function formatDate(dateStr: string): string {

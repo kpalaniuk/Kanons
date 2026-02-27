@@ -55,7 +55,7 @@ const bands: Band[] = [
   },
   {
     name: 'Granada House Sessions',
-    subtitle: '(Neo Somatic)',
+    subtitle: '(Neo-Somatic)',
     description: 'Jazz-funk-prose direction. Writing a whole new set — evolving the sound with spoken word and improvisation.',
     members: ['Kyle', 'Seth', 'Anthony'],
     status: 'In Development',

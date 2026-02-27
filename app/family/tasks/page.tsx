@@ -50,13 +50,13 @@ const CATEGORY_ICONS: Record<string, string> = {
   Other: '📌',
   'Granada House': '🏡',
   'StronGnome': '🎸',
-  'Neo Somatic': '🧠',
+  'Neo-Somatic': '🧠',
 }
 
 // Life area mappings
 const LIFE_AREAS = {
   'Work & Business': ['LO Buddy', 'Lead Gen', 'Granada House'],
-  'Music & Creative': ['Music', 'StronGnome', 'Neo Somatic'],
+  'Music & Creative': ['Music', 'StronGnome', 'Neo-Somatic'],
   'Family & Home': ['Home & Family'],
   'System / DevOps': ['System / DevOps'],
   'Finance': ['Finance'],

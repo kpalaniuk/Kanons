@@ -47,7 +47,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   Other: '📌',
   'Granada House': '🏡',
   'StronGnome': '🎸',
-  'Neo Somatic': '🧠',
+  'Neo-Somatic': '🧠',
 }
 
 function getWeekDates(weekOffset: number = 0): Date[] {
