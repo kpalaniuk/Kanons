@@ -5,6 +5,7 @@ import {
   Music, Search, ChevronDown, ChevronRight, Loader2,
   FileText, Edit3, Check, X
 } from 'lucide-react'
+import { BANDS, type Band } from '@/app/lib/lyrics-config'
 
 interface Song {
   id: string
@@ -21,9 +22,6 @@ interface SongMeta {
   bpm?: string
   timeSig?: string
 }
-
-const BANDS = ['Neo-Somatic', 'StronGnome', 'Personal', 'Well Well Well', 'Tu Lengua', 'Covers'] as const
-type Band = typeof BANDS[number]
 
 const BAND_COLORS: Record<Band, string> = {
   'Neo-Somatic':   'bg-cyan/10 text-cyan border-cyan/30',
@@ -160,9 +158,15 @@ function extractMeta(content: string): { meta: SongMeta; body: string } {
   for (const line of lines) {
     const m = line.match(/^(band|key|feel|type|status|bpm|time|timesig)\s*:\s*(.+)$/i)
     if (m) {
-      const k = m[1].toLowerCase() as keyof SongMeta
-      if (k === 'time' || k === 'timesig') meta.timeSig = m[2].trim()
-      else meta[k] = m[2].trim()
+      const k = m[1].toLowerCase()
+      const v = m[2].trim()
+      if (k === 'time' || k === 'timesig') meta.timeSig = v
+      else if (k === 'band')   meta.band   = v
+      else if (k === 'key')    meta.key    = v
+      else if (k === 'feel')   meta.feel   = v
+      else if (k === 'type')   meta.type   = v
+      else if (k === 'status') meta.status = v
+      else if (k === 'bpm')    meta.bpm    = v
     } else {
       bodyLines.push(line)
     }

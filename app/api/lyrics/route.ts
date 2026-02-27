@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Client } from '@notionhq/client'
+import { BANDS, BAND_ORDER, type Band } from '@/app/lib/lyrics-config'
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY })
-
-// ── Band definitions ──────────────────────────────────────────────────────────
-export const BANDS = ['Neo-Somatic', 'StronGnome', 'Personal', 'Well Well Well', 'Tu Lengua', 'Covers'] as const
-export type Band = typeof BANDS[number]
 
 // ── Source config ─────────────────────────────────────────────────────────────
 // Each source maps child pages of a Notion parent to a band
@@ -175,11 +172,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Sort alphabetically within each band, then order by band
-    const bandOrder: Record<Band, number> = {
-      'Neo-Somatic': 0, 'StronGnome': 1, 'Personal': 2, 'Well Well Well': 3, 'Tu Lengua': 4, 'Covers': 5
-    }
     allSongs.sort((a, b) => {
-      const bo = bandOrder[a.band] - bandOrder[b.band]
+      const bo = BAND_ORDER[a.band] - BAND_ORDER[b.band]
       if (bo !== 0) return bo
       return a.title.localeCompare(b.title)
     })
