@@ -32,7 +32,7 @@ const ARCHIVED = [
 
 function imgUrl(concept: { id: string; folder?: string }) {
   const folder = concept.folder || 'lo-buddy-character'
-  return `/workshop/${folder}/${concept.id}.png`
+  return `/assets/${folder}/${concept.id}.png`
 }
 
 type Concept = typeof CONCEPTS[number] & { folder?: string }
