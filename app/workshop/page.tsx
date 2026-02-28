@@ -12,6 +12,7 @@ import {
   BookOpen,
   Music,
   Palette,
+  Disc,
 } from 'lucide-react'
 
 const workTools = [
@@ -27,8 +28,9 @@ const personalTools = [
   { href: '/workshop/personal/music',     title: 'Music Habit',   description: '30-min daily habit — trumpet + production, streak log', icon: Music,       color: 'terracotta' },
   { href: '/workshop/personal/focus',     title: 'Focus',         description: 'Scoped AI sessions that produce clean artifacts',        icon: Sparkles,    color: 'terracotta' },
   { href: '/workshop/personal/fc-balboa', title: 'FC Balboa',     description: 'U10 coaching hub — roster, practice plans, log',         icon: Trophy,      color: 'terracotta' },
-  { href: '/workshop/personal/lyrics',    title: 'Songs',         description: 'Song library — lyrics, chords, arrangements by band',   icon: Music,       color: 'terracotta' },
-  { href: '/workshop/personal/life',      title: 'Life',          description: 'ADU ledger, event splitter, usage',                     icon: Leaf,        color: 'terracotta' },
+  { href: '/workshop/personal/lyrics',     title: 'Songs',         description: 'Song library — lyrics, chords, arrangements by band',       icon: Music,  color: 'terracotta' },
+  { href: '/workshop/personal/strongnome',title: 'StronGnome',    description: '"Vast" release draft — landing page for Kyle + Seth review', icon: Disc,   color: 'terracotta' },
+  { href: '/workshop/personal/life',      title: 'Life',          description: 'ADU ledger, event splitter, usage',                          icon: Leaf,   color: 'terracotta' },
 ]
 
 // Knowledge Base articles imported from shared data (published only, newest 6)
