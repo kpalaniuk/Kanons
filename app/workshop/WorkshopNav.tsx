@@ -16,6 +16,7 @@ import {
   Map,
   Music,
   Disc,
+  NotebookPen,
 } from 'lucide-react'
 
 const workLinks = [
@@ -26,6 +27,7 @@ const workLinks = [
 ]
 
 const personalLinks = [
+  { href: '/workshop/personal/journal',          label: 'Journal',  icon: NotebookPen },
   { href: '/workshop/personal/tasks',           label: 'Tasks',    icon: CheckSquare },
   { href: '/workshop/personal/music',            label: 'Music',    icon: Music },
   { href: '/workshop/personal/strongnome',       label: 'StronGnome', icon: Disc },

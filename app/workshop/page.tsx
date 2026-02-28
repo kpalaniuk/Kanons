@@ -13,6 +13,7 @@ import {
   Music,
   Palette,
   Disc,
+  NotebookPen,
 } from 'lucide-react'
 
 const workTools = [
@@ -23,6 +24,7 @@ const workTools = [
 ]
 
 const personalTools = [
+  { href: '/workshop/personal/journal',   title: 'Journal',       description: 'Brain dumps and late-night reflections — voice preserved', icon: NotebookPen, color: 'terracotta' },
   { href: '/workshop/personal/morning',   title: 'Morning Brief', description: 'Daily priorities, weather, trip countdown',              icon: Sun,        color: 'terracotta' },
   { href: '/workshop/personal/tasks',     title: 'Tasks',         description: 'Personal task tracking',                                icon: CheckSquare, color: 'terracotta' },
   { href: '/workshop/personal/music',     title: 'Music Habit',   description: '30-min daily habit — trumpet + production, streak log', icon: Music,       color: 'terracotta' },
