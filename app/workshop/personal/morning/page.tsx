@@ -45,6 +45,47 @@ const GRATITUDE_PROMPTS = [
   "What's one moment from soccer coaching you want to carry with you?",
 ]
 
+// ── Music Streak ──────────────────────────────────────────────────────────────
+
+interface MusicSession {
+  id: string
+  date: string // YYYY-MM-DD
+  instrument: string
+  durationMin: number
+}
+
+function calcMusicStreak(sessions: MusicSession[]): number {
+  if (!sessions.length) return 0
+  const days = [...new Set(sessions.map((s) => s.date))].sort().reverse()
+  const today = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+
+  let streak = 0
+  let cursor = fmt(today)
+
+  for (const day of days) {
+    if (day === cursor) {
+      streak++
+      const d = new Date(cursor)
+      d.setDate(d.getDate() - 1)
+      cursor = fmt(d)
+    } else if (day < cursor) {
+      if (streak === 0) {
+        // Allow yesterday to start the streak
+        const yesterday = new Date(today)
+        yesterday.setDate(yesterday.getDate() - 1)
+        if (day === fmt(yesterday)) {
+          streak++
+          yesterday.setDate(yesterday.getDate() - 1)
+          cursor = fmt(yesterday)
+        } else break
+      } else break
+    }
+  }
+  return streak
+}
+
 function getDailyGratitudePrompt(): string {
   const now = new Date()
   const start = new Date(now.getFullYear(), 0, 0)
@@ -151,6 +192,7 @@ export default function MorningBriefPage() {
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
+  const [musicStreak, setMusicStreak] = useState<number>(0)
 
   const { greeting, dayNote, isCoachingDay } = getDayContext()
   const trip = getTripCountdown()
@@ -204,6 +246,16 @@ export default function MorningBriefPage() {
 
   useEffect(() => {
     fetchAll()
+    // Load music streak from localStorage
+    try {
+      const raw = localStorage.getItem('kanons-music-habit')
+      if (raw) {
+        const data = JSON.parse(raw) as { sessions: MusicSession[] }
+        setMusicStreak(calcMusicStreak(data.sessions || []))
+      }
+    } catch {
+      // localStorage unavailable or malformed
+    }
   }, [])
 
   const urgentTasks = tasks.filter((t) => t.priority === 'Urgent')
@@ -398,25 +450,61 @@ export default function MorningBriefPage() {
           <h2 className="font-display text-2xl text-midnight">Quick Access</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { href: '/workshop/work/pipeline', label: 'Pipeline', icon: CheckSquare, color: 'text-ocean' },
-            { href: '/workshop/personal/fc-balboa', label: 'FC Balboa', icon: Trophy, color: 'text-terracotta', highlight: isCoachingDay },
-            { href: '/workshop/personal/tasks', label: 'Task Board', icon: Calendar, color: 'text-amber-500' },
-            { href: '/workshop/personal/trip-july-2026', label: 'Trip Planner', icon: Map, color: 'text-cyan-500' },
-          ].map(({ href, label, icon: Icon, color, highlight }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center
-                ${highlight
-                  ? 'bg-terracotta/10 border-terracotta/30 hover:border-terracotta/60'
-                  : 'bg-cream border-midnight/5 hover:border-midnight/20'}`}
-            >
-              <Icon className={`w-5 h-5 ${color}`} />
-              <span className="text-xs font-medium text-midnight/70">{label}</span>
-              {highlight && <span className="text-xs text-terracotta font-semibold">Today!</span>}
-            </Link>
-          ))}
+          {/* Pipeline */}
+          <Link
+            href="/workshop/work/pipeline"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-cream border-midnight/5 hover:border-midnight/20 transition-all text-center"
+          >
+            <CheckSquare className="w-5 h-5 text-ocean" />
+            <span className="text-xs font-medium text-midnight/70">Pipeline</span>
+          </Link>
+
+          {/* FC Balboa */}
+          <Link
+            href="/workshop/personal/fc-balboa"
+            className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center
+              ${isCoachingDay
+                ? 'bg-terracotta/10 border-terracotta/30 hover:border-terracotta/60'
+                : 'bg-cream border-midnight/5 hover:border-midnight/20'}`}
+          >
+            <Trophy className="w-5 h-5 text-terracotta" />
+            <span className="text-xs font-medium text-midnight/70">FC Balboa</span>
+            {isCoachingDay && <span className="text-xs text-terracotta font-semibold">Today!</span>}
+          </Link>
+
+          {/* Task Board */}
+          <Link
+            href="/workshop/personal/tasks"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-cream border-midnight/5 hover:border-midnight/20 transition-all text-center"
+          >
+            <Calendar className="w-5 h-5 text-amber-500" />
+            <span className="text-xs font-medium text-midnight/70">Task Board</span>
+          </Link>
+
+          {/* Music Habit — with streak badge */}
+          <Link
+            href="/workshop/personal/music"
+            className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all text-center
+              ${musicStreak >= 3
+                ? 'bg-orange-50 border-orange-200 hover:border-orange-400'
+                : 'bg-cream border-midnight/5 hover:border-midnight/20'}`}
+          >
+            <div className="relative">
+              <Music className={`w-5 h-5 ${musicStreak >= 3 ? 'text-orange-500' : 'text-midnight/50'}`} />
+              {musicStreak > 0 && (
+                <span className="absolute -top-2 -right-3 text-[10px] font-bold bg-orange-500 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none">
+                  {musicStreak}
+                </span>
+              )}
+            </div>
+            <span className="text-xs font-medium text-midnight/70">Music Habit</span>
+            {musicStreak >= 3 && (
+              <span className="text-xs text-orange-600 font-semibold">🔥 {musicStreak} days</span>
+            )}
+            {musicStreak === 0 && (
+              <span className="text-xs text-midnight/30">Start today</span>
+            )}
+          </Link>
         </div>
       </div>
 
