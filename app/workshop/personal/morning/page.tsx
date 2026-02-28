@@ -6,8 +6,52 @@ import {
   Sun, Cloud, CloudRain, Droplets, Wind,
   CheckSquare, AlertCircle, Clock, Trophy,
   Map, Music, Mic, ArrowRight, RefreshCw,
-  Calendar, Zap,
+  Calendar, Zap, Heart,
 } from 'lucide-react'
+
+// ── Gratitude Prompts ─────────────────────────────────────────────────────────
+
+const GRATITUDE_PROMPTS = [
+  "What's one small thing that made yesterday worth it?",
+  "Who's someone you're quietly grateful for right now?",
+  "Name one thing about your home that you love.",
+  "What's a skill you've built that you take for granted?",
+  "What made you smile this week, even briefly?",
+  "Think of one moment with Bohdi or Meta that you want to remember.",
+  "What's working well in your business right now?",
+  "Name something beautiful you've seen recently.",
+  "What's a relationship in your life you don't appreciate enough?",
+  "What's one thing your body can do that you're grateful for?",
+  "What piece of music has moved you lately?",
+  "What's something you built — physical or otherwise — that you're proud of?",
+  "What's one convenience in your life that people 100 years ago would have considered magic?",
+  "What's something Paige does that makes your life better?",
+  "Name a mentor, teacher, or influence who shaped who you are.",
+  "What's a challenge from last year that made you stronger?",
+  "What's one thing about North Park / San Diego that you love?",
+  "What's a tool or system in your life that quietly makes everything easier?",
+  "What's one thing your kids said or did recently that stuck with you?",
+  "Name something in nature you find genuinely beautiful.",
+  "What's a creative project you're proud of, finished or not?",
+  "What's one freedom you have today that you don't want to take for granted?",
+  "Who in your community shows up consistently? What does that mean to you?",
+  "What's something about your grandfather Stefan's story that inspires you?",
+  "What's a meal, coffee, or experience you genuinely enjoy?",
+  "What's one aspect of running your own business that you love?",
+  "Name something you learned this month — even something small.",
+  "What's one thing you'd miss if it disappeared tomorrow?",
+  "What does Granada House mean to you right now?",
+  "What's something in your life that's better than it was a year ago?",
+  "What's one moment from soccer coaching you want to carry with you?",
+]
+
+function getDailyGratitudePrompt(): string {
+  const now = new Date()
+  const start = new Date(now.getFullYear(), 0, 0)
+  const diff = now.getTime() - start.getTime()
+  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24))
+  return GRATITUDE_PROMPTS[dayOfYear % GRATITUDE_PROMPTS.length]
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -165,6 +209,8 @@ export default function MorningBriefPage() {
   const urgentTasks = tasks.filter((t) => t.priority === 'Urgent')
   const highTasks = tasks.filter((t) => t.priority === 'High')
   const otherTasks = tasks.filter((t) => t.priority !== 'Urgent' && t.priority !== 'High')
+  const overdueTasks = tasks.filter((t) => t.dueDate && new Date(t.dueDate) < new Date())
+  const gratitudePrompt = getDailyGratitudePrompt()
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-16">
@@ -245,6 +291,32 @@ export default function MorningBriefPage() {
           </Link>
         </div>
       </div>
+
+      {/* ── Overdue Alert ── */}
+      {overdueTasks.length > 0 && (
+        <div className="bg-red-50 rounded-2xl p-5 border border-red-200">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertCircle className="w-4 h-4 text-red-500" />
+            <h2 className="font-display text-lg text-red-700">
+              {overdueTasks.length} Overdue {overdueTasks.length === 1 ? 'Task' : 'Tasks'}
+            </h2>
+          </div>
+          <div className="space-y-2">
+            {overdueTasks.map((task) => (
+              <div key={task.id} className="flex items-start gap-3 bg-white/70 rounded-lg px-4 py-3 border border-red-100">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-red-800 leading-snug">{task.title}</p>
+                  <p className="text-xs text-red-400 mt-0.5">
+                    Due {new Date(task.dueDate!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {task.category ? ` · ${task.category}` : ''}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Today's Priorities ── */}
       <div>
@@ -346,6 +418,18 @@ export default function MorningBriefPage() {
             </Link>
           ))}
         </div>
+      </div>
+
+      {/* ── Gratitude Prompt ── */}
+      <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100">
+        <div className="flex items-center gap-2 mb-3">
+          <Heart className="w-4 h-4 text-terracotta" />
+          <h2 className="font-display text-lg text-midnight">Morning Reflection</h2>
+        </div>
+        <p className="text-midnight/70 text-base leading-relaxed italic">
+          &ldquo;{gratitudePrompt}&rdquo;
+        </p>
+        <p className="text-xs text-midnight/30 mt-3">Take 30 seconds. Just notice.</p>
       </div>
 
       {/* ── Footer ── */}
