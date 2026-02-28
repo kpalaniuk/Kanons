@@ -4,7 +4,22 @@ import { useState } from 'react'
 import { Palette, X, ChevronLeft, ChevronRight, Download } from 'lucide-react'
 import Link from 'next/link'
 
-// v8 — Pixar caricature head (current round)
+// v9 — New face: round head, big eyes, calm smile (current round)
+const V9 = [
+  { id: 'v9-001', label: 'v9.1 — Round head · calm smile', model: 'Imagen 4' },
+  { id: 'v9-002', label: 'v9.2 — 3/4 · one brow raised', model: 'Imagen 4' },
+  { id: 'v9-003', label: 'v9.3 — Round + big eyes · gentle', model: 'Imagen 4' },
+  { id: 'v9-004', label: 'v9.4 — Most sophisticated ⭐', model: 'Imagen 4' },
+  { id: 'v9-005', label: 'v9.5 — 3/4 · problem solved', model: 'Imagen 4' },
+  { id: 'v9-006', label: 'v9.6 — Max chibi + round', model: 'Imagen 4' },
+  { id: 'v9-007', label: 'v9.7 — Deeper skin tone', model: 'Imagen 4' },
+  { id: 'v9-008', label: 'v9.8 — Listening face · calm', model: 'Imagen 4' },
+  { id: 'v9-white-001', label: 'v9.w1 — White bg · frontal', model: 'Imagen 4' },
+  { id: 'v9-white-002', label: 'v9.w2 — White bg · slight angle', model: 'Imagen 4' },
+  { id: 'v9-white-003', label: 'v9.w3 — White bg · Meshy pick ⭐⭐', model: 'Imagen 4' },
+]
+
+// v8 — Pixar caricature head (previous round)
 const V8 = [
   { id: 'v8-001', label: 'v8.1 — Straight on · big smile', model: 'Imagen 4' },
   { id: 'v8-002', label: 'v8.2 — 3/4 angle · knowing smirk', model: 'Imagen 4' },
@@ -53,9 +68,9 @@ type Concept = { id: string; label: string; model: string; folder?: string }
 
 export default function LOBuddyCharacterPage() {
   const [lightbox, setLightbox] = useState<number | null>(null)
-  const [tab, setTab] = useState<'v8' | 'v7' | 'archived'>('v8')
+  const [tab, setTab] = useState<'v9' | 'v8' | 'v7' | 'archived'>('v9')
 
-  const active: Concept[] = tab === 'v8' ? V8 : tab === 'v7' ? V7 : ARCHIVED
+  const active: Concept[] = tab === 'v9' ? V9 : tab === 'v8' ? V8 : tab === 'v7' ? V7 : ARCHIVED
 
   const openIdx = lightbox !== null ? lightbox : -1
 
@@ -70,7 +85,7 @@ export default function LOBuddyCharacterPage() {
           <Palette className="w-7 h-7 text-terracotta" />
           <h1 className="font-display text-3xl text-midnight">LO Buddy — Character Concepts</h1>
         </div>
-        <p className="text-midnight/50 text-sm">AI-generated concept art · Pixar caricature style · v8-005 selected for Meshy 3D generation</p>
+        <p className="text-midnight/50 text-sm">AI-generated concept art · Pixar caricature style · v9-white-003 selected for Meshy 3D generation</p>
       </div>
 
       {/* Brief card */}
@@ -88,7 +103,7 @@ export default function LOBuddyCharacterPage() {
 
       {/* Tabs */}
       <div className="flex gap-2 flex-wrap">
-        {([['v8', '✦ v8 — Pixar Head'], ['v7', 'v7 — No Armor'], ['archived', 'v6 — Armor']] as const).map(([t, label]) => (
+        {([['v9', '✦ v9 — New Face'], ['v8', 'v8 — First Pixar'], ['v7', 'v7 — No Armor'], ['archived', 'v6 — Armor']] as const).map(([t, label]) => (
           <button
             key={t}
             onClick={() => setTab(t)}
