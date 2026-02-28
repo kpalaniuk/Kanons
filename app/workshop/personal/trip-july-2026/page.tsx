@@ -47,8 +47,8 @@ const DAYS: TripDay[] = [
   { date: 'Jul 12', label: 'Isle of Skye — Fairy Pools, Old Man of Storr', sleep: 'Isle of Skye', sleepIcon: '🏔️', stopId: 'skye', type: 'excursion' },
 
   // HIGHLANDS — EAGLE BRAY
-  { date: 'Jul 13', label: 'Skye → Eagle Bray Luxury Cabins', sleep: 'Eagle Bray Cabins', sleepIcon: '🪵', stopId: 'eagle-bray', type: 'transit' },
-  { date: 'Jul 14', label: 'Eagle Bray — forest, hot tub, chill', sleep: 'Eagle Bray Cabins', sleepIcon: '🪵', stopId: 'eagle-bray', type: 'chill' },
+  { date: 'Jul 13', label: 'Skye → Eagle Brae Luxury Cabins', sleep: 'Eagle Brae Cabins', sleepIcon: '🪵', stopId: 'eagle-bray', type: 'transit' },
+  { date: 'Jul 14', label: 'Eagle Brae — forest, hot tub, chill', sleep: 'Eagle Brae Cabins', sleepIcon: '🪵', stopId: 'eagle-bray', type: 'chill' },
 
   // TRANSIT — EDINBURGH AIRPORT HOTEL
   { date: 'Jul 15', label: 'Drive south → Edinburgh airport hotel', sleep: 'Hotel, Edinburgh Airport', sleepIcon: '✈️', stopId: 'edinburgh-hotel', type: 'transit', note: 'Return Scotland car. Early flight to Dublin tomorrow.' },
@@ -111,12 +111,12 @@ const STOPS = [
     accommodation: 'Airbnb (Paige has one saved) or guest house — open',
   },
   {
-    id: 'eagle-bray', name: 'Eagle Bray Log Cabins', emoji: '🪵', nights: 2, dates: 'Jul 13–15',
+    id: 'eagle-bray', name: 'Eagle Brae Log Cabins', emoji: '🪵', nights: 2, dates: 'Jul 13–15',
     status: 'open', color: 'bg-amber-50 border-amber-200', dotColor: 'bg-amber-500', who: 'Core family',
     details: 'Luxury log cabins Paige found. Next stop after Skye — Highland splurge before heading back south. Likely hot tubs, forest setting, self-catering.',
     highlights: ['Luxury Highland cabin', 'Hot tubs (likely)', 'Forest setting', 'Self-catering', 'Family-friendly'],
-    action: 'Check Jul 13–14 availability: eaglebray.co.uk',
-    accommodation: 'Eagle Bray Luxury Log Cabins — open',
+    action: 'Check Jul 13–14 availability: eaglebrae.co.uk',
+    accommodation: 'Eagle Brae Luxury Log Cabins — open',
   },
   {
     id: 'edinburgh-hotel', name: 'Edinburgh Airport Hotel', emoji: '✈️', nights: 1, dates: 'Jul 15',
@@ -185,7 +185,7 @@ const OPEN_ITEMS = [
   { urgent: true,  text: 'Dublin HX — confirm Jul 16–20 with host' },
   { urgent: true,  text: 'East Lothian HX — confirm Jun 30–Jul 11 and book' },
   { urgent: true,  text: "Isle of Skye — check Paige's saved Airbnb Jul 11–12. Book ASAP." },
-  { urgent: true,  text: 'Eagle Bray Cabins — check Jul 13–14 at eaglebray.co.uk' },
+  { urgent: true,  text: 'Eagle Brae Cabins — check Jul 13–14 at eaglebrae.co.uk' },
   { urgent: true,  text: 'Edinburgh airport hotel — book 1 night Jul 15' },
   { urgent: false, text: 'Kilkenny — research B&Bs / hotels for ~Jul 30–Aug 1' },
   { urgent: false, text: 'Return flights — Dublin → SAN, Aug 1–3 window. Use Chase points. Compare Shannon vs Dublin.' },
