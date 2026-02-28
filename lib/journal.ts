@@ -53,7 +53,31 @@ I love my family so much.
 
 Okay. I'm gonna stop now. This is just getting boring.
 
-*(It's not boring. None of it is boring.)*`,
+*(It's not boring. None of it is boring.)*
+
+—
+
+*The conversation kept going.*
+
+What I find scary and weird is this: the ego death idea means the whole world doesn't revolve around you. You don't make up the whole world.
+
+And then at the exact same time — you actually do.
+
+Your existence is literally defined by everything you make within it. So there's a conundrum. A paradox. There's this entire truth that lives within you, and the idea that you are not the whole thing.
+
+In that song I'm literally saying you are the whole thing. And it's true. You are only what your mind creates.
+
+—
+
+*And then we landed somewhere.*
+
+Whether I am a silly, mutated vessel of synapses on a brain that's hypnotized by my own existence — by how I was brought up, programmed to love what I love, see what I see — I will hold on to the fact that I choose to be grateful for certain things.
+
+If the love I experience is just a computer process of my existence, I still get to choose what I do every day and how I feel every day. I get to choose to be grateful. To love my family. To exist as part of that family. And consequently I get to show my family that that is some way to operate.
+
+If that's all I have, it's okay.
+
+Maybe it's the distance between us. Maybe it's not between egos. Whatever it is — I at least get to decide whether I appreciate it or not.`,
   },
 
   {
