@@ -13,8 +13,8 @@ type DayType = 'transit' | 'explore' | 'chill' | 'work' | 'solo' | 'excursion' |
 interface TripDay {
   date: string
   label: string
-  sleep: string       // where you sleep THAT NIGHT
-  sleepIcon?: string  // emoji for the sleep location
+  sleep: string
+  sleepIcon?: string
   stopId: string
   type: DayType
   note?: string
@@ -25,42 +25,43 @@ interface TripDay {
 // ─── Day-by-day ───────────────────────────────────────────────────────────────
 
 const DAYS: TripDay[] = [
-  // ICELAND
-  { date: 'Jun 28', label: 'Fly SAN → Reykjavik', sleep: 'Reykjavik, Iceland', sleepIcon: '🧊', stopId: 'iceland', type: 'transit' },
-  { date: 'Jun 29', label: 'Iceland — Golden Circle, hot springs', sleep: 'Reykjavik, Iceland', sleepIcon: '🧊', stopId: 'iceland', type: 'explore' },
+  // ICELAND — 3 nights (Jun 27-30)
+  { date: 'Jun 27', label: 'Fly SAN → Reykjavik', sleep: 'Reykjavik, Iceland', sleepIcon: '🧊', stopId: 'iceland', type: 'transit' },
+  { date: 'Jun 28', label: 'Iceland — Golden Circle, geysers', sleep: 'Reykjavik, Iceland', sleepIcon: '🧊', stopId: 'iceland', type: 'explore' },
+  { date: 'Jun 29', label: 'Iceland — hot springs, Kristjan local guide day', sleep: 'Reykjavik, Iceland', sleepIcon: '🧊', stopId: 'iceland', type: 'explore' },
 
-  // SCOTLAND — EAST LOTHIAN
-  { date: 'Jun 30', label: 'Fly KEF → Edinburgh, pick up car', sleep: 'East Lothian HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'east-lothian', type: 'transit' },
-  { date: 'Jul 1',  label: 'Settle into East Lothian base', sleep: 'East Lothian HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'east-lothian', type: 'chill' },
-  { date: 'Jul 2',  label: 'Edinburgh explore', sleep: 'East Lothian HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'east-lothian', type: 'explore' },
-  { date: 'Jul 3',  label: 'East Lothian coast / castles', sleep: 'East Lothian HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'east-lothian', type: 'explore' },
-  { date: 'Jul 4',  label: 'Kyle work day', sleep: 'East Lothian HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'east-lothian', type: 'work' },
-  { date: 'Jul 5',  label: 'Edinburgh or North Berwick beach', sleep: 'East Lothian HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'east-lothian', type: 'explore' },
-  { date: 'Jul 6',  label: 'Family day — Paige preps for Athens', sleep: 'East Lothian HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'east-lothian', type: 'chill' },
-  { date: 'Jul 7',  label: 'Paige flies Edinburgh → Athens', sleep: 'East Lothian HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'east-lothian', type: 'solo', paigeAway: true, note: "Paige → Athens, Claudia's 40th" },
-  { date: 'Jul 8',  label: 'Kyle + kids adventure', sleep: 'East Lothian HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'east-lothian', type: 'solo', paigeAway: true },
-  { date: 'Jul 9',  label: 'Kyle + kids local day', sleep: 'East Lothian HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'east-lothian', type: 'solo', paigeAway: true },
-  { date: 'Jul 10', label: 'Paige returns 🎉 Rest + pack for Highlands', sleep: 'East Lothian HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'east-lothian', type: 'chill', note: 'Paige returns from Athens' },
+  // SCOTLAND — GLASGOW
+  { date: 'Jun 30', label: 'Fly KEF → Glasgow, pick up car', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'transit' },
+  { date: 'Jul 1',  label: 'Settle into Glasgow base', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'chill' },
+  { date: 'Jul 2',  label: 'Glasgow city explore', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'explore' },
+  { date: 'Jul 3',  label: 'Day trip — Loch Lomond or Stirling Castle', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'explore' },
+  { date: 'Jul 4',  label: 'Kyle work day', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'work' },
+  { date: 'Jul 5',  label: 'Edinburgh day trip (50 min by train)', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'explore' },
+  { date: 'Jul 6',  label: 'Family day — Paige preps for Athens', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'chill' },
+  { date: 'Jul 7',  label: 'Paige flies Glasgow → Athens', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'solo', paigeAway: true, note: "Paige → Athens, Claudia's 40th" },
+  { date: 'Jul 8',  label: 'Kyle + kids adventure (Glasgow or coast)', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'solo', paigeAway: true },
+  { date: 'Jul 9',  label: 'Kyle + kids local day', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'solo', paigeAway: true },
+  { date: 'Jul 10', label: 'Paige returns 🎉 Rest + pack for Highlands', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'chill', note: 'Paige returns from Athens' },
 
   // HIGHLANDS — SKYE
-  { date: 'Jul 11', label: 'Check out East Lothian → Drive to Skye (5-6 hrs)', sleep: 'Isle of Skye', sleepIcon: '🏔️', stopId: 'skye', type: 'transit', note: 'Leave early, lunch en route' },
-  { date: 'Jul 12', label: 'Isle of Skye — Fairy Pools, Old Man of Storr', sleep: 'Isle of Skye', sleepIcon: '🏔️', stopId: 'skye', type: 'excursion' },
+  { date: 'Jul 11', label: 'Check out Glasgow → Drive to Skye (~2.5 hrs)', sleep: 'Isle of Skye — Croft4, Breakish', sleepIcon: '🏔️', stopId: 'skye', type: 'transit', booked: true, note: 'Via Loch Lomond & Glencoe — stunning drive' },
+  { date: 'Jul 12', label: 'Isle of Skye — Fairy Pools, Old Man of Storr', sleep: 'Isle of Skye — Croft4, Breakish', sleepIcon: '🏔️', stopId: 'skye', type: 'excursion', booked: true },
 
-  // HIGHLANDS — EAGLE BRAY
-  { date: 'Jul 13', label: 'Skye → Eagle Brae Luxury Cabins', sleep: 'Eagle Brae Cabins', sleepIcon: '🪵', stopId: 'eagle-bray', type: 'transit' },
-  { date: 'Jul 14', label: 'Eagle Brae — forest, hot tub, chill', sleep: 'Eagle Brae Cabins', sleepIcon: '🪵', stopId: 'eagle-bray', type: 'chill' },
+  // HIGHLANDS — EAGLE BRAE
+  { date: 'Jul 13', label: 'Skye → Eagle Brae Cabins (Eilean Donan stop)', sleep: 'Eagle Brae — Cinclus Cabin', sleepIcon: '🪵', stopId: 'eagle-brae', type: 'transit', booked: true },
+  { date: 'Jul 14', label: 'Eagle Brae — sauna, forest, chill', sleep: 'Eagle Brae — Cinclus Cabin', sleepIcon: '🪵', stopId: 'eagle-brae', type: 'chill', booked: true },
 
-  // TRANSIT — EDINBURGH AIRPORT HOTEL
-  { date: 'Jul 15', label: 'Drive south → Edinburgh airport hotel', sleep: 'Hotel, Edinburgh Airport', sleepIcon: '✈️', stopId: 'edinburgh-hotel', type: 'transit', note: 'Return Scotland car. Early flight to Dublin tomorrow.' },
+  // INVERNESS
+  { date: 'Jul 15', label: 'Eagle Brae check-out → Inverness city day', sleep: 'Inverness — Highland Cow Apt', sleepIcon: '🏙️', stopId: 'inverness', type: 'explore', booked: true, note: 'Check in 3pm. 15 min from Eagle Brae.' },
 
   // IRELAND — DUBLIN
-  { date: 'Jul 16', label: 'Fly Edinburgh → Dublin. Check into HX.', sleep: 'Dublin HX', sleepIcon: '🍀', stopId: 'dublin', type: 'transit', note: 'Parents fly in separately' },
+  { date: 'Jul 16', label: 'Fly Inverness → Dublin. Check into HX.', sleep: 'Dublin HX', sleepIcon: '🍀', stopId: 'dublin', type: 'transit', note: 'Aer Lingus INV→DUB direct, ~1h35m. Checkout 11am.' },
   { date: 'Jul 17', label: 'Dublin — Trinity College, Phoenix Park', sleep: 'Dublin HX', sleepIcon: '🍀', stopId: 'dublin', type: 'explore' },
   { date: 'Jul 18', label: 'Dublin — Hop-On-Hop-Off, Temple Bar', sleep: 'Dublin HX', sleepIcon: '🍀', stopId: 'dublin', type: 'explore' },
   { date: 'Jul 19', label: 'Dublin — chill, prep for Johnsfort', sleep: 'Dublin HX', sleepIcon: '🍀', stopId: 'dublin', type: 'chill' },
 
   // KELLS — JOHNSFORT
-  { date: 'Jul 20', label: 'Johnsfort pickup from Dublin. Farm day 1.', sleep: 'Johnsfort, Kells', sleepIcon: '🐄', stopId: 'kells', type: 'excursion', booked: true, note: 'Richard collects family + parents from hotel' },
+  { date: 'Jul 20', label: 'Johnsfort pickup from Dublin. Farm day 1.', sleep: 'Johnsfort, Kells', sleepIcon: '🐄', stopId: 'kells', type: 'excursion', booked: true, note: 'Richard collects family from hotel' },
   { date: 'Jul 21', label: 'Johnsfort private tour day 2', sleep: 'Johnsfort, Kells', sleepIcon: '🐄', stopId: 'kells', type: 'excursion', booked: true },
   { date: 'Jul 22', label: 'Johnsfort private tour day 3', sleep: 'Johnsfort, Kells', sleepIcon: '🐄', stopId: 'kells', type: 'excursion', booked: true },
   { date: 'Jul 23', label: 'Johnsfort private tour day 4', sleep: 'Johnsfort, Kells', sleepIcon: '🐄', stopId: 'kells', type: 'excursion', booked: true },
@@ -71,10 +72,10 @@ const DAYS: TripDay[] = [
   { date: 'Jul 26', label: 'Galway Arts Festival — final day', sleep: 'Galway HX', sleepIcon: '🎪', stopId: 'galway', type: 'festival', booked: true },
   { date: 'Jul 27', label: 'Aran Islands — 90 min ferry', sleep: 'Galway HX', sleepIcon: '🎪', stopId: 'galway', type: 'excursion', booked: true },
   { date: 'Jul 28', label: 'Cliffs of Moher day trip (~1.5 hrs)', sleep: 'Galway HX', sleepIcon: '🎪', stopId: 'galway', type: 'excursion', booked: true },
-  { date: 'Jul 29', label: 'Connemara / Wild Atlantic Way', sleep: 'Galway HX', sleepIcon: '🎪', stopId: 'galway', type: 'explore', note: 'Flexible — may check out today or tomorrow' },
+  { date: 'Jul 29', label: 'Connemara / Wild Atlantic Way', sleep: 'Galway HX', sleepIcon: '🎪', stopId: 'galway', type: 'explore', booked: true },
 
   // KILKENNY
-  { date: 'Jul 30', label: 'Drive Galway → Kilkenny (~2.5 hrs)', sleep: 'Kilkenny', sleepIcon: '🏰', stopId: 'kilkenny', type: 'transit', note: 'Medieval city, Kilkenny Castle' },
+  { date: 'Jul 30', label: 'Drive Galway → Kilkenny (~2.5 hrs)', sleep: 'Kilkenny', sleepIcon: '🏰', stopId: 'kilkenny', type: 'transit' },
   { date: 'Jul 31', label: 'Kilkenny — castle, old city, pubs', sleep: 'Kilkenny', sleepIcon: '🏰', stopId: 'kilkenny', type: 'explore' },
 
   // FLY HOME
@@ -86,79 +87,83 @@ const DAYS: TripDay[] = [
 
 const STOPS = [
   {
-    id: 'iceland', name: 'Reykjavik, Iceland', emoji: '🧊', nights: 2, dates: 'Jun 28–30',
-    status: 'open', color: 'bg-sky-50 border-sky-200', dotColor: 'bg-sky-400', who: 'Core family',
-    details: "Stopover — time zone buffer + adventure. Kyle has a friend who lives there. 2 nights is enough for the Golden Circle, a geothermal soak, and landing rested.",
-    highlights: ['Golden Circle / geysers', 'Blue Lagoon / hot pools', 'Midnight sun', "Kyle's friend local"],
-    action: 'Text Kyle\'s friend. Check HomeExchange credits for KEF.',
-    accommodation: 'HomeExchange or friend — open',
+    id: 'iceland', name: 'Reykjavik, Iceland', emoji: '🧊', nights: 3, dates: 'Jun 27–30',
+    status: 'pursuing', color: 'bg-sky-50 border-sky-200', dotColor: 'bg-sky-400', who: 'Core family',
+    details: "3 nights — Kristjan (Kyle's friend, local travel guide) wants the kids to properly explore. Enough time for the Golden Circle, geothermal soak, and midnight sun adventures. Fly SAN→KEF Jun 27, KEF→Glasgow Jun 30.",
+    highlights: ['Golden Circle / geysers', 'Blue Lagoon / hot pools', 'Midnight sun', 'Kristjan as local guide', '3 nights for kids to settle'],
+    action: 'Book SAN→KEF (Jun 27) and KEF→GLA (Jun 30) flights. Confirm stay with Kristjan.',
+    accommodation: 'Staying with Kristjan (local travel guide)',
   },
   {
-    id: 'east-lothian', name: 'East Lothian, Scotland', emoji: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', nights: 11, dates: 'Jun 30–Jul 11',
+    id: 'glasgow', name: 'Glasgow, Scotland', emoji: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', nights: 11, dates: 'Jun 30–Jul 11',
     status: 'pursuing', color: 'bg-indigo-50 border-indigo-200', dotColor: 'bg-indigo-500', who: 'Core family',
-    details: 'Scotland home base near Edinburgh — ~11 nights. Paige departs Edinburgh airport Jul 7 for Athens (Claudia\'s 40th). Kyle solo with kids Jul 7–9. Paige returns Jul 10, rest day. Check out Jul 11 and drive to Skye.',
-    highlights: ['Edinburgh city (25 min)', 'North Berwick beach', 'Tantallon Castle', 'Kyle work days', 'Scottish culture soak'],
-    action: 'Confirm HomeExchange booking Jun 30–Jul 11.',
-    accommodation: 'HomeExchange (pursuing)',
-    alert: 'Paige departs Edinburgh airport Jul 7 → Athens. Returns Jul 10. Kyle solo Jul 7–9.'
+    details: "Scotland home base — 11 nights. Glasgow replaces East Lothian. Edinburgh is 50 min by train. Loch Lomond, Stirling Castle, and the Highlands are all on the doorstep. Paige departs Jul 7 for Athens (Claudia's 40th). Kyle solo with Bohdi + Meta Jul 7–9. Paige returns Jul 10. Check out Jul 11 — Glasgow is actually closer to Skye (~2.5 hrs vs 5.5 from East Lothian).",
+    highlights: ['Edinburgh 50 min by train', 'Loch Lomond day trip', 'Stirling Castle', 'Kyle work days', 'Closer to Skye than East Lothian'],
+    action: 'Confirm Glasgow HomeExchange booking Jun 30–Jul 11.',
+    accommodation: 'HomeExchange — awaiting confirmation',
+    alert: "Paige departs Glasgow airport Jul 7 → Athens. Returns Jul 10. Kyle solo with kids Jul 7–9."
   },
   {
     id: 'skye', name: 'Isle of Skye', emoji: '🏔️', nights: 2, dates: 'Jul 11–13',
-    status: 'open', color: 'bg-emerald-50 border-emerald-200', dotColor: 'bg-emerald-500', who: 'Core family',
-    details: '5–6 hour drive from East Lothian. Leave early Jul 11, stop for lunch en route. 2 nights. Paige has an Airbnb saved — check availability immediately.',
-    highlights: ['Old Man of Storr', 'Fairy Pools', 'Neist Point lighthouse', 'Dunvegan Castle', 'Portree village'],
-    action: "Check Paige's saved Airbnb for Jul 11–12. Book fast — July peak season.",
-    accommodation: 'Airbnb (Paige has one saved) or guest house — open',
+    status: 'booked', color: 'bg-emerald-50 border-emerald-200', dotColor: 'bg-emerald-500', who: 'Core family',
+    details: '~2.5 hour drive from Glasgow (much better than 5.5 from East Lothian). Property is Croft4 in Breakish — SE Skye near the bridge. Old Man of Storr and Fairy Pools are a 40–55 min drive north/west — worth it, leave early.',
+    highlights: ['Old Man of Storr', 'Fairy Pools', 'Neist Point lighthouse', 'Portree village', 'Leave croft early for best spots'],
+    action: 'BOOKED ✅ Croft4, Breakish. Booking #6564117675.',
+    accommodation: 'Croft4, 4 Scullamus Moss, Breakish IV42 8QB — BOOKED ✅',
+    cost: '£1,179.90 paid',
   },
   {
-    id: 'eagle-bray', name: 'Eagle Brae Log Cabins', emoji: '🪵', nights: 2, dates: 'Jul 13–15',
-    status: 'open', color: 'bg-amber-50 border-amber-200', dotColor: 'bg-amber-500', who: 'Core family',
-    details: 'Luxury log cabins Paige found. Next stop after Skye — Highland splurge before heading back south. Likely hot tubs, forest setting, self-catering.',
-    highlights: ['Luxury Highland cabin', 'Hot tubs (likely)', 'Forest setting', 'Self-catering', 'Family-friendly'],
-    action: 'Check Jul 13–14 availability: eaglebrae.co.uk',
-    accommodation: 'Eagle Brae Luxury Log Cabins — open',
+    id: 'eagle-brae', name: 'Eagle Brae Log Cabins', emoji: '🪵', nights: 2, dates: 'Jul 13–15',
+    status: 'booked', color: 'bg-amber-50 border-amber-200', dotColor: 'bg-amber-500', who: 'Core family',
+    details: "Luxury Highland log cabin near Beauly, 40 min from Inverness. Cinclus cabin: south-facing views down to the River Glass, sauna in bathroom, French windows, 2 sitting rooms, mezzanine log beds (kids' loft), super king bedroom. Check-in 4pm, check-out 10am. Stop at Eilean Donan Castle en route from Skye.",
+    highlights: ['Sauna in cabin', 'River Glass views', "Kids' mezzanine log beds", 'Eilean Donan en route', 'Near Loch Ness'],
+    action: 'BOOKED ✅ Cinclus cabin. Deposit paid. Balance £1,161.20 due May 4, 2026.',
+    accommodation: 'Cinclus, Eagle Brae — BOOKED ✅ | info@eaglebrae.co.uk | 07738 076711',
+    cost: '£1,481.60 total · £320.40 paid · £1,161.20 due May 4',
+    alert: '⚠️ Balance of £1,161.20 due May 4, 2026'
   },
   {
-    id: 'edinburgh-hotel', name: 'Edinburgh Airport Hotel', emoji: '✈️', nights: 1, dates: 'Jul 15',
-    status: 'open', color: 'bg-slate-50 border-slate-200', dotColor: 'bg-slate-400', who: 'Core family',
-    details: 'One night near Edinburgh airport before early Dublin flight. Return Scotland rental car here. No need for anything fancy — just sleep and wheels to the terminal.',
-    highlights: ['Return car rental', 'Airport convenience', 'Early Dublin flight'],
-    action: 'Book 1 night airport hotel for Jul 15. Return car at Edinburgh airport.',
-    accommodation: 'Airport hotel — open',
+    id: 'inverness', name: 'Inverness', emoji: '🏙️', nights: 1, dates: 'Jul 15',
+    status: 'booked', color: 'bg-teal-50 border-teal-200', dotColor: 'bg-teal-500', who: 'Core family',
+    details: 'One night in Inverness — 15 min from Eagle Brae. Highland Cow Apartment: 2-bed, fully equipped kitchen, garden views. Check-in 3pm, check-out 11am. Explore Inverness city, river walk, Inverness Castle. Return Scotland rental car here before flying to Dublin.',
+    highlights: ['15 min from Eagle Brae', 'Inverness city explore', '2-bed apartment', 'Return Scotland car', 'Early INV→DUB flight next morning'],
+    action: 'BOOKED ✅ Lockbox. PIN: 7462. Free cancellation until Jul 13.',
+    accommodation: 'Highland Cow Apartment, 31 Millburn Court, Inverness IV2 3PW — BOOKED ✅ | +447934244040',
+    cost: '£205.20 paid',
   },
   {
     id: 'dublin', name: 'Dublin, Ireland', emoji: '🍀', nights: 4, dates: 'Jul 16–20',
     status: 'pursuing', color: 'bg-green-50 border-green-200', dotColor: 'bg-green-500', who: 'Core family + parents',
-    details: 'HomeExchange Jul 16–20. No car needed — Hop-On-Hop-Off and public transport. Parents fly in and join here. Johnsfort collects everyone Monday morning Jul 20.',
-    highlights: ['Trinity College', 'Phoenix Park', 'Hop-On-Hop-Off', 'Temple Bar', 'Family pubs'],
-    action: 'Confirm Dublin HX with host (Jul 16–20). Coordinate parents\' arrival flights.',
-    accommodation: 'HomeExchange (almost confirmed)',
-    alert: "Paige's parents fly in to join. Johnsfort collects all Jul 20 morning."
+    details: 'HomeExchange Jul 16–20. Fly Inverness→Dublin on Aer Lingus direct (1h35m, checkout 11am so aim afternoon/evening departure). No car needed in Dublin — Hop-On-Hop-Off and public transport. Johnsfort collects everyone Jul 20 morning.',
+    highlights: ['Trinity College', 'Phoenix Park', 'Hop-On-Hop-Off', 'Temple Bar', 'Aer Lingus direct from Inverness'],
+    action: 'Confirm Dublin HX Jul 16–20. Book INV→DUB flight (Aer Lingus direct). Use Chase UR → AerClub Avios.',
+    accommodation: 'HomeExchange — pursuing',
+    alert: "Book INV→DUB Aer Lingus flight ASAP. Johnsfort collects family Jul 20 morning."
   },
   {
     id: 'kells', name: 'Johnsfort Farm, Kells', emoji: '🐄', nights: 4, dates: 'Jul 20–24',
     status: 'booked', color: 'bg-lime-50 border-lime-300', dotColor: 'bg-lime-600', who: 'Core family · Parents at Headfort Arms Hotel',
-    details: 'Private 4-day curated farm experience. Richard collects from Dublin hotel, drops Jul 24 at Athlone (train to Galway) or car rental. Custom questionnaire shapes every day. Parents join tours à la carte from Headfort Arms Hotel (10 min away).',
-    highlights: ['Custom private tours', 'Farm activities for kids', 'Hill of Tara', 'Trim Castle', 'Boyne Valley', "Father-in-law's Irish ancestry"],
+    details: 'Private 4-day curated farm experience. Richard collects from Dublin hotel, drops Jul 24. Custom questionnaire shapes every day. Parents join tours à la carte from Headfort Arms Hotel (10 min away).',
+    highlights: ['Custom private tours', 'Farm activities for kids', 'Hill of Tara', 'Trim Castle', 'Boyne Valley'],
     action: 'BOOKED ✅ Answer Johnsfort questionnaire when it arrives.',
     accommodation: "Bartholomew's Loft, Johnsfort (BOOKED ✅) · Parents: The Headfort Arms Hotel, Kells",
-    cost: '€4,500 family of 4 · Parents à la carte',
+    cost: '€4,500 family of 4',
   },
   {
     id: 'galway', name: 'Outside Galway', emoji: '🎪', nights: 6, dates: 'Jul 24–30',
-    status: 'booked', color: 'bg-orange-50 border-orange-200', dotColor: 'bg-orange-500', who: 'Core family (HX) · Parents TBD',
-    details: 'HomeExchange outside Galway. Arriving Jul 24 = last 2 days of Galway Arts Festival (Jul 13–26). Pick up car from Athlone/Johnsfort drop on Jul 24. Day trips to Aran Islands, Cliffs of Moher, Connemara. Flexible on last night — Jul 29 or 30 depending on Kilkenny timing and flight costs.',
-    highlights: ['Galway Arts Festival (Jul 24–26)', 'Aran Islands ferry (90 min)', 'Cliffs of Moher', 'Connemara', 'Wild Atlantic Way', 'Galway city food & music'],
-    action: 'Confirm extension dates with HX host. Decide Jul 29 or 30 checkout based on flights.',
-    accommodation: 'HomeExchange (BOOKED ✅ — extending)',
-    alert: 'Galway Arts Festival Jul 13–26. Arriving Jul 24 = last 2 days.'
+    status: 'booked', color: 'bg-orange-50 border-orange-200', dotColor: 'bg-orange-500', who: 'Core family (HX)',
+    details: 'HomeExchange outside Galway. Arriving Jul 24 = last 2 days of Galway Arts Festival. Aran Islands, Cliffs of Moher, Connemara all within reach.',
+    highlights: ['Galway Arts Festival (Jul 24–26)', 'Aran Islands ferry', 'Cliffs of Moher', 'Connemara', 'Wild Atlantic Way'],
+    action: 'BOOKED ✅ Confirm checkout date with host (Jul 29 or 30).',
+    accommodation: 'HomeExchange — BOOKED ✅',
+    alert: 'Galway Arts Festival runs Jul 13–26. Arriving Jul 24 = final 2 days.'
   },
   {
     id: 'kilkenny', name: 'Kilkenny', emoji: '🏰', nights: 2, dates: 'Jul 30–Aug 1',
     status: 'open', color: 'bg-purple-50 border-purple-200', dotColor: 'bg-purple-500', who: 'Core family',
-    details: "Medieval city on the way back to Dublin — 2.5 hrs from Galway, 1.5 hrs from Dublin airport. Kilkenny Castle, the Marble City, great pubs and food. Perfect final Ireland stop before flying home. Dates flex based on Galway checkout and flight costs.",
-    highlights: ["Kilkenny Castle", "Medieval mile walk", "Smithwick's brewery", "Marble City pubs", "St Canice's Cathedral"],
-    action: 'Research B&Bs or small hotels in Kilkenny city. Check flight costs from Dublin Aug 1–3.',
+    details: "Medieval city on the way back to Dublin — 2.5 hrs from Galway, 1.5 hrs from Dublin airport. Kilkenny Castle, the Marble City, great pubs. Perfect final Ireland stop.",
+    highlights: ["Kilkenny Castle", "Medieval mile walk", "Smithwick's brewery", "Marble City pubs"],
+    action: 'Research B&Bs or small hotels in Kilkenny city centre for Jul 30–Aug 1.',
     accommodation: 'B&B or hotel — open',
   },
 ]
@@ -182,36 +187,32 @@ const STATUS_BADGE: Record<string, { label: string; color: string }> = {
 }
 
 const OPEN_ITEMS = [
+  { urgent: true,  text: 'Glasgow HX — confirm Jun 30–Jul 11 (replacing East Lothian)',
+    url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
   { urgent: true,  text: 'Dublin HX — confirm Jul 16–20 with host',
     url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
-  { urgent: true,  text: 'East Lothian HX — confirm Jun 30–Jul 11 and book',
-    url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
-  { urgent: true,  text: "Isle of Skye — check Paige's saved Airbnb Jul 11–12. Book ASAP.",
-    url: 'https://www.airbnb.com/wishlists', label: 'Airbnb Wishlists' },
-  { urgent: true,  text: 'Eagle Brae Cabins — Aquila cabin Jul 13–15. Book directly.',
-    url: 'https://eaglebrae.co.uk/our-cabins/aquila/', label: 'Eagle Brae ↗' },
-  { urgent: true,  text: 'Edinburgh airport hotel — 1 night Jul 15 (early Dublin flight)',
-    url: 'https://www.booking.com/searchresults.html?ss=Edinburgh+Airport&checkin=2026-07-15&checkout=2026-07-16&group_adults=4', label: 'Booking.com' },
-  { urgent: false, text: 'Kilkenny B&B / hotel — ~Jul 30–Aug 1, medieval city center',
+  { urgent: true,  text: 'Flights INV → DUB — Jul 16, Aer Lingus direct. Use Chase UR → AerClub Avios.',
+    url: 'https://www.aerlingus.com/flight-information/routes/inverness-to-dublin/', label: 'Aer Lingus ↗' },
+  { urgent: true,  text: 'Flights SAN → KEF — Jun 27 departure. Family of 4.',
+    url: 'https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTA2LTI3ag0IAxIJL20vMDZ0d3RyDAgDEggvbS8wMWVmeA', label: 'Google Flights' },
+  { urgent: true,  text: 'Flights KEF → GLA — Jun 30. Connect from Iceland to Glasgow.',
+    url: 'https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTA2LTMwag0IAxIJL20vMDFleHhyDAgDEggvbS8wMWhiNA', label: 'Google Flights' },
+  { urgent: false, text: '⚠️ Eagle Brae balance — £1,161.20 due May 4, 2026',
+    url: 'https://eaglebrae.co.uk', label: 'Eagle Brae ↗' },
+  { urgent: false, text: 'Kilkenny B&B / hotel — ~Jul 30–Aug 1, medieval city centre',
     url: 'https://www.booking.com/searchresults.html?ss=Kilkenny+City+Centre&checkin=2026-07-30&checkout=2026-08-01&group_adults=4', label: 'Booking.com' },
-  { urgent: false, text: 'Return flights — Dublin → SAN, Aug 1–3 window. Chase points. Compare DUB vs SNN.',
-    url: 'https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTA4LTAxag0IAxIJL20vMDFueGVzcgwIAxIIL20vMDFob3MaHhIKMjAyNi0wOC0wMWoMCAMSCC9tLzAxaG9zcg0IAxIJL20vMDFueGVz', label: 'Google Flights' },
-  { urgent: false, text: 'Galway: confirm HX host for extension Jul 29–30 checkout',
-    url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
-  { urgent: false, text: 'Parents Galway hotel — Salthill (pool) or Parkhouse (ferry). Book near Galway HX.',
-    url: 'https://www.booking.com/searchresults.html?ss=Salthill+Galway&checkin=2026-07-24&checkout=2026-07-28&group_adults=2', label: 'Booking.com' },
-  { urgent: false, text: "Iceland — text Kyle's friend. Check HomeExchange credits for Reykjavik.",
-    url: 'https://www.homeexchange.com/s#?b_map=false&q=Reykjavik', label: 'HX Reykjavik' },
-  { urgent: false, text: 'Flights SAN → KEF → EDI — Chase Ultimate Rewards, late June',
-    url: 'https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTA2LTI4ag0IAxIJL20vMDZ0d3RyDAgDEggvbS8wMWVmeA', label: 'Google Flights' },
-  { urgent: false, text: 'Edinburgh → Dublin flight Jul 16 morning (return Scotland car first)',
-    url: 'https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTA3LTE2ag0IAxIJL20vMDJtNzJyDAgDEggvbS8wMXl3Zg', label: 'Google Flights' },
-  { urgent: false, text: 'Ireland car rental — Athlone pickup Jul 24, Dublin airport return Aug 1',
-    url: 'https://www.rentalcars.com/en/country/ie/?affiliateCode=google&preflang=en&dateFrom=2026-07-24&dateTo=2026-08-01', label: 'RentalCars.com' },
-  { urgent: false, text: 'Meta activities Jul 7–9 near East Lothian (under-7, not age-gated)',
-    url: 'https://www.visitscotland.com/see-do/activities/family/', label: 'VisitScotland' },
-  { urgent: false, text: 'Johnsfort questionnaire — answer when it arrives to shape the farm itinerary',
+  { urgent: false, text: 'Return flights DUB → SAN — Aug 1 window. Chase Ultimate Rewards.',
+    url: 'https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTA4LTAxag0IAxIJL20vMDFueGVzcgwIAxIIL20vMDFob3M', label: 'Google Flights' },
+  { urgent: false, text: 'Scotland car rental — Glasgow Airport pickup Jun 30, Inverness drop-off Jul 15',
+    url: 'https://www.rentalcars.com/', label: 'RentalCars.com' },
+  { urgent: false, text: 'Ireland car rental — Dublin Airport pickup Jul 16, return Aug 1',
+    url: 'https://www.rentalcars.com/', label: 'RentalCars.com' },
+  { urgent: false, text: 'Johnsfort questionnaire — answer when it arrives',
     url: 'https://johnsfort.ie', label: 'johnsfort.ie' },
+  { urgent: false, text: 'Galway HX — confirm checkout date with host (Jul 29 or 30)',
+    url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
+  { urgent: false, text: 'Paige Glasgow → Athens flight — Jul 7 (Claudia\'s 40th, returns Jul 10)',
+    url: 'https://www.google.com/travel/flights', label: 'Google Flights' },
 ]
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -220,9 +221,9 @@ export default function TripPage() {
   const [activeStop, setActiveStop] = useState<string | null>(null)
   const [view, setView] = useState<'calendar' | 'route' | 'open'>('calendar')
 
-  const totalNights = DAYS.length - 1
   const bookedStops = STOPS.filter(s => s.status === 'booked').length
   const urgentCount = OPEN_ITEMS.filter(i => i.urgent).length
+  const totalNights = DAYS.length - 1
 
   return (
     <div className="min-h-screen bg-paper py-8">
@@ -232,18 +233,18 @@ export default function TripPage() {
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-2xl">🗺️</span>
-            <h1 className="font-display text-2xl text-midnight">Scotland & Ireland — July 2026</h1>
+            <h1 className="font-display text-2xl text-midnight">Iceland · Scotland · Ireland — 2026</h1>
           </div>
-          <p className="text-midnight/50 text-sm">Kyle · Paige · Bohdi · Meta · Paige's parents · johnsfort.ie booked ✅</p>
+          <p className="text-midnight/50 text-sm">Kyle · Paige · Bohdi · Meta · Jun 27 → Aug 2</p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-2">
           {[
             { label: 'Countries', value: '3', sub: 'Iceland · Scotland · Ireland' },
-            { label: '~Nights', value: `${totalNights}`, sub: `${bookedStops} stops confirmed` },
-            { label: 'Johnsfort', value: '€4,500', sub: 'Deposit paid ✅' },
-            { label: 'Urgent', value: `${urgentCount} items`, sub: 'Still to book' },
+            { label: 'Nights', value: `${totalNights}`, sub: 'Jun 27 → Aug 2' },
+            { label: 'Confirmed', value: `${bookedStops}/${STOPS.length}`, sub: 'stops booked' },
+            { label: 'Open', value: `${urgentCount} urgent`, sub: 'items remaining' },
           ].map(s => (
             <div key={s.label} className="bg-cream rounded-2xl p-3 border border-midnight/8">
               <div className="font-display text-base text-midnight">{s.value}</div>
@@ -251,6 +252,25 @@ export default function TripPage() {
               <div className="text-xs text-midnight/30 mt-0.5 leading-tight">{s.sub}</div>
             </div>
           ))}
+        </div>
+
+        {/* Booking status legend */}
+        <div className="bg-cream rounded-2xl border border-midnight/8 p-4">
+          <div className="text-xs font-semibold text-midnight/50 uppercase tracking-wide mb-3">Accommodation status</div>
+          <div className="space-y-2">
+            {STOPS.map(stop => (
+              <div key={stop.id} className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${stop.dotColor}`} />
+                  <span className="text-sm text-midnight/80">{stop.emoji} {stop.name}</span>
+                  <span className="text-xs text-midnight/40">{stop.dates}</span>
+                </div>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${STATUS_BADGE[stop.status].color}`}>
+                  {STATUS_BADGE[stop.status].label}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* View toggle */}
@@ -268,7 +288,6 @@ export default function TripPage() {
         {/* ── CALENDAR — every night ── */}
         {view === 'calendar' && (
           <div className="space-y-1">
-            {/* Legend */}
             <div className="flex flex-wrap gap-1.5 pb-2">
               {(Object.entries(DAY_STYLES) as [DayType, typeof DAY_STYLES[DayType]][]).map(([type, style]) => (
                 <span key={type} className={`text-xs px-2 py-0.5 rounded-md flex items-center gap-1 ${style.bg} ${style.text}`}>
@@ -281,32 +300,24 @@ export default function TripPage() {
               const style = DAY_STYLES[day.type]
               return (
                 <div key={i} className={`flex items-start gap-2 rounded-xl px-3 py-2 border ${
-                  day.paigeAway ? 'border-red-200 bg-red-50' : `border-midnight/8 bg-cream`
+                  day.paigeAway ? 'border-red-200 bg-red-50' : 'border-midnight/8 bg-cream'
                 }`}>
-                  {/* Date */}
                   <div className="w-12 flex-shrink-0 pt-0.5">
                     <div className="text-xs font-bold text-midnight/40">{day.date}</div>
                   </div>
-
-                  {/* Type badge */}
                   <div className={`flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-md flex-shrink-0 mt-0.5 ${style.bg} ${style.text}`}>
                     {style.icon}
                   </div>
-
-                  {/* Activity + sleep */}
                   <div className="flex-1 min-w-0">
                     <div className={`text-sm font-medium leading-snug ${day.paigeAway ? 'text-red-800' : 'text-midnight'}`}>
                       {day.label}
                     </div>
-                    {/* Sleep location */}
                     <div className="flex items-center gap-1 mt-0.5">
                       <Moon size={9} className="text-midnight/30 flex-shrink-0" />
                       <span className="text-xs text-midnight/45">{day.sleepIcon} {day.sleep}</span>
                     </div>
                     {day.note && <div className="text-xs text-midnight/40 mt-0.5 italic">{day.note}</div>}
                   </div>
-
-                  {/* Flags */}
                   <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
                     {day.paigeAway && <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md">Solo</span>}
                     {day.booked && <CheckCircle size={12} className="text-green-500" />}
@@ -374,7 +385,7 @@ export default function TripPage() {
               <div className="w-3 h-3 rounded-full bg-midnight/20 flex-shrink-0" />
               <div>
                 <div className="font-display text-base text-midnight">🏠 San Diego</div>
-                <div className="text-xs text-midnight/45">Aug 1–2 · Chase Ultimate Rewards · Dublin airport</div>
+                <div className="text-xs text-midnight/45">Aug 1–2 · DUB → SAN · Chase Ultimate Rewards</div>
               </div>
             </div>
           </div>
@@ -395,12 +406,8 @@ export default function TripPage() {
                       <span className="text-sm text-red-800 leading-snug">{item.text}</span>
                     </div>
                     {item.url && (
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 text-xs font-medium bg-red-600 text-white px-2.5 py-1 rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap flex items-center gap-1"
-                      >
+                      <a href={item.url} target="_blank" rel="noopener noreferrer"
+                        className="flex-shrink-0 text-xs font-medium bg-red-600 text-white px-2.5 py-1 rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap flex items-center gap-1">
                         {item.label} <ExternalLink size={10} />
                       </a>
                     )}
@@ -420,12 +427,8 @@ export default function TripPage() {
                       <span className="text-sm text-amber-800 leading-snug">{item.text}</span>
                     </div>
                     {item.url && (
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 text-xs font-medium bg-amber-600 text-white px-2.5 py-1 rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap flex items-center gap-1"
-                      >
+                      <a href={item.url} target="_blank" rel="noopener noreferrer"
+                        className="flex-shrink-0 text-xs font-medium bg-amber-600 text-white px-2.5 py-1 rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap flex items-center gap-1">
                         {item.label} <ExternalLink size={10} />
                       </a>
                     )}
