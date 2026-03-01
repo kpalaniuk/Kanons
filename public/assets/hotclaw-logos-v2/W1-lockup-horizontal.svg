@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120">
+  <rect width="520" height="120" fill="#0a0a0a"/>
+  <!-- Symbol: three slashes scaled down -->
+  <g transform="translate(10,10) scale(0.5)">
+    <polygon points="54,162 68,162 116,38 102,38" fill="#fbbf24"/>
+    <polygon points="82,162 96,162 144,38 130,38" fill="#fbbf24" opacity="0.82"/>
+    <polygon points="110,162 124,162 172,38 158,38" fill="#fbbf24" opacity="0.6"/>
+    <polygon points="102,38 116,38 109,26" fill="#fff7ed"/>
+    <polygon points="130,38 144,38 137,26" fill="#fff7ed" opacity="0.85"/>
+    <polygon points="158,38 172,38 165,26" fill="#fff7ed" opacity="0.65"/>
+  </g>
+  <!-- HOTCLAW wordmark -->
+  <text x="116" y="82" font-family="'Arial Black','Impact','Helvetica Neue',sans-serif"
+        font-size="58" font-weight="900" letter-spacing="-1" fill="#f8f7f4">HOTCLAW</text>
+  <!-- Subtle amber underline accent -->
+  <rect x="116" y="93" width="392" height="3" rx="1.5" fill="#fbbf24" opacity="0.35"/>
+</svg>

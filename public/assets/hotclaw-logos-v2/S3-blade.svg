@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0a0a0a" rx="32"/>
+  <defs>
+    <linearGradient id="blade" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#fef3c7"/>
+    </linearGradient>
+  </defs>
+  <!-- Single claw blade: starts sharp at top-right, fans to base at bottom-left -->
+  <polygon points="136,28 152,44 80,172 48,158" fill="url(#blade)"/>
+  <!-- Highlight edge -->
+  <line x1="136" y1="28" x2="152" y2="44" stroke="#fff7ed" stroke-width="1.5" opacity="0.8"/>
+</svg>

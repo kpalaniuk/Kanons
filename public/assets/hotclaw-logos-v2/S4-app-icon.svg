@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- App icon container with subtle gradient -->
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141414"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#bg)" rx="44"/>
+  <rect x="2" y="2" width="196" height="196" fill="none" stroke="rgba(251,191,36,0.12)" stroke-width="1.5" rx="43"/>
+  <!-- H letterform — clean, heavy weight -->
+  <rect x="38" y="52" width="20" height="96" rx="5" fill="#f8f7f4"/>
+  <rect x="90" y="52" width="20" height="96" rx="5" fill="#f8f7f4"/>
+  <!-- H crossbar — replaced by claw slash geometry -->
+  <polygon points="58,108 90,82 110,82 78,108" fill="#f8f7f4"/>
+  <!-- Amber claw slash — cuts across the whole mark -->
+  <polygon points="62,52 78,52 148,148 132,148" fill="#fbbf24"/>
+  <!-- Sharp tip -->
+  <polygon points="140,148 148,148 148,140" fill="#fef3c7"/>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120">
+  <rect width="520" height="120" fill="#0a0a0a"/>
+  <!-- HOTCLAW in clean heavy weight -->
+  <text x="20" y="82" font-family="'Arial Black','Impact','Helvetica Neue',sans-serif"
+        font-size="62" font-weight="900" letter-spacing="-2" fill="#f8f7f4">HOTCLAW</text>
+  <!-- Amber diagonal slash overlaying the T crossbar zone through to L -->
+  <polygon points="138,18 152,18 290,102 276,102" fill="#fbbf24" opacity="0.92"/>
+  <!-- Sharp claw tip -->
+  <polygon points="282,102 290,102 290,94" fill="#fef3c7"/>
+  <!-- Secondary micro slash (echo) -->
+  <polygon points="108,18 116,18 254,102 246,102" fill="#fbbf24" opacity="0.25"/>
+</svg>
