@@ -86,6 +86,21 @@ function calcMusicStreak(sessions: MusicSession[]): number {
   return streak
 }
 
+// ── Sunday Weekly Review ──────────────────────────────────────────────────────
+
+const WEEKLY_REVIEW_PROMPTS = [
+  { area: 'Work & Business', icon: '💼', q: 'What moved the needle this week? What stalled?' },
+  { area: 'Music & Creative', icon: '🎵', q: 'Did you play? What creative energy needs attention?' },
+  { area: 'Family & Home', icon: '🏡', q: 'How present were you with Paige, Bohdi, and Meta?' },
+  { area: 'Health & Body', icon: '💪', q: 'How did your body feel? Sleep, movement, food?' },
+  { area: 'Relationships', icon: '🤝', q: 'Who showed up for you this week? Who needs a check-in?' },
+  { area: 'Finance', icon: '💰', q: 'Anything slipping on the money side? Decisions pending?' },
+]
+
+function isSunday(): boolean {
+  return new Date().getDay() === 0
+}
+
 function getDailyGratitudePrompt(): string {
   const now = new Date()
   const start = new Date(now.getFullYear(), 0, 0)
@@ -137,7 +152,7 @@ function getDayContext(): { greeting: string; dayNote: string; isCoachingDay: bo
     4: 'FC Balboa coaching — home by 3:30pm',
     5: 'TGIF. Wrap the week strong.',
     6: 'Weekend. Recharge.',
-    0: 'Sunday. Weekly review tonight?',
+    0: 'Sunday. Weekly review is below ↓',
   }
 
   return {
@@ -193,6 +208,10 @@ export default function MorningBriefPage() {
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
   const [musicStreak, setMusicStreak] = useState<number>(0)
+  const [reviewOpen, setReviewOpen] = useState(false)
+  const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({})
+  const [topThree, setTopThree] = useState('')
+  const sunday = isSunday()
 
   const { greeting, dayNote, isCoachingDay } = getDayContext()
   const trip = getTripCountdown()
@@ -343,6 +362,77 @@ export default function MorningBriefPage() {
           </Link>
         </div>
       </div>
+
+      {/* ── Sunday Weekly Review ── */}
+      {sunday && (
+        <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl border border-indigo-100 overflow-hidden">
+          <button
+            onClick={() => setReviewOpen(o => !o)}
+            className="w-full flex items-center justify-between p-6 text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-base">📋</div>
+              <div>
+                <h2 className="font-display text-lg text-midnight">Sunday Weekly Review</h2>
+                <p className="text-xs text-midnight/40 mt-0.5">15 minutes. Reflect, reset, set the week.</p>
+              </div>
+            </div>
+            <div className={`text-midnight/30 transition-transform duration-200 ${reviewOpen ? 'rotate-180' : ''}`}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 10.5L2.5 5h11L8 10.5z"/>
+              </svg>
+            </div>
+          </button>
+
+          {reviewOpen && (
+            <div className="px-6 pb-6 space-y-5">
+              <div className="border-t border-indigo-100 pt-5">
+                <p className="text-xs font-semibold text-indigo-500 uppercase tracking-wide mb-4">Life Area Check-In</p>
+                <div className="space-y-4">
+                  {WEEKLY_REVIEW_PROMPTS.map((prompt) => (
+                    <div key={prompt.area}>
+                      <label className="block text-sm font-medium text-midnight mb-1">
+                        {prompt.icon} {prompt.area}
+                        <span className="block text-xs font-normal text-midnight/40 mt-0.5">{prompt.q}</span>
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder="Quick note…"
+                        value={reviewNotes[prompt.area] || ''}
+                        onChange={(e) => setReviewNotes(n => ({ ...n, [prompt.area]: e.target.value }))}
+                        className="w-full text-sm bg-white/80 border border-indigo-100 rounded-xl px-3 py-2 text-midnight placeholder-midnight/20 resize-none focus:outline-none focus:border-indigo-300"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-indigo-100 pt-5">
+                <label className="block text-sm font-semibold text-midnight mb-1">
+                  🎯 Top 3 priorities for this week
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="1. &#10;2. &#10;3."
+                  value={topThree}
+                  onChange={(e) => setTopThree(e.target.value)}
+                  className="w-full text-sm bg-white/80 border border-indigo-100 rounded-xl px-3 py-2 text-midnight placeholder-midnight/20 resize-none focus:outline-none focus:border-indigo-300"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <p className="text-xs text-midnight/30">Notes stay local — refresh clears them.</p>
+                <Link
+                  href="/workshop/personal/tasks"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:underline"
+                >
+                  Open Task Board <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Overdue Alert ── */}
       {overdueTasks.length > 0 && (
