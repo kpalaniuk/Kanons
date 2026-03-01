@@ -363,6 +363,32 @@ export default function MorningBriefPage() {
         </div>
       </div>
 
+      {/* ── Scotland/Ireland Trip — Open Bookings Alert ── */}
+      {trip.days > 0 && trip.days < 200 && (
+        <Link
+          href="/workshop/personal/trip-july-2026"
+          className="block bg-gradient-to-r from-sky-50 to-indigo-50 rounded-2xl p-5 border border-sky-200 hover:border-sky-400 transition-colors group"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <span className="text-xl shrink-0">🏴󠁧󠁢󠁳󠁣󠁴󠁿</span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-midnight">Scotland &amp; Ireland — 5 urgent bookings open</p>
+                  <span className="text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">!</span>
+                </div>
+                <p className="text-xs text-midnight/45 mt-0.5">
+                  Eagle Brae · Skye Airbnb · East Lothian HX · Dublin HX · Edinburgh hotel
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-xs font-medium text-sky-600 group-hover:text-sky-800 transition-colors shrink-0">
+              Book now <ArrowRight className="w-3 h-3" />
+            </div>
+          </div>
+        </Link>
+      )}
+
       {/* ── Sunday Weekly Review ── */}
       {sunday && (
         <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl border border-indigo-100 overflow-hidden">
