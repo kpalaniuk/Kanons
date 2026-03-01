@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="fav" x1="70%" y1="5%" x2="30%" y2="95%">
+      <stop offset="0%"   stop-color="#fef08a"/>
+      <stop offset="30%"  stop-color="#fbbf24"/>
+      <stop offset="70%"  stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#7c2d12"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" fill="#0f0a06" rx="7"/>
+  <!-- Single bold forge slash — readable at 16px -->
+  <polygon points="7,28 13,28 25,4 19,4" fill="url(#fav)"/>
+  <!-- Hot tip -->
+  <polygon points="19,4 25,4 22,0" fill="#fef9f0" opacity="0.9"/>
+</svg>

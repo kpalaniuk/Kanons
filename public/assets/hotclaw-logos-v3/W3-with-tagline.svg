@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 140">
+  <defs>
+    <linearGradient id="htg3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <linearGradient id="sym3" x1="70%" y1="5%" x2="30%" y2="95%">
+      <stop offset="0%"   stop-color="#fffbeb"/>
+      <stop offset="25%"  stop-color="#fbbf24"/>
+      <stop offset="65%"  stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#7c2d12"/>
+    </linearGradient>
+    <filter id="sg3" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="580" height="140" fill="#0f0a06"/>
+  <!-- Symbol -->
+  <g transform="translate(8,10) scale(0.54)">
+    <polygon points="52,172 80,172 152,28 124,28" fill="url(#sym3)" filter="url(#sg3)"/>
+    <polygon points="124,28 152,28 138,12" fill="#fffbeb" filter="url(#sg3)"/>
+  </g>
+  <!-- HOTCLAW -->
+  <text x="90" y="82"
+        font-family="'Arial Black','Impact','Helvetica Neue',sans-serif"
+        font-size="66" font-weight="900" letter-spacing="-2" fill="url(#htg3)">HOT</text>
+  <text x="286" y="82"
+        font-family="'Arial Black','Impact','Helvetica Neue',sans-serif"
+        font-size="66" font-weight="900" letter-spacing="-2" fill="#fef9f0">CLAW</text>
+  <!-- Divider line -->
+  <rect x="90" y="97" width="472" height="1.5" fill="rgba(251,191,36,0.2)" rx="1"/>
+  <!-- Tagline -->
+  <text x="92" y="118"
+        font-family="'Arial','Helvetica Neue',sans-serif"
+        font-size="13" font-weight="400" letter-spacing="3.5" fill="rgba(254,249,240,0.45)">AI AGENTS. BUILT HOT. SHIPPED FAST.</text>
+</svg>

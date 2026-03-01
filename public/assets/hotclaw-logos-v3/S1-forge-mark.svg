@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="forge" x1="80%" y1="10%" x2="20%" y2="90%">
+      <stop offset="0%"   stop-color="#fffbeb"/>
+      <stop offset="15%"  stop-color="#fef08a"/>
+      <stop offset="35%"  stop-color="#fbbf24"/>
+      <stop offset="60%"  stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#7c2d12"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="200" height="200" fill="#0f0a06" rx="36"/>
+  <!-- Main forge slash — thick, bold, hot -->
+  <polygon points="58,168 82,168 148,32 124,32" fill="url(#forge)" filter="url(#glow)"/>
+  <!-- Sharp white-hot claw tip -->
+  <polygon points="124,32 148,32 136,16" fill="#fffbeb" filter="url(#glow)"/>
+  <!-- Heat glow halo around tip -->
+  <ellipse cx="136" cy="22" rx="14" ry="10" fill="#fef08a" opacity="0.2" filter="url(#glow)"/>
+</svg>

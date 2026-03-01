@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a0e06"/>
+      <stop offset="100%" stop-color="#0f0a06"/>
+    </linearGradient>
+    <linearGradient id="slash4" x1="75%" y1="5%" x2="25%" y2="95%">
+      <stop offset="0%"   stop-color="#fffbeb"/>
+      <stop offset="18%"  stop-color="#fef08a"/>
+      <stop offset="40%"  stop-color="#fbbf24"/>
+      <stop offset="70%"  stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#7c2d12"/>
+    </linearGradient>
+    <filter id="glow4" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="200" height="200" fill="url(#bg4)" rx="44"/>
+  <!-- Subtle warm border -->
+  <rect x="1.5" y="1.5" width="197" height="197" fill="none"
+        stroke="rgba(251,191,36,0.18)" stroke-width="1.5" rx="43"/>
+  <!-- Bold forge slash filling the icon -->
+  <polygon points="52,172 80,172 152,28 124,28" fill="url(#slash4)" filter="url(#glow4)"/>
+  <!-- Hot tip -->
+  <polygon points="124,28 152,28 138,12" fill="#fffbeb" filter="url(#glow4)"/>
+  <!-- Ambient heat glow at tip -->
+  <ellipse cx="138" cy="18" rx="20" ry="14" fill="#fef08a" opacity="0.18"/>
+</svg>

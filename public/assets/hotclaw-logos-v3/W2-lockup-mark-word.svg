@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 120">
+  <defs>
+    <linearGradient id="sym2" x1="70%" y1="5%" x2="30%" y2="95%">
+      <stop offset="0%"   stop-color="#fffbeb"/>
+      <stop offset="20%"  stop-color="#fbbf24"/>
+      <stop offset="65%"  stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#7c2d12"/>
+    </linearGradient>
+    <linearGradient id="hotg2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <filter id="sg2" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="580" height="120" fill="#0f0a06"/>
+  <!-- Symbol: single forge slash scaled -->
+  <g transform="translate(8,6) scale(0.54)">
+    <polygon points="52,172 80,172 152,28 124,28" fill="url(#sym2)" filter="url(#sg2)"/>
+    <polygon points="124,28 152,28 138,12" fill="#fffbeb" filter="url(#sg2)"/>
+  </g>
+  <!-- HOTCLAW word with split -->
+  <text x="90" y="87"
+        font-family="'Arial Black','Impact','Helvetica Neue',sans-serif"
+        font-size="70" font-weight="900" letter-spacing="-2.5" fill="url(#hotg2)">HOT</text>
+  <text x="296" y="87"
+        font-family="'Arial Black','Impact','Helvetica Neue',sans-serif"
+        font-size="70" font-weight="900" letter-spacing="-2.5" fill="#fef9f0">CLAW</text>
+  <!-- Thin separator line -->
+  <line x1="288" y1="22" x2="292" y2="98" stroke="rgba(251,191,36,0.3)" stroke-width="1.5"/>
+</svg>

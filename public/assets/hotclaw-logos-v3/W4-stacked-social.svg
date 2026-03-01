@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 340">
+  <defs>
+    <linearGradient id="sbg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a0e06"/>
+      <stop offset="100%" stop-color="#0f0a06"/>
+    </linearGradient>
+    <linearGradient id="ssym" x1="70%" y1="5%" x2="30%" y2="95%">
+      <stop offset="0%"   stop-color="#fffbeb"/>
+      <stop offset="20%"  stop-color="#fef08a"/>
+      <stop offset="45%"  stop-color="#fbbf24"/>
+      <stop offset="75%"  stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#7c2d12"/>
+    </linearGradient>
+    <linearGradient id="shot" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <filter id="ssg" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="340" height="340" fill="url(#sbg)"/>
+  <!-- Symbol centered top -->
+  <g transform="translate(70,20) scale(1.0)">
+    <polygon points="52,172 80,172 152,28 124,28" fill="url(#ssym)" filter="url(#ssg)"/>
+    <polygon points="124,28 152,28 138,12" fill="#fffbeb" filter="url(#ssg)"/>
+    <ellipse cx="138" cy="18" rx="18" ry="12" fill="#fef08a" opacity="0.2"/>
+  </g>
+  <!-- HOT -->
+  <text x="170" y="270"
+        font-family="'Arial Black','Impact','Helvetica Neue',sans-serif"
+        font-size="56" font-weight="900" letter-spacing="-1.5" fill="url(#shot)"
+        text-anchor="middle">HOT</text>
+  <!-- CLAW -->
+  <text x="170" y="318"
+        font-family="'Arial Black','Impact','Helvetica Neue',sans-serif"
+        font-size="56" font-weight="900" letter-spacing="-1.5" fill="#fef9f0"
+        text-anchor="middle">CLAW</text>
+  <!-- Divider -->
+  <rect x="60" y="278" width="220" height="1.5" fill="rgba(251,191,36,0.25)" rx="1"/>
+</svg>

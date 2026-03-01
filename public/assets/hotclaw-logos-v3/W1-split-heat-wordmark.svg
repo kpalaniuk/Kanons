@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 120">
+  <defs>
+    <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f0a06"/>
+      <stop offset="100%" stop-color="#0f0a06"/>
+    </linearGradient>
+    <linearGradient id="hotgrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <linearGradient id="slashg" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%"   stop-color="#fffbeb"/>
+      <stop offset="30%"  stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <filter id="tipglow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="560" height="120" fill="#0f0a06"/>
+  <!-- HOT in lava-to-amber gradient -->
+  <text x="18" y="88"
+        font-family="'Arial Black','Impact','Helvetica Neue',sans-serif"
+        font-size="72" font-weight="900" letter-spacing="-3" fill="url(#hotgrad)">HOT</text>
+  <!-- Forge slash separator — white-hot to lava -->
+  <polygon points="220,14 232,14 268,106 256,106" fill="url(#slashg)" filter="url(#tipglow)"/>
+  <polygon points="220,14 232,14 226,4" fill="#fffbeb" filter="url(#tipglow)"/>
+  <!-- CLAW in cream -->
+  <text x="272" y="88"
+        font-family="'Arial Black','Impact','Helvetica Neue',sans-serif"
+        font-size="72" font-weight="900" letter-spacing="-3" fill="#fef9f0">CLAW</text>
+</svg>
