@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0a0a0a"/>
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Main claw slash -->
+  <polygon points="62,165 78,165 138,35 122,35" fill="#fbbf24" filter="url(#glow)"/>
+  <!-- Sharp tip -->
+  <polygon points="122,35 138,35 130,22" fill="#fff7ed"/>
+  <!-- Circuit traces branching off -->
+  <line x1="90" y1="130" x2="60" y2="130" stroke="#fbbf24" stroke-width="2" opacity="0.5"/>
+  <line x1="60" y1="130" x2="60" y2="150" stroke="#fbbf24" stroke-width="2" opacity="0.5"/>
+  <circle cx="60" cy="150" r="4" fill="#fbbf24" opacity="0.7"/>
+  <line x1="105" y1="100" x2="148" y2="100" stroke="#fbbf24" stroke-width="2" opacity="0.5"/>
+  <line x1="148" y1="100" x2="148" y2="80" stroke="#fbbf24" stroke-width="2" opacity="0.5"/>
+  <circle cx="148" cy="80" r="4" fill="#fbbf24" opacity="0.7"/>
+  <line x1="82" y1="148" x2="50" y2="165" stroke="#fbbf24" stroke-width="1.5" opacity="0.3"/>
+  <circle cx="50" cy="165" r="3" fill="#fbbf24" opacity="0.4"/>
+  <line x1="118" y1="53" x2="155" y2="35" stroke="#fbbf24" stroke-width="1.5" opacity="0.3"/>
+  <circle cx="155" cy="35" r="3" fill="#fbbf24" opacity="0.4"/>
+</svg>

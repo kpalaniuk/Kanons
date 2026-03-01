@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0a0a0a"/>
+  <defs>
+    <filter id="glow2">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Main pad — hexagonal circuit node -->
+  <polygon points="100,120 120,108 120,88 100,76 80,88 80,108" fill="none" stroke="#fbbf24" stroke-width="3" filter="url(#glow2)"/>
+  <polygon points="100,113 114,105 114,91 100,83 86,91 86,105" fill="#fbbf24" opacity="0.15"/>
+  <circle cx="100" cy="98" r="8" fill="#fbbf24"/>
+  <!-- Toe nodes -->
+  <polygon points="68,68 80,60 80,46 68,38 56,46 56,60" fill="none" stroke="#fbbf24" stroke-width="2" opacity="0.8" filter="url(#glow2)"/>
+  <circle cx="68" cy="53" r="5" fill="#fbbf24" opacity="0.8"/>
+  <polygon points="100,58 112,50 112,36 100,28 88,36 88,50" fill="none" stroke="#fbbf24" stroke-width="2" opacity="0.9" filter="url(#glow2)"/>
+  <circle cx="100" cy="43" r="5" fill="#fbbf24"/>
+  <polygon points="132,68 144,60 144,46 132,38 120,46 120,60" fill="none" stroke="#fbbf24" stroke-width="2" opacity="0.8" filter="url(#glow2)"/>
+  <circle cx="132" cy="53" r="5" fill="#fbbf24" opacity="0.8"/>
+  <!-- Connecting traces -->
+  <line x1="80" y1="60" x2="86" y2="88" stroke="#fbbf24" stroke-width="1.5" opacity="0.5"/>
+  <line x1="100" y1="58" x2="100" y2="76" stroke="#fbbf24" stroke-width="1.5" opacity="0.6"/>
+  <line x1="120" y1="60" x2="114" y2="88" stroke="#fbbf24" stroke-width="1.5" opacity="0.5"/>
+  <!-- Bottom traces -->
+  <line x1="100" y1="120" x2="100" y2="155" stroke="#fbbf24" stroke-width="2" opacity="0.4"/>
+  <line x1="100" y1="155" x2="68" y2="168" stroke="#fbbf24" stroke-width="1.5" opacity="0.3"/>
+  <line x1="100" y1="155" x2="132" y2="168" stroke="#fbbf24" stroke-width="1.5" opacity="0.3"/>
+  <circle cx="68" cy="168" r="4" fill="#fbbf24" opacity="0.5"/>
+  <circle cx="132" cy="168" r="4" fill="#fbbf24" opacity="0.5"/>
+</svg>

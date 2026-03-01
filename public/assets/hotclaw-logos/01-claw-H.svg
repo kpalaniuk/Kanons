@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0a0a0a"/>
+  <!-- H shape with claw slash crossbar -->
+  <rect x="52" y="48" width="18" height="104" rx="4" fill="#fbbf24"/>
+  <rect x="130" y="48" width="18" height="104" rx="4" fill="#fbbf24"/>
+  <!-- Claw slash crossbar -->
+  <polygon points="70,115 130,85 136,95 76,125" fill="#fbbf24"/>
+  <polygon points="126,82 138,86 132,92 120,88" fill="#ff8c00"/>
+</svg>

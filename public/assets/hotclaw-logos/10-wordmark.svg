@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120">
+  <rect width="360" height="120" fill="#0a0a0a"/>
+  <!-- HOTCLAW wordmark -->
+  <text x="20" y="80" font-family="Arial Black, Impact, sans-serif" font-size="64" font-weight="900" letter-spacing="-2" fill="#f8f7f4">HOTCLAW</text>
+  <!-- Claw slash overlay on T-L junction area -->
+  <polygon points="148,18 158,10 248,105 238,113" fill="#fbbf24" opacity="0.9"/>
+  <polygon points="238,105 248,105 248,113" fill="#ff8c00"/>
+  <!-- Amber accent line under -->
+  <rect x="20" y="92" width="320" height="3" rx="1.5" fill="#fbbf24" opacity="0.3"/>
+</svg>

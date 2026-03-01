@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0a0a0a"/>
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff8c00"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <!-- Three claw slashes arranged diagonally -->
+  <polygon points="55,155 70,155 115,45 100,45" fill="url(#g1)"/>
+  <polygon points="80,155 92,155 137,45 125,45" fill="url(#g1)" opacity="0.85"/>
+  <polygon points="105,155 114,155 159,45 150,45" fill="url(#g1)" opacity="0.65"/>
+  <!-- Sharp tips -->
+  <polygon points="100,45 115,45 118,38" fill="#fbbf24"/>
+  <polygon points="125,45 137,45 140,38" fill="#fbbf24"/>
+  <polygon points="150,45 159,45 162,38" fill="#fbbf24"/>
+</svg>

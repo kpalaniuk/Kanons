@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0a0a0a"/>
+  <defs>
+    <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff8c00"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <!-- 8-point star: alternating claw tips and rounded points -->
+  <!-- Claw tips at N,E,S,W — blunt at diagonals -->
+  <polygon points="
+    100,18  106,55  120,42  114,68
+    162,55  140,75  165,85  130,95
+    162,100 130,105 158,120 132,112
+    145,158 112,130 108,162 100,135
+    100,182 94,145 80,158 86,130
+    55,145 68,112 42,120 70,105
+    38,100 70,95 35,85 60,75
+    38,55 86,68 80,42 94,55
+  " fill="url(#sg)"/>
+  <!-- Inner circle -->
+  <circle cx="100" cy="100" r="22" fill="#0a0a0a"/>
+  <circle cx="100" cy="100" r="14" fill="#fbbf24" opacity="0.3"/>
+</svg>

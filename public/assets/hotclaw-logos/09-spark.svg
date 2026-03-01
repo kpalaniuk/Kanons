@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0a0a0a"/>
+  <defs>
+    <linearGradient id="spk" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#fff7ed"/>
+      <stop offset="40%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#ff8c00"/>
+    </linearGradient>
+  </defs>
+  <!-- Lightning bolt / claw spark -->
+  <polygon points="112,30 80,100 102,100 88,170 120,95 98,95" fill="url(#spk)"/>
+  <!-- Glow halos -->
+  <circle cx="100" cy="100" r="55" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.12"/>
+  <circle cx="100" cy="100" r="72" fill="none" stroke="#fbbf24" stroke-width="0.5" opacity="0.06"/>
+</svg>

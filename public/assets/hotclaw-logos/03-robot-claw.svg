@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0a0a0a"/>
+  <!-- Robot palm -->
+  <rect x="72" y="100" width="56" height="40" rx="8" fill="#fbbf24"/>
+  <!-- Three fingers with claw tips -->
+  <rect x="78" y="56" width="14" height="50" rx="7" fill="#fbbf24"/>
+  <rect x="93" y="48" width="14" height="58" rx="7" fill="#fbbf24"/>
+  <rect x="108" y="56" width="14" height="50" rx="7" fill="#fbbf24"/>
+  <!-- Sharp claw tips -->
+  <polygon points="78,56 92,56 85,44" fill="#ff8c00"/>
+  <polygon points="93,48 107,48 100,36" fill="#ff8c00"/>
+  <polygon points="108,56 122,56 115,44" fill="#ff8c00"/>
+  <!-- Circuit lines below -->
+  <line x1="100" y1="140" x2="100" y2="162" stroke="#fbbf24" stroke-width="2" opacity="0.4"/>
+  <line x1="100" y1="162" x2="72" y2="162" stroke="#fbbf24" stroke-width="2" opacity="0.4"/>
+  <line x1="100" y1="162" x2="128" y2="162" stroke="#fbbf24" stroke-width="2" opacity="0.4"/>
+  <circle cx="72" cy="162" r="3" fill="#fbbf24" opacity="0.6"/>
+  <circle cx="128" cy="162" r="3" fill="#fbbf24" opacity="0.6"/>
+</svg>

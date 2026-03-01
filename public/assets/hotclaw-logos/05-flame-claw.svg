@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#0a0a0a"/>
+  <defs>
+    <linearGradient id="fg" x1="50%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" stop-color="#ff4500"/>
+      <stop offset="60%" stop-color="#ff8c00"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <!-- Three flames that end in claw points -->
+  <path d="M70,160 Q55,130 60,110 Q65,90 58,75 Q70,95 72,108 Q78,85 82,68 Q90,90 88,115 Q100,82 105,60 Q115,88 110,115 Q114,90 120,78 Q118,102 114,120 Q122,105 130,100 Q125,125 118,140 Q115,155 100,162 Q85,168 70,160Z" fill="url(#fg)"/>
+  <!-- Claw tips at top of flames -->
+  <polygon points="82,68 90,60 95,70" fill="#fff7ed" opacity="0.9"/>
+  <polygon points="105,60 112,50 118,62" fill="#fff7ed" opacity="0.9"/>
+</svg>

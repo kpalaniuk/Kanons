@@ -109,6 +109,9 @@ export default function OperationHotDogPage() {
           <a href="https://hotclaw.ai/admin" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-cream border border-midnight/10 text-midnight rounded-lg text-sm font-medium hover:border-midnight/30 transition-colors">
             <Settings className="w-4 h-4" /> Admin (Intakes)
           </a>
+          <Link href="/workshop/operation-hot-dog/logos" className="inline-flex items-center gap-2 px-4 py-2 bg-cream border border-midnight/10 text-midnight rounded-lg text-sm font-medium hover:border-midnight/30 transition-colors">
+            <Zap className="w-4 h-4" /> Logo Concepts
+          </Link>
         </div>
       </div>
 
