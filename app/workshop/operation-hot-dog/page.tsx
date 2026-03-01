@@ -183,6 +183,9 @@ export default function OperationHotDogPage() {
           <Link href="/workshop/operation-hot-dog/logos" className="inline-flex items-center gap-2 px-4 py-2 bg-cream border border-midnight/10 text-midnight rounded-lg text-sm font-medium hover:border-midnight/30 transition-colors">
             <Zap className="w-4 h-4" /> Logo Concepts V3
           </Link>
+          <Link href="/workshop/operation-hot-dog/setup" className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-bold hover:bg-orange-400 transition-colors">
+            <Settings className="w-4 h-4" /> 🔥 Setup Guide
+          </Link>
         </div>
       </div>
 
