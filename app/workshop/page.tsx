@@ -14,6 +14,7 @@ import {
   Palette,
   Disc,
   NotebookPen,
+  Zap,
 } from 'lucide-react'
 
 const workTools = [
@@ -21,6 +22,7 @@ const workTools = [
   { href: '/workshop/work/tools',             title: 'Tools',           description: 'Scenario builders, DSCR calc, underwriting chat',           icon: Wrench,        color: 'ocean' },
   { href: '/workshop/work/clients',           title: 'Clients',         description: 'Saved scenario pages for individual clients',               icon: Users,         color: 'ocean' },
   { href: '/workshop/work/lo-buddy-character',title: 'LO Buddy Art',    description: 'Character concept gallery — v7 no-armor + archived rounds', icon: Palette,       color: 'ocean' },
+  { href: '/workshop/operation-hot-dog',      title: '🌭 Operation Hot Dog', description: 'Productized AI agent deployment — research, discovery framework, build queue', icon: Zap, color: 'ocean' },
 ]
 
 const personalTools = [
