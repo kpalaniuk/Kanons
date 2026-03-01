@@ -48,7 +48,7 @@ const pphTools = [
 ]
 
 const hotDogTools = [
-  { href: '/workshop/operation-hot-dog',        title: 'Hot Dog HQ',  description: 'Research, discovery framework, build queue',                 icon: Zap },
+  { href: '/workshop/operation-hot-dog',        title: 'Hotclaw HQ',  description: 'hotclaw.ai — AI agent deployment service HQ',               icon: Zap },
   { href: '/workshop/operation-hot-dog/hopper', title: 'Hopper',      description: 'Sprint planning discovery interview for LO Buddy',           icon: Inbox },
 ]
 
@@ -135,7 +135,7 @@ export default function WorkshopPage() {
           <div className="flex items-center gap-3 mb-6">
             <div className="w-1 h-8 bg-amber-400 rounded-full" />
             <span className="text-lg">🌭</span>
-            <h2 className="font-display text-2xl text-midnight">Operation Hot Dog</h2>
+            <h2 className="font-display text-2xl text-midnight">Hotclaw Solutions</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {hotDogTools.map(tool => <SectionCard key={tool.href} tool={tool} color="amber" />)}

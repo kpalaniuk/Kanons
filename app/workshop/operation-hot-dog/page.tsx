@@ -131,7 +131,7 @@ const openQuestions = [
   { done: true, text: 'Business archetypes defined (7 types) ✅' },
   { done: true, text: 'Pricing model drafted (3 tiers) ✅' },
   { done: true, text: 'Competitive landscape mapped ✅' },
-  { done: true, text: 'Intake form deployed at hot-dog-intake.vercel.app ✅' },
+  { done: true, text: 'Intake form deployed (rebranded to Hotclaw Solutions) ✅' },
   { done: true, text: 'Workshop RBAC — Chad gets /operation-hot-dog access ✅' },
 ]
 
@@ -148,7 +148,7 @@ const competitorData = [
   { name: 'xCloud', price: '$24/mo', custom: false, integration: false, support: 'Infra only', target: 'Individuals' },
   { name: 'ClawTank', price: '$19–39/mo', custom: false, integration: false, support: 'None', target: 'Developers' },
   { name: 'AI Agency', price: '$2k+/mo', custom: true, integration: true, support: 'Full', target: 'Enterprise' },
-  { name: '🌭 Hot Dog', price: '$199–599/mo', custom: true, integration: true, support: 'Included', target: 'SMB' },
+  { name: '🌭 Hotclaw', price: '$199–599/mo', custom: true, integration: true, support: 'Included', target: 'SMB' },
 ]
 
 export default function OperationHotDogPage() {
@@ -162,8 +162,8 @@ export default function OperationHotDogPage() {
             <Zap className="w-5 h-5 text-amber-400" />
           </div>
           <div>
-            <h1 className="font-display text-4xl text-midnight">Operation Hot Dog</h1>
-            <p className="text-midnight/50 text-sm mt-0.5">Productized AI agent deployment service — internal codename 🌭</p>
+            <h1 className="font-display text-4xl text-midnight">Hotclaw Solutions</h1>
+            <p className="text-midnight/50 text-sm mt-0.5">AI agent deployment service · hotclaw.ai · internal codename: Operation Hot Dog 🌭</p>
           </div>
         </div>
         <p className="text-midnight/60 max-w-2xl mt-4 leading-relaxed">
@@ -173,7 +173,8 @@ export default function OperationHotDogPage() {
           <span className="px-3 py-1 bg-ocean/10 text-ocean rounded-full text-xs font-medium">OpenClaw + Docker</span>
           <span className="px-3 py-1 bg-ocean/10 text-ocean rounded-full text-xs font-medium">Hostinger VPS</span>
           <span className="px-3 py-1 bg-ocean/10 text-ocean rounded-full text-xs font-medium">OpenRouter (client BYOK)</span>
-          <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">Stage: Research + Early Build</span>
+          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Domain: hotclaw.ai ✅</span>
+          <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">Stage: Early Build</span>
         </div>
         <div className="flex flex-wrap gap-3 mt-5">
           <Link
