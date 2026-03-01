@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import {
   MapPin, Plane, Car, Star, ChevronDown, ChevronUp,
-  AlertCircle, CheckCircle, Clock, Briefcase, Coffee, Users, Heart, Train, Moon
+  AlertCircle, CheckCircle, Clock, Briefcase, Coffee, Users, Heart, Train, Moon, ExternalLink
 } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -182,21 +182,36 @@ const STATUS_BADGE: Record<string, { label: string; color: string }> = {
 }
 
 const OPEN_ITEMS = [
-  { urgent: true,  text: 'Dublin HX — confirm Jul 16–20 with host' },
-  { urgent: true,  text: 'East Lothian HX — confirm Jun 30–Jul 11 and book' },
-  { urgent: true,  text: "Isle of Skye — check Paige's saved Airbnb Jul 11–12. Book ASAP." },
-  { urgent: true,  text: 'Eagle Brae Cabins — check Jul 13–14 at eaglebrae.co.uk' },
-  { urgent: true,  text: 'Edinburgh airport hotel — book 1 night Jul 15' },
-  { urgent: false, text: 'Kilkenny — research B&Bs / hotels for ~Jul 30–Aug 1' },
-  { urgent: false, text: 'Return flights — Dublin → SAN, Aug 1–3 window. Use Chase points. Compare Shannon vs Dublin.' },
-  { urgent: false, text: 'Galway: confirm extension nights with HX host (decide Jul 29 or 30 checkout)' },
-  { urgent: false, text: 'Parents Galway hotel — Salthill (pool/beach) or Parkhouse (ferry access)' },
-  { urgent: false, text: 'Iceland — text Kyle\'s friend. Check HomeExchange credits for KEF.' },
-  { urgent: false, text: 'Flights SAN → KEF → EDI — Chase points, late June window' },
-  { urgent: false, text: 'Scotland → Ireland: Edinburgh → Dublin flight (Jul 16 morning)' },
-  { urgent: false, text: 'Car rental: pick up Athlone Jul 24, return Dublin airport Aug 1' },
-  { urgent: false, text: 'Meta activities Jul 7–9 near East Lothian (under-7, need alternatives to age 7+ camps)' },
-  { urgent: false, text: 'Johnsfort questionnaire — answer when it arrives to shape itinerary' },
+  { urgent: true,  text: 'Dublin HX — confirm Jul 16–20 with host',
+    url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
+  { urgent: true,  text: 'East Lothian HX — confirm Jun 30–Jul 11 and book',
+    url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
+  { urgent: true,  text: "Isle of Skye — check Paige's saved Airbnb Jul 11–12. Book ASAP.",
+    url: 'https://www.airbnb.com/wishlists', label: 'Airbnb Wishlists' },
+  { urgent: true,  text: 'Eagle Brae Cabins — Aquila cabin Jul 13–15. Book directly.',
+    url: 'https://eaglebrae.co.uk/our-cabins/aquila/', label: 'Eagle Brae ↗' },
+  { urgent: true,  text: 'Edinburgh airport hotel — 1 night Jul 15 (early Dublin flight)',
+    url: 'https://www.booking.com/searchresults.html?ss=Edinburgh+Airport&checkin=2026-07-15&checkout=2026-07-16&group_adults=4', label: 'Booking.com' },
+  { urgent: false, text: 'Kilkenny B&B / hotel — ~Jul 30–Aug 1, medieval city center',
+    url: 'https://www.booking.com/searchresults.html?ss=Kilkenny+City+Centre&checkin=2026-07-30&checkout=2026-08-01&group_adults=4', label: 'Booking.com' },
+  { urgent: false, text: 'Return flights — Dublin → SAN, Aug 1–3 window. Chase points. Compare DUB vs SNN.',
+    url: 'https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTA4LTAxag0IAxIJL20vMDFueGVzcgwIAxIIL20vMDFob3MaHhIKMjAyNi0wOC0wMWoMCAMSCC9tLzAxaG9zcg0IAxIJL20vMDFueGVz', label: 'Google Flights' },
+  { urgent: false, text: 'Galway: confirm HX host for extension Jul 29–30 checkout',
+    url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
+  { urgent: false, text: 'Parents Galway hotel — Salthill (pool) or Parkhouse (ferry). Book near Galway HX.',
+    url: 'https://www.booking.com/searchresults.html?ss=Salthill+Galway&checkin=2026-07-24&checkout=2026-07-28&group_adults=2', label: 'Booking.com' },
+  { urgent: false, text: "Iceland — text Kyle's friend. Check HomeExchange credits for Reykjavik.",
+    url: 'https://www.homeexchange.com/s#?b_map=false&q=Reykjavik', label: 'HX Reykjavik' },
+  { urgent: false, text: 'Flights SAN → KEF → EDI — Chase Ultimate Rewards, late June',
+    url: 'https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTA2LTI4ag0IAxIJL20vMDZ0d3RyDAgDEggvbS8wMWVmeA', label: 'Google Flights' },
+  { urgent: false, text: 'Edinburgh → Dublin flight Jul 16 morning (return Scotland car first)',
+    url: 'https://www.google.com/travel/flights/search?tfs=CBwQAhoeEgoyMDI2LTA3LTE2ag0IAxIJL20vMDJtNzJyDAgDEggvbS8wMXl3Zg', label: 'Google Flights' },
+  { urgent: false, text: 'Ireland car rental — Athlone pickup Jul 24, Dublin airport return Aug 1',
+    url: 'https://www.rentalcars.com/en/country/ie/?affiliateCode=google&preflang=en&dateFrom=2026-07-24&dateTo=2026-08-01', label: 'RentalCars.com' },
+  { urgent: false, text: 'Meta activities Jul 7–9 near East Lothian (under-7, not age-gated)',
+    url: 'https://www.visitscotland.com/see-do/activities/family/', label: 'VisitScotland' },
+  { urgent: false, text: 'Johnsfort questionnaire — answer when it arrives to shape the farm itinerary',
+    url: 'https://johnsfort.ie', label: 'johnsfort.ie' },
 ]
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -372,10 +387,23 @@ export default function TripPage() {
               <div className="text-sm font-bold text-red-800 mb-2 flex items-center gap-1.5">
                 <AlertCircle size={14} /> Urgent — book these now
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {OPEN_ITEMS.filter(i => i.urgent).map((item, idx) => (
-                  <li key={idx} className="text-sm text-red-800 flex items-start gap-2">
-                    <span className="font-bold flex-shrink-0">{idx + 1}.</span>{item.text}
+                  <li key={idx} className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 flex-1 min-w-0">
+                      <span className="text-sm font-bold text-red-700 flex-shrink-0">{idx + 1}.</span>
+                      <span className="text-sm text-red-800 leading-snug">{item.text}</span>
+                    </div>
+                    {item.url && (
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0 text-xs font-medium bg-red-600 text-white px-2.5 py-1 rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap flex items-center gap-1"
+                      >
+                        {item.label} <ExternalLink size={10} />
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -384,10 +412,23 @@ export default function TripPage() {
               <div className="text-sm font-bold text-amber-800 mb-2 flex items-center gap-1.5">
                 <Clock size={14} /> Research & logistics
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {OPEN_ITEMS.filter(i => !i.urgent).map((item, idx) => (
-                  <li key={idx} className="text-sm text-amber-800 flex items-start gap-2">
-                    <span className="text-amber-400 flex-shrink-0">○</span>{item.text}
+                  <li key={idx} className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 flex-1 min-w-0">
+                      <span className="text-amber-400 flex-shrink-0 mt-0.5">○</span>
+                      <span className="text-sm text-amber-800 leading-snug">{item.text}</span>
+                    </div>
+                    {item.url && (
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0 text-xs font-medium bg-amber-600 text-white px-2.5 py-1 rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap flex items-center gap-1"
+                      >
+                        {item.label} <ExternalLink size={10} />
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
