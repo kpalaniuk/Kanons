@@ -136,10 +136,10 @@ const STOPS = [
   {
     id: 'dublin', name: 'Dublin, Ireland', emoji: '🍀', nights: 4, dates: 'Jul 16–20',
     status: 'booked', color: 'bg-green-50 border-green-200', dotColor: 'bg-green-500', who: 'Core family',
-    details: "Jennifer's home — HomeExchange confirmed Feb 2026. Dublin city, 20 min bus to city centre (bus at top of road). Jennifer (professor) + husband away in Netherlands Jul 11–25. 🏡 Garden home office for Kyle — separate building, bathroom + WiFi. Pool & gym pass (15 min walk). Kids on the road to play with. Two locked offices in house (professor + IT — leave them). Cleaning fee paid separately.",
+    details: "12 Adrian Avenue, Harold's Cross, Dublin D6WRX86. Exchange #119116132. Jennifer Redmond — HomeExchange confirmed Mar 2026. Jennifer (professor) + husband away in Netherlands Jul 11–25. 🚌 S2 bus at end of road: Sandymount/sea ↔ Heuston Station/Phoenix Park/Zoo. ~20 min to city centre. 🏡 Garden home office for Kyle — separate building, bathroom + WiFi. Pool & gym pass (15–20 min walk or 5 min on S2 bus). Kids on the road to play with. Two locked offices in house (leave them — confidential). Cleaning fee paid separately. Jennifer: +353863563610 | jenmum13@gmail.com",
     highlights: ['🏡 Garden home office for Kyle', 'Bus to city centre 20 min', 'Pool & gym pass', 'Trinity College', 'Phoenix Park', 'Hop-On-Hop-Off bus'],
-    action: 'BOOKED ✅ Confirm exact arrival with Jennifer (Jul 15 or 16). Book INV→DUB Aer Lingus (Chase UR → AerClub Avios).',
-    accommodation: "Jennifer's home, Dublin — HomeExchange BOOKED ✅",
+    action: 'BOOKED ✅ Arrival confirmed Jul 16. Book INV→DUB Aer Lingus (Chase UR → AerClub Avios).',
+    accommodation: "12 Adrian Avenue, Harold's Cross — HomeExchange BOOKED ✅ (#119116132)",
     alert: 'Book INV→DUB Aer Lingus flight — Jul 16, direct 1h35m. Johnsfort collects Jul 20 morning.'
   },
   {
@@ -205,7 +205,7 @@ const OPEN_ITEMS = [
     url: 'https://www.booking.com/searchresults.html?ss=Glasgow+Airport&checkin=2026-06-30&checkout=2026-07-01&group_adults=4', label: 'Booking.com' },
   { urgent: false, text: '✅ Glasgow HX confirmed — Graeme Smith, 25 Deepdene Rd, Bearsden. Jul 1–11. Feed 🐱 Honey morning + evening.',
     url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
-  { urgent: false, text: "✅ Dublin HX confirmed — Jennifer's home, Jul 16–20. Confirm exact arrival date (Jul 15 or 16) with Jennifer.",
+  { urgent: false, text: "✅ Dublin HX confirmed — 12 Adrian Ave, Harold's Cross. Jul 16–20. Exchange #119116132. Jennifer Redmond.",
     url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
   { urgent: true,  text: 'Flights INV → DUB — Jul 16. Aer Lingus direct. Chase UR → AerClub Avios.',
     url: 'https://www.aerlingus.com', label: 'Aer Lingus ↗' },
