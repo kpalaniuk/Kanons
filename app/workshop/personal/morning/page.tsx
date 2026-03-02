@@ -6,7 +6,7 @@ import {
   Sun, Cloud, CloudRain, Droplets, Wind,
   CheckSquare, AlertCircle, Clock, Trophy,
   Map, Music, Mic, ArrowRight, RefreshCw,
-  Calendar, Zap, Heart,
+  Calendar, Zap, Heart, Plus, Check,
 } from 'lucide-react'
 
 // ── Gratitude Prompts ─────────────────────────────────────────────────────────
@@ -213,6 +213,14 @@ export default function MorningBriefPage() {
   const [topThree, setTopThree] = useState('')
   const sunday = isSunday()
 
+  // Quick Task Add
+  const [quickTitle, setQuickTitle] = useState('')
+  const [quickPriority, setQuickPriority] = useState('Medium')
+  const [quickCategory, setQuickCategory] = useState('Other')
+  const [quickAdding, setQuickAdding] = useState(false)
+  const [quickSuccess, setQuickSuccess] = useState(false)
+  const [quickError, setQuickError] = useState('')
+
   const { greeting, dayNote, isCoachingDay } = getDayContext()
   const trip = getTripCountdown()
 
@@ -276,6 +284,35 @@ export default function MorningBriefPage() {
       // localStorage unavailable or malformed
     }
   }, [])
+
+  const handleQuickTaskAdd = async () => {
+    if (!quickTitle.trim()) return
+    setQuickAdding(true)
+    setQuickError('')
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: quickTitle.trim(),
+          priority: quickPriority,
+          category: quickCategory,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed')
+      setQuickTitle('')
+      setQuickPriority('Medium')
+      setQuickCategory('Other')
+      setQuickSuccess(true)
+      setTimeout(() => setQuickSuccess(false), 3000)
+      // Refresh task list to show new item
+      fetchAll()
+    } catch {
+      setQuickError('Failed to add task — try again')
+    } finally {
+      setQuickAdding(false)
+    }
+  }
 
   const urgentTasks = tasks.filter((t) => t.priority === 'Urgent')
   const highTasks = tasks.filter((t) => t.priority === 'High')
@@ -556,6 +593,63 @@ export default function MorningBriefPage() {
           >
             Full task board <ArrowRight className="w-3.5 h-3.5" />
           </Link>
+        </div>
+      </div>
+
+      {/* ── Quick Task Add ── */}
+      <div className="bg-cream rounded-2xl p-6 border border-midnight/5">
+        <div className="flex items-center gap-2 mb-4">
+          <Plus className="w-4 h-4 text-ocean" />
+          <h2 className="font-display text-lg text-midnight">Quick Add Task</h2>
+          {quickSuccess && (
+            <span className="ml-auto flex items-center gap-1 text-xs font-medium text-emerald-600">
+              <Check className="w-3.5 h-3.5" /> Added to Notion
+            </span>
+          )}
+        </div>
+        <div className="space-y-3">
+          <input
+            type="text"
+            placeholder="What needs doing?"
+            value={quickTitle}
+            onChange={(e) => setQuickTitle(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && !quickAdding && handleQuickTaskAdd()}
+            className="w-full text-sm bg-white border border-midnight/10 rounded-xl px-4 py-2.5 text-midnight placeholder-midnight/25 focus:outline-none focus:border-ocean transition-colors"
+          />
+          <div className="flex gap-2">
+            <select
+              value={quickPriority}
+              onChange={(e) => setQuickPriority(e.target.value)}
+              className="flex-1 text-sm bg-white border border-midnight/10 rounded-xl px-3 py-2 text-midnight focus:outline-none focus:border-ocean transition-colors"
+            >
+              <option value="Urgent">🔴 Urgent</option>
+              <option value="High">🟠 High</option>
+              <option value="Medium">🟡 Medium</option>
+              <option value="Low">⚪ Low</option>
+            </select>
+            <select
+              value={quickCategory}
+              onChange={(e) => setQuickCategory(e.target.value)}
+              className="flex-1 text-sm bg-white border border-midnight/10 rounded-xl px-3 py-2 text-midnight focus:outline-none focus:border-ocean transition-colors"
+            >
+              <option value="LO Buddy">🤖 LO Buddy</option>
+              <option value="Lead Gen">📊 Lead Gen</option>
+              <option value="Life Org">🏠 Life Org</option>
+              <option value="Home &amp; Family">👨‍👩‍👧‍👦 Home &amp; Family</option>
+              <option value="Music">🎵 Music</option>
+              <option value="Finance">💰 Finance</option>
+              <option value="System / DevOps">⚙️ System / DevOps</option>
+              <option value="Other">📌 Other</option>
+            </select>
+            <button
+              onClick={handleQuickTaskAdd}
+              disabled={quickAdding || !quickTitle.trim()}
+              className="px-5 py-2 bg-midnight text-cream text-sm font-medium rounded-xl hover:bg-ocean transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+            >
+              {quickAdding ? '…' : 'Add'}
+            </button>
+          </div>
+          {quickError && <p className="text-xs text-red-500">{quickError}</p>}
         </div>
       </div>
 
