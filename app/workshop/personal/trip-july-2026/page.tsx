@@ -98,12 +98,12 @@ const STOPS = [
   },
   {
     id: 'glasgow', name: 'Glasgow, Scotland', emoji: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', nights: 11, dates: 'Jun 30–Jul 11',
-    status: 'pursuing', color: 'bg-indigo-50 border-indigo-200', dotColor: 'bg-indigo-500', who: 'Core family',
-    details: "Scotland home base — 11 nights. Edinburgh 50 min by train. Loch Lomond, Stirling Castle on the doorstep. Paige departs Jul 7 for Athens (Claudia's 40th), returns Jul 10. Kyle solo with kids Jul 7–9. Check out Jul 11 — Glasgow is only ~2.5 hrs from Skye vs 5.5 from East Lothian.",
-    highlights: ['Edinburgh 50 min by train', 'Loch Lomond / Trossachs', 'Stirling Castle', 'Closer to Skye than East Lothian'],
-    action: 'Confirm Glasgow HomeExchange booking Jun 30–Jul 11.',
-    accommodation: 'HomeExchange — awaiting confirmation',
-    alert: "Paige departs Glasgow airport Jul 7 → Athens. Returns Jul 10. Kyle solo with kids Jul 7–9."
+    status: 'booked', color: 'bg-indigo-50 border-indigo-200', dotColor: 'bg-indigo-500', who: 'Core family',
+    details: "Scotland home base — 11 nights. Graeme's home via HomeExchange, confirmed Mar 1. Community-centred neighbourhood — Graeme says it's very similar to North Park, San Diego. 🐱 Honey the cat (4 months old) lives here — needs feeding morning + evening. Edinburgh 50 min by train. Loch Lomond 30 min. Paige departs Jul 7 for Athens (Claudia's 40th), returns Jul 10. Graeme arrives home evening Jul 11 — leave early that morning.",
+    highlights: ['Graeme\'s home — confirmed ✅', '🐱 Honey the kitten (4 months)', 'Edinburgh 50 min by train', 'Loch Lomond 30 min', 'Stirling Castle 45 min', '~2.5 hrs to Skye'],
+    action: 'BOOKED ✅ HomeExchange confirmed Mar 1. Remember to feed Honey morning + evening.',
+    accommodation: "Graeme's home, Glasgow — HomeExchange BOOKED ✅",
+    alert: "Paige departs Glasgow Airport Jul 7 → Athens. Returns Jul 10. Kyle solo with kids Jul 7–9. Graeme returns evening Jul 11 — leave early + leave house tidy."
   },
   {
     id: 'skye', name: 'Isle of Skye', emoji: '🏔️', nights: 2, dates: 'Jul 11–13',
@@ -201,7 +201,7 @@ const OPEN_ITEMS = [
     url: 'https://www.google.com/travel/flights', label: 'Google Flights' },
   { urgent: true,  text: 'Flights KEF → GLA — Jun 30 (Iceland → Glasgow).',
     url: 'https://www.google.com/travel/flights', label: 'Google Flights' },
-  { urgent: true,  text: 'Glasgow HX — confirm Jun 30–Jul 11 with host.',
+  { urgent: false, text: '✅ Glasgow HX confirmed — Graeme\'s home Jun 30–Jul 11. Feed 🐱 Honey morning + evening.',
     url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
   { urgent: true,  text: 'Dublin HX — confirm Jul 16–20 with host.',
     url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
