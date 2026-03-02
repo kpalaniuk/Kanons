@@ -1,15 +1,15 @@
 {
-  "lastUpdated": "2026-03-02T17:03:41.188Z",
+  "lastUpdated": "2026-03-02T23:03:41.265Z",
   "period": "2026-02-21 to 2026-03-02",
   "providers": [
     {
       "name": "anthropic",
       "model": "claude-sonnet-4-6",
       "status": "active",
-      "calls": 3498,
-      "tokensIn": 29116,
-      "tokensOut": 2028818,
-      "estimatedCost": 402.76073814999984,
+      "calls": 3678,
+      "tokensIn": 30638,
+      "tokensOut": 2128569,
+      "estimatedCost": 425.0749385499998,
       "notes": "Primary reasoning model. Claude Sonnet 4.5 for most tasks, Opus 4 for complex thinking."
     },
     {
@@ -26,7 +26,7 @@
       "name": "openclaw",
       "model": "delivery-mirror",
       "status": "active",
-      "calls": 119,
+      "calls": 124,
       "tokensIn": 0,
       "tokensOut": 0,
       "estimatedCost": 0,
@@ -229,7 +229,7 @@
     {
       "date": "2026-03-02",
       "provider": "openclaw",
-      "calls": 29,
+      "calls": 34,
       "tokensIn": 0,
       "tokensOut": 0,
       "cost": 0
@@ -237,18 +237,18 @@
     {
       "date": "2026-03-02",
       "provider": "anthropic",
-      "calls": 410,
-      "tokensIn": 3460,
-      "tokensOut": 265823,
-      "cost": 61.08085815000002
+      "calls": 590,
+      "tokensIn": 4982,
+      "tokensOut": 365574,
+      "cost": 83.39505854999994
     }
   ],
   "totals": {
-    "totalCalls": 3679,
-    "totalTokensIn": 8042485,
-    "totalTokensOut": 2047792,
-    "totalCost": 407.1382787499998,
-    "avgCallsPerDay": 368,
-    "avgTokensPerCall": 2743
+    "totalCalls": 3864,
+    "totalTokensIn": 8044007,
+    "totalTokensOut": 2147543,
+    "totalCost": 429.45247914999976,
+    "avgCallsPerDay": 386,
+    "avgTokensPerCall": 2638
   }
 }
