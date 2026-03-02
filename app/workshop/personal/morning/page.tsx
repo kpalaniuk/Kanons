@@ -200,6 +200,38 @@ function WeatherIcon({ desc }: { desc: string }) {
   return <Sun className="w-8 h-8 text-amber-400" />
 }
 
+function getWardrobeSuggestion(weather: WeatherData): { outfit: string; note: string } {
+  const { temp_f, description, wind_kph, humidity } = weather
+  const desc = description.toLowerCase()
+  const isRainy = desc.includes('rain') || desc.includes('drizzle') || desc.includes('shower')
+  const isWindy = wind_kph > 25
+  const isOvercast = desc.includes('cloud') || desc.includes('overcast')
+
+  let outfit = ''
+  let note = ''
+
+  if (temp_f >= 80) {
+    outfit = 'Shorts + lightweight tee or linen shirt'
+    note = isRainy ? 'Grab a light rain layer — it\'s warm but wet.' : 'Sunglasses and sunscreen if you\'re outside.'
+  } else if (temp_f >= 72) {
+    outfit = 'Chinos or jeans + short sleeve button-down'
+    note = isWindy ? 'Breezier than it looks — throw a light layer in your bag.' : 'Classic San Diego day. Easy.'
+  } else if (temp_f >= 62) {
+    outfit = 'Jeans + long sleeve or light jacket'
+    note = isRainy ? 'Light waterproof layer worth it today.' : isOvercast ? 'Marine layer morning — might warm up later.' : 'Comfortable layers.'
+  } else if (temp_f >= 52) {
+    outfit = 'Jeans + jacket or heavier overshirt'
+    note = isWindy ? 'Windy — zip up.' : 'Chilly for SD. Layer up.'
+  } else {
+    outfit = 'Full layers — coat, the works'
+    note = 'Rare cold day. Don\'t leave the house underdressed.'
+  }
+
+  if (isRainy && !note.includes('rain')) note = 'Rain today — bring a jacket.'
+
+  return { outfit, note }
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function MorningBriefPage() {
@@ -367,16 +399,29 @@ export default function MorningBriefPage() {
             <h2 className="font-display text-lg text-midnight">San Diego</h2>
           </div>
           {weather ? (
-            <div className="flex items-center gap-4">
-              <WeatherIcon desc={weather.description} />
-              <div>
-                <div className="text-3xl font-display text-midnight">{weather.temp_f}°F</div>
-                <div className="text-sm text-midnight/50">{weather.description}</div>
-                <div className="flex items-center gap-3 mt-1.5 text-xs text-midnight/40">
-                  <span className="flex items-center gap-1"><Droplets className="w-3 h-3" />{weather.humidity}%</span>
-                  <span className="flex items-center gap-1"><Wind className="w-3 h-3" />{weather.wind_kph} km/h</span>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <WeatherIcon desc={weather.description} />
+                <div>
+                  <div className="text-3xl font-display text-midnight">{weather.temp_f}°F</div>
+                  <div className="text-sm text-midnight/50">{weather.description}</div>
+                  <div className="flex items-center gap-3 mt-1.5 text-xs text-midnight/40">
+                    <span className="flex items-center gap-1"><Droplets className="w-3 h-3" />{weather.humidity}%</span>
+                    <span className="flex items-center gap-1"><Wind className="w-3 h-3" />{weather.wind_kph} km/h</span>
+                  </div>
                 </div>
               </div>
+              {/* Wardrobe suggestion */}
+              {(() => {
+                const { outfit, note } = getWardrobeSuggestion(weather)
+                return (
+                  <div className="border-t border-midnight/5 pt-3">
+                    <p className="text-xs font-semibold text-midnight/40 uppercase tracking-wide mb-1">👔 Wear today</p>
+                    <p className="text-sm font-medium text-midnight">{outfit}</p>
+                    <p className="text-xs text-midnight/40 mt-0.5">{note}</p>
+                  </div>
+                )
+              })()}
             </div>
           ) : (
             <div className="text-midnight/30 text-sm">{loading ? 'Loading…' : 'Unavailable'}</div>
