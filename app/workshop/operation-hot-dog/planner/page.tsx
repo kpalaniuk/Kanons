@@ -345,6 +345,28 @@ export default function PlannerPage() {
     localStorage.removeItem('hotclaw-planner-answers')
   }
 
+  const copyToClipboard = () => {
+    const lines: string[] = ['# Hotclaw Planner — Decision Summary', `Generated: ${new Date().toLocaleDateString()}`, '']
+    sections.forEach(sec => {
+      lines.push(`## ${sec.emoji} ${sec.title}`)
+      sec.questions.forEach(q => {
+        const a = answers[q.id]
+        const val = !a || (Array.isArray(a) && a.length === 0)
+          ? '(not answered)'
+          : Array.isArray(a)
+            ? a.map(v => getOptionLabel(q, v)).join(', ')
+            : getOptionLabel(q, a as string)
+        lines.push(`Q: ${q.text}`)
+        lines.push(`A: ${val}`)
+        lines.push('')
+      })
+    })
+    navigator.clipboard.writeText(lines.join('\n')).catch(() => {
+      // fallback: show in alert
+      alert(lines.join('\n'))
+    })
+  }
+
   const getOptionLabel = (q: Question, value: string) => q.options?.find(o => o.value === value)?.label || value
 
   return (
@@ -360,10 +382,14 @@ export default function PlannerPage() {
               <h1 className="text-3xl font-bold tracking-tight">🧭 Hotclaw Planner</h1>
               <p className="text-white/50 mt-1">Answer these questions to lock in how Hotclaw Solutions operates. Answers save automatically.</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <button onClick={() => setShowSummary(!showSummary)}
                 className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-bold hover:bg-orange-400 transition-colors">
                 {showSummary ? 'Hide' : 'View'} Summary
+              </button>
+              <button onClick={copyToClipboard}
+                className="px-4 py-2 bg-white/10 text-white rounded-lg text-sm font-medium hover:bg-white/20 transition-colors flex items-center gap-2">
+                <Download size={14} /> Copy for Jasper
               </button>
               <button onClick={resetAll} className="flex items-center gap-1.5 text-xs text-white/30 hover:text-white/60 transition-colors">
                 <RefreshCw size={12} /> Reset
