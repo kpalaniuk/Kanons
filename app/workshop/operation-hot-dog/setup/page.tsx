@@ -19,6 +19,8 @@ interface Step {
   link?: { label: string; url: string }
   code?: string
   warning?: string
+  defaultDone?: boolean
+  note?: string  // status note shown in amber (e.g. "partial", "pending verification")
 }
 
 interface Phase {
@@ -44,6 +46,7 @@ const phases: Phase[] = [
     steps: [
       {
         id: 'p0-hetzner-signup',
+        defaultDone: true,
         who: 'kyle',
         text: 'Sign up for Hetzner Cloud',
         detail: 'Create account, add a payment method. This is our VPS host — 3x cheaper than Hostinger for better hardware.',
@@ -51,6 +54,7 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-hetzner-server',
+        defaultDone: true,
         who: 'kyle',
         text: 'Provision CX52 server',
         detail: 'New Project → "hotclaw-solutions". Create Server: Location = Ashburn VA, OS = Ubuntu 24.04 LTS, Type = CX52 (16 vCPU / 32GB / $37/mo). Add your SSH public key. Hostname: super.hotclaw.ai',
@@ -58,18 +62,21 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-hetzner-volume',
+        defaultDone: true,
         who: 'kyle',
         text: 'Add a 160GB volume to the server',
         detail: 'In Hetzner dashboard → Volumes → Create Volume → 160GB → attach to your CX52. This is where client data lives. ~$8/mo.',
       },
       {
         id: 'p0-hetzner-ip',
+        defaultDone: true,
         who: 'kyle',
         text: 'Copy server IP → share with Jasper',
         detail: 'After provisioning, Hetzner shows the IP. Drop it in Discord so Jasper can wire up Cloudflare DNS.',
       },
       {
         id: 'p0-cloudflare-token',
+        defaultDone: true,
         who: 'kyle',
         text: 'Create Cloudflare API token',
         detail: 'Cloudflare dashboard → Profile → API Tokens → Create Token → use "Edit zone DNS" template → scope to hotclaw.ai zone only.',
@@ -77,6 +84,7 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-twilio',
+        defaultDone: true,
         who: 'kyle',
         text: 'Create Twilio account + buy a number',
         detail: 'Sign up at twilio.com. Buy a number — (619) area code if available, otherwise (858) or (760). Copy Account SID + Auth Token from the console dashboard.',
@@ -84,6 +92,7 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-openrouter',
+        defaultDone: true,
         who: 'kyle',
         text: 'Confirm OpenRouter API key is funded',
         detail: 'Check openrouter.ai → Keys — confirm the Super Hotclaw key is active. Top up credits if needed. One key covers all our LLM calls.',
@@ -91,6 +100,7 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-pinecone',
+        defaultDone: true,
         who: 'kyle',
         text: 'Create Pinecone project + index',
         detail: 'Sign in at pinecone.io → Create Project "hotclaw" → Create Index: Name = hotclaw-super, Dimensions = 1536, Metric = cosine, Cloud = AWS us-east-1. Starter plan is free to start.',
@@ -98,6 +108,7 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-supabase',
+        defaultDone: true,
         who: 'kyle',
         text: 'Create Supabase project',
         detail: 'supabase.com → New project → name: hotclaw-super, region: East US. Copy the Project URL and anon/service_role keys.',
@@ -105,6 +116,7 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-elevenlabs',
+        note: '⚠️ Free plan only — needs upgrade to Standard ($22/mo) for production voice',
         who: 'kyle',
         text: 'Get ElevenLabs API key',
         detail: 'elevenlabs.io → Profile → API Keys → Create. Standard plan ($22/mo) gives us 100k chars/mo — plenty for agent voice responses.',
@@ -112,6 +124,7 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-runway',
+        note: '⏳ Not yet done — needed for video gen (Pro+ clients). Not blocking launch.',
         who: 'kyle',
         text: 'Get Runway API key',
         detail: 'runwayml.com → account → API access. We use this for video gen. BYOK for clients (they get their own key for Pro+ tier).',
@@ -119,6 +132,7 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-discord-bot',
+        defaultDone: true,
         who: 'kyle',
         text: 'Create Discord bot for Super Hotclaw',
         detail: 'discord.com/developers → New Application → "Super Hotclaw" → Bot → Reset Token (copy it) → OAuth2 → Bot → check: Send Messages, Read History, Add Reactions → invite to your server. Also get your Guild ID (right-click server → Copy ID).',
@@ -126,6 +140,7 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-stripe',
+        note: '⏳ Pending Stripe verification — account created, awaiting email verification',
         who: 'chad',
         text: 'Create Stripe account for Hotclaw Solutions',
         detail: 'stripe.com → sign up under Hotclaw Solutions name. Get the Secret Key from Dashboard → Developers → API Keys. Also set up a product + pricing plan for each tier.',
@@ -133,6 +148,7 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-github-org',
+        defaultDone: true,
         who: 'kyle',
         text: 'Create GitHub org "hotclaw-solutions"',
         detail: 'github.com → + → New organization → hotclaw-solutions. Free tier is fine. We\'ll move hot-dog-infra here.',
@@ -140,6 +156,7 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-vercel-team',
+        defaultDone: true,
         who: 'kyle',
         text: 'Create Vercel team "hotclaw"',
         detail: 'vercel.com → create team → transfer hot-dog-intake project into it. This keeps Hotclaw billing separate from Kanons.',
@@ -147,6 +164,7 @@ const phases: Phase[] = [
       },
       {
         id: 'p0-keys-collected',
+        defaultDone: true,
         who: 'both',
         text: 'Paste all keys into Discord for Jasper',
         detail: 'Drop them in a DM or private channel — NOT in #lo-buddy-hopper. Jasper will load them into the VPS .env file and then confirm they\'re saved.',
@@ -164,6 +182,7 @@ const phases: Phase[] = [
     steps: [
       {
         id: 'p1-ssh',
+        defaultDone: true,
         who: 'kyle',
         text: 'SSH into the server',
         code: 'ssh root@YOUR_SERVER_IP',
@@ -171,18 +190,21 @@ const phases: Phase[] = [
       },
       {
         id: 'p1-update',
+        defaultDone: true,
         who: 'kyle',
         text: 'Update system packages',
         code: 'apt update && apt upgrade -y',
       },
       {
         id: 'p1-essentials',
+        defaultDone: true,
         who: 'kyle',
         text: 'Install essentials',
         code: 'apt install -y curl wget git htop ufw fail2ban ca-certificates gnupg lsb-release jq unzip tmux',
       },
       {
         id: 'p1-user',
+        note: '⏳ Skipped for now — running as root. Harden later.',
         who: 'kyle',
         text: 'Create hotclaw user',
         code: `adduser hotclaw\nusermod -aG sudo hotclaw\nrsync --archive --chown=hotclaw:hotclaw ~/.ssh /home/hotclaw/`,
@@ -190,12 +212,14 @@ const phases: Phase[] = [
       },
       {
         id: 'p1-firewall',
+        defaultDone: true,
         who: 'kyle',
         text: 'Configure UFW firewall',
         code: `ufw default deny incoming\nufw default allow outgoing\nufw allow ssh\nufw allow 80\nufw allow 443\nufw enable`,
       },
       {
         id: 'p1-fail2ban',
+        defaultDone: true,
         who: 'kyle',
         text: 'Enable fail2ban',
         code: `systemctl enable fail2ban\nsystemctl start fail2ban`,
@@ -203,18 +227,21 @@ const phases: Phase[] = [
       },
       {
         id: 'p1-docker',
+        defaultDone: true,
         who: 'kyle',
         text: 'Install Docker',
         code: `curl -fsSL https://get.docker.com | bash\nusermod -aG docker hotclaw\nnewgrp docker\ndocker run hello-world`,
       },
       {
         id: 'p1-volume',
+        defaultDone: true,
         who: 'kyle',
         text: 'Mount the data volume',
         code: `# Find your volume device (look for unformatted block device)\nlsblk\n\n# Format + mount (replace sdb with your device name)\nmkfs.ext4 /dev/sdb\nmkdir -p /data\nmount /dev/sdb /data\nchown -R hotclaw:hotclaw /data\n\n# Auto-mount on reboot\necho '/dev/sdb /data ext4 defaults 0 2' >> /etc/fstab`,
       },
       {
         id: 'p1-dirs',
+        defaultDone: true,
         who: 'kyle',
         text: 'Create directory structure',
         code: `mkdir -p /data/{clients,super,shared,backups,caddy-data,scripts}\nmkdir -p /data/super/{workspace,config,tools}`,
@@ -237,18 +264,21 @@ const phases: Phase[] = [
     steps: [
       {
         id: 'p2-cloudflare-dns',
+        defaultDone: true,
         who: 'jasper',
         text: 'Jasper: Wire Cloudflare DNS',
         detail: 'Adds A records: super.hotclaw.ai → server IP, *.hotclaw.ai → server IP (wildcard for client subdomains). Proxied off so Caddy can get TLS certs.',
       },
       {
         id: 'p2-caddy-install',
+        defaultDone: true,
         who: 'jasper',
         text: 'Jasper: Install Caddy (Cloudflare build)',
         detail: 'The Cloudflare-DNS-enabled build of Caddy is required for wildcard TLS certs. Jasper installs and configures it.',
       },
       {
         id: 'p2-caddyfile',
+        defaultDone: true,
         who: 'jasper',
         text: 'Jasper: Write Caddyfile',
         detail: 'Routes: super.hotclaw.ai → port 18900 (Super Hotclaw), hotclaw.ai → port 18901 (marketing/intake), *.hotclaw.ai → dynamic client routes.',
@@ -519,12 +549,14 @@ export default function SetupPage() {
   const [checked, setChecked] = useState<Record<string, boolean>>({})
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
-  // Load from localStorage
+  // Load from localStorage, seeding defaults for completed steps
   useEffect(() => {
     const saved = localStorage.getItem('hotclaw-setup-checks')
-    if (saved) {
-      try { setChecked(JSON.parse(saved)) } catch {}
-    }
+    const stored: Record<string, boolean> = saved ? (() => { try { return JSON.parse(saved) } catch { return {} } })() : {}
+    // Seed defaultDone values for any step not yet manually toggled
+    const defaults: Record<string, boolean> = {}
+    phases.forEach(p => p.steps.forEach(s => { if (s.defaultDone && !(s.id in stored)) defaults[s.id] = true }))
+    setChecked({ ...defaults, ...stored })
   }, [])
 
   const toggle = (id: string) => {
@@ -660,6 +692,13 @@ export default function SetupPage() {
                               <p className={`text-sm mt-1 ${done ? 'text-white/20' : 'text-white/50'}`}>
                                 {step.detail}
                               </p>
+                            )}
+
+                            {step.note && (
+                              <div className="mt-2 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-1.5">
+                                <AlertCircle size={12} className="text-amber-400 flex-shrink-0" />
+                                <p className="text-xs text-amber-300">{step.note}</p>
+                              </div>
                             )}
 
                             {step.warning && (
