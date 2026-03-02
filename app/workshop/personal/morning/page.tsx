@@ -164,14 +164,14 @@ function getDayContext(): { greeting: string; dayNote: string; isCoachingDay: bo
 
 function getTripCountdown(): { days: number; label: string; dest: string } {
   const now = new Date()
-  // Scotland/Ireland trip: July 14, 2026
-  const tripStart = new Date('2026-07-14')
+  // Iceland/Scotland/Ireland trip: June 27, 2026 (SAN→KEF departure)
+  const tripStart = new Date('2026-06-27')
   const msLeft = tripStart.getTime() - now.getTime()
   const days = Math.ceil(msLeft / (1000 * 60 * 60 * 24))
   return {
     days,
     label: days > 0 ? `${days} days` : 'IT\'S TIME!',
-    dest: 'Scotland / Ireland',
+    dest: 'Iceland · Scotland · Ireland',
   }
 }
 
@@ -352,7 +352,7 @@ export default function MorningBriefPage() {
           </div>
           <div>
             <div className="text-2xl font-display text-cyan-400">{trip.days}</div>
-            <div className="text-xs text-cream/40 mt-0.5">Days to Scotland</div>
+            <div className="text-xs text-cream/40 mt-0.5">Days to departure</div>
           </div>
         </div>
       </div>
@@ -390,7 +390,7 @@ export default function MorningBriefPage() {
             <h2 className="font-display text-lg text-midnight">{trip.dest}</h2>
           </div>
           <div className="text-4xl font-display text-ocean">{trip.label}</div>
-          <div className="text-sm text-midnight/50 mt-1">July 14, 2026</div>
+          <div className="text-sm text-midnight/50 mt-1">June 27, 2026 — SAN → KEF</div>
           <Link
             href="/workshop/personal/trip-july-2026"
             className="inline-flex items-center gap-1.5 mt-4 text-xs font-medium text-ocean hover:underline"
@@ -411,11 +411,11 @@ export default function MorningBriefPage() {
               <span className="text-xl shrink-0">🏴󠁧󠁢󠁳󠁣󠁴󠁿</span>
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-midnight">Scotland &amp; Ireland — 5 urgent bookings open</p>
+                  <p className="text-sm font-semibold text-midnight">Scotland &amp; Ireland — 7 bookings still open</p>
                   <span className="text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">!</span>
                 </div>
                 <p className="text-xs text-midnight/45 mt-0.5">
-                  Eagle Brae · Skye Airbnb · East Lothian HX · Dublin HX · Edinburgh hotel
+                  Flights (SAN→KEF · KEF→GLA · INV→DUB · DUB→SAN) · Hotel Jun 30 · Dromquinna Manor · Kilkenny
                 </p>
               </div>
             </div>
