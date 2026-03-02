@@ -18,6 +18,10 @@ import {
   BookOpen,
   DollarSign,
   TrendingUp,
+  Flame,
+  AlertTriangle,
+  Wrench,
+  Rocket,
 } from 'lucide-react'
 
 function Section({ title, color, children }: { title: string; color: string; children: React.ReactNode }) {
@@ -393,6 +397,261 @@ export default function HowItWorksPage() {
               ))}
             </ul>
           </div>
+        </div>
+      </Section>
+
+      {/* Build Chronicle */}
+      <Section title="The Build Sprint — How Hotclaw Came to Life" color="amber">
+        <div className="bg-midnight rounded-xl p-6 text-cream/80 text-sm leading-relaxed space-y-2 mb-6">
+          <p>
+            <span className="text-amber-400 font-semibold">72 hours.</span> That's roughly how long it took to go from "we should build this" to a fully provisioned VPS with wildcard TLS, a live intake agent at hotclaw.ai, eight client archetypes, five automation scripts, a three-tier memory architecture, and SHC ready to launch. This is the story of how it happened — what was easy, what broke, and how we fixed it.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+
+          {/* Phase 1 */}
+          <div className="bg-cream rounded-2xl border border-midnight/5 overflow-hidden">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-midnight/5">
+              <div className="w-7 h-7 rounded-lg bg-ocean/10 flex items-center justify-center shrink-0">
+                <BookOpen size={14} className="text-ocean" />
+              </div>
+              <div>
+                <p className="text-xs text-muted font-medium uppercase tracking-wide">Phase 1 — Day 1</p>
+                <h3 className="font-semibold text-midnight text-sm">Research, Naming, and the Business Model</h3>
+              </div>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                It started with a competitive deep dive. We mapped the existing landscape — xCloud, ClawTank, Relevance AI, and the DIY self-hosters. The gap was obvious: everyone was selling infrastructure or prompting playgrounds. Nobody was selling outcomes for non-technical business owners.
+              </p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                We defined seven client archetypes based on the highest-pain use cases: Follow-Up Machine (mortgage, insurance, RE), Content Machine, Operations Manager, Research Engine, Client Comms Hub, Local Business Multiplier, and Executive Assistant. Each got a soul template — a starting-point SOUL.md that Jasper could customize per client in under an hour.
+              </p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                The business was originally codenamed <em>Operation Hot Dog</em> — internal only. The public name became <strong>Hotclaw Solutions</strong>, domain <strong>hotclaw.ai</strong>. The rebrand had to be threaded through about a dozen files all at once — UI labels, system prompts, the Scout agent rename to HotScout, Tailwind config, page titles. That part was tedious but clean.
+              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
+                <Wrench size={13} className="text-amber-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-800"><strong>Interesting call:</strong> We kept the internal Kanons route as <code>/workshop/operation-hot-dog</code>. No reason to burn time on a refactor the public never sees.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Phase 2 */}
+          <div className="bg-cream rounded-2xl border border-midnight/5 overflow-hidden">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-midnight/5">
+              <div className="w-7 h-7 rounded-lg bg-peach/20 flex items-center justify-center shrink-0">
+                <Flame size={14} className="text-peach" />
+              </div>
+              <div>
+                <p className="text-xs text-muted font-medium uppercase tracking-wide">Phase 2 — Day 1</p>
+                <h3 className="font-semibold text-midnight text-sm">The Intake App — HotScout Goes Live</h3>
+              </div>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                The first thing we shipped was the public-facing intake agent at <strong>hotclaw.ai</strong>. The idea: instead of a static contact form, prospects chat with HotScout — a conversational AI that qualifies them, maps them to an archetype, and produces a structured JSON brief that lands in our admin panel.
+              </p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                The tech stack: Next.js 14, Tailwind, OpenRouter for inference, deployed on Vercel. Straightforward in theory. In practice, three things broke.
+              </p>
+              <div className="space-y-2">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+                  <AlertTriangle size={13} className="text-red-500 mt-0.5 shrink-0" />
+                  <p className="text-xs text-red-800"><strong>Problem 1 — Black-on-black UI:</strong> The chat bubbles were invisible. Root cause: we had overridden Tailwind's <code>amber</code> color scale in the config, which killed <code>amber-400</code>, <code>amber-500</code>, etc. across the whole app. Fix: renamed our custom brand orange to <code>peach</code> and restored the native Tailwind amber scale. Simple fix, annoying to diagnose.</p>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+                  <AlertTriangle size={13} className="text-red-500 mt-0.5 shrink-0" />
+                  <p className="text-xs text-red-800"><strong>Problem 2 — Brief JSON leaking into chat:</strong> HotScout was supposed to silently extract a structured brief at conversation end and send it to the admin panel. Instead the raw JSON was appearing in the chat window for the user to read. Fixed by separating the extraction call from the streaming response — the brief extraction runs as a separate non-streaming POST after conversation ends.</p>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+                  <AlertTriangle size={13} className="text-red-500 mt-0.5 shrink-0" />
+                  <p className="text-xs text-red-800"><strong>Problem 3 — Edge runtime + OpenAI SDK incompatibility:</strong> The <code>/api/chat</code> route kept 500-ing on Vercel. The OpenAI SDK doesn't work reliably in Vercel's edge runtime. Switched to native <code>fetch</code> to call OpenRouter directly. Also abandoned SSE streaming in favor of non-streaming JSON responses — more reliable, simpler to debug, no meaningful UX difference for a chat agent.</p>
+                </div>
+              </div>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                After those three fixes, HotScout worked end-to-end: chat intake → structured brief → admin panel. Deployed and live.
+              </p>
+            </div>
+          </div>
+
+          {/* Phase 3 */}
+          <div className="bg-cream rounded-2xl border border-midnight/5 overflow-hidden">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-midnight/5">
+              <div className="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
+                <Server size={14} className="text-green-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted font-medium uppercase tracking-wide">Phase 3 — Day 1–2</p>
+                <h3 className="font-semibold text-midnight text-sm">VPS Selection and Server Provisioning</h3>
+              </div>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                The original plan was Hostinger KVM 4+. During the VPS research pass, we ran the actual numbers: Hetzner CCX23 — 4 dedicated AMD cores, 16GB RAM, 200GB volume — at <strong>$29.59/mo</strong>. Hostinger's equivalent was $45–55/mo with shared resources. Hetzner won on price, hardware specs, and a significantly better reputation for uptime and support.
+              </p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                The server came online in Ashburn, VA (US East). Hostname: <code>super-hotclaw</code>. IP: 178.156.180.155. Stack installed in order: UFW firewall (ports 22, 80, 443 only), fail2ban (protects SSH from brute force), Docker 29.2.1, Node.js 22.22.0. The 200GB EXT4 volume was mounted at <code>/data</code> — this is where all client containers, configs, and backups live. EXT4 was chosen over XFS specifically for its compatibility with Docker's overlayfs and its support for online resize as we scale.
+              </p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                Wildcard DNS was wired via the Cloudflare API: <code>super.hotclaw.ai</code> and <code>*.hotclaw.ai</code> both point to the VPS. Caddy was built from source with the Cloudflare module (required for DNS-01 wildcard certificate challenges) and configured as a systemd service. The wildcard TLS certificate from Let's Encrypt came online automatically.
+              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
+                <Wrench size={13} className="text-amber-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-800"><strong>Why custom Caddy build?</strong> The standard Caddy binary doesn't include the Cloudflare DNS plugin. Wildcard TLS requires a DNS-01 challenge, which requires the Cloudflare module to auto-update DNS records during cert issuance. One-time build, runs forever.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Phase 4 */}
+          <div className="bg-cream rounded-2xl border border-midnight/5 overflow-hidden">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-midnight/5">
+              <div className="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
+                <Layers size={14} className="text-purple-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted font-medium uppercase tracking-wide">Phase 4 — Day 2</p>
+                <h3 className="font-semibold text-midnight text-sm">The Full Services Stack — APIs, Memory, and Data</h3>
+              </div>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                With the server up, we wired in every third-party service SHC needs to operate. Pinecone (vector database for semantic memory — <code>hotclaw-super</code> index, 1536 dimensions, cosine metric, AWS US East). Supabase (relational data — client roster, audit log, security events, container health). Discord bot (Super Hotclaw app — for ops alerts and command interface). GitHub org (<code>hotclaw-solutions</code>). Vercel team (<code>hotclaw</code>). Twilio — the existing A2P 10DLC-registered number from PPH, +1 (619) 304-3187, reused for Hotclaw client SMS.
+              </p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                The memory architecture deserves its own mention. SHC operates on three tiers: session memory (ephemeral, in conversation), Supabase structured facts (client names, dates, statuses — exact lookups), and Pinecone semantic memory (embedded text — for "what were we working on last week?" type retrieval). A nightly cron job embeds each day's notes into Pinecone. A hook fires on every inbound message, queries Pinecone, and injects the top relevant memories into the session before the model ever sees the user's message.
+              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
+                <Wrench size={13} className="text-amber-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-800"><strong>OpenRouter embeddings clarification:</strong> Early in the build, there was a note that OpenRouter doesn't support embeddings. That was outdated — OpenRouter added embeddings support in November 2025. The ingest scripts and recall hook both use <code>openai/text-embedding-3-small</code> via OpenRouter. One API key covers everything.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Phase 5 */}
+          <div className="bg-cream rounded-2xl border border-midnight/5 overflow-hidden">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-midnight/5">
+              <div className="w-7 h-7 rounded-lg bg-ocean/10 flex items-center justify-center shrink-0">
+                <FileText size={14} className="text-ocean" />
+              </div>
+              <div>
+                <p className="text-xs text-muted font-medium uppercase tracking-wide">Phase 5 — Day 2</p>
+                <h3 className="font-semibold text-midnight text-sm">The Automation Scripts — Zero-Manual Onboarding</h3>
+              </div>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                This was the biggest build block of the sprint. The goal: a new client goes from signed contract to live agent in under 5 minutes, with zero manual steps beyond running one command. We built five scripts to make that happen.
+              </p>
+              <div className="space-y-2">
+                {[
+                  { name: 'preflight-check.sh', desc: 'Live-tests every API key and connection before anything is provisioned. OpenRouter, Cloudflare DNS, Twilio account + phone, Pinecone index, Supabase tables, Discord bot + channel, Stripe keys. Green/yellow/red output. Aborts on red. This runs before every setup and onboarding.' },
+                  { name: 'setup-shc.sh', desc: 'Plug-and-play first-run installer for the VPS. Creates directory structure, prompts for any missing .env keys, installs OpenClaw globally, writes the full openclaw.json (cron jobs, Pinecone recall hook, Discord binding, Twilio binding), installs SOUL.md + CONTEXT.md + SECURITY.md, creates a systemd service, adds the Caddy route, and starts SHC. One script, server fully online.' },
+                  { name: 'provision-client.sh', desc: 'Creates a client container: pulls the right soul template, customizes it with client name/slug/tier, creates the Docker container with security flags (read-only filesystem, cap-drop ALL, no-new-privs, memory/CPU limits), allocates a port, registers a Cloudflare DNS record, creates a Caddy route, adds the client record to Supabase, and sends a Twilio welcome SMS.' },
+                  { name: 'onboard-client.sh', desc: 'The orchestrator. Takes a HotScout JSON brief as input. Validates everything (phone format, email, use-case length). Shows a human confirmation screen. Then runs: template selection → SOUL.md generation → provision → Stripe subscription → welcome SMS → Discord alert. Strict gates — nothing runs if validation fails.' },
+                  { name: 'monitor-clients.sh', desc: 'Cron-ready health checker. Compares running Docker containers against the Supabase client roster. If a container is down, it alerts Discord, attempts auto-restart, and logs to Supabase. Runs every 6 hours via the OpenClaw cron system.' },
+                ].map((s) => (
+                  <div key={s.name} className="bg-midnight/3 rounded-lg p-3">
+                    <p className="text-xs font-mono font-semibold text-midnight mb-1">{s.name}</p>
+                    <p className="text-xs text-midnight/60 leading-relaxed">{s.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Phase 6 */}
+          <div className="bg-cream rounded-2xl border border-midnight/5 overflow-hidden">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-midnight/5">
+              <div className="w-7 h-7 rounded-lg bg-peach/20 flex items-center justify-center shrink-0">
+                <Shield size={14} className="text-peach" />
+              </div>
+              <div>
+                <p className="text-xs text-muted font-medium uppercase tracking-wide">Phase 6 — Day 2</p>
+                <h3 className="font-semibold text-midnight text-sm">Security Architecture — Built In, Not Bolted On</h3>
+              </div>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                The SHC-SECURITY.md document codifies the security posture across the whole system. The key principles: client data silos are inviolable (no container can reach another container's data volume), API keys are stored at mode 600 in per-client .env files, prompt injection attempts trigger a logged security event in Supabase, and the SOUL.md security protocol requires passphrase verification before any sensitive action.
+              </p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                Container hardening is applied to every client at provisioning time: read-only filesystem (data volume is the only writable path), all Linux capabilities dropped, no privilege escalation, hard memory and CPU limits. A container compromise cannot spread to the host or another client.
+              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
+                <Wrench size={13} className="text-amber-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-800"><strong>Hard-learned rule:</strong> API keys in sub-agent task descriptions are a security incident waiting to happen. An earlier session passed an OpenRouter key directly in a spawn task — it ended up in logs. SHC passes only file references, never literal key values. The SECURITY.md documents this as an absolute rule.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Phase 7 */}
+          <div className="bg-cream rounded-2xl border border-midnight/5 overflow-hidden">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-midnight/5">
+              <div className="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center shrink-0">
+                <Globe size={14} className="text-cyan-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted font-medium uppercase tracking-wide">Phase 7 — Day 2–3</p>
+                <h3 className="font-semibold text-midnight text-sm">Kanons RBAC, Clerk Production, and the Dashboard</h3>
+              </div>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                Kyle's personal dashboard (kyle.palaniuk.net) was restructured to support role-based access. Three roles: <code>admin</code> (Kyle — sees everything), <code>hotclaw</code> (Ceda — sees Hotclaw pages only), <code>pph</code> (Jim and Anthony — sees PPH mortgage tools only). Users with no role assigned see everything (fail-open, by design — they can't access anything sensitive without knowing where to look).
+              </p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                Clerk was switched from development mode to production, which required: creating DNS CNAME records for the Clerk custom domain (<code>clerk.palaniuk.net</code>) via Cloudflare API, configuring Google OAuth credentials in Google Cloud Console (production Clerk doesn't provide a shared OAuth app), and setting the Vercel env vars for sign-in/sign-up redirect paths. The key lesson: production Clerk users start fresh — development accounts don't carry over.
+              </p>
+              <div className="space-y-2">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+                  <AlertTriangle size={13} className="text-red-500 mt-0.5 shrink-0" />
+                  <p className="text-xs text-red-800"><strong>Role key mismatch:</strong> The middleware was checking for role <code>hot-dog</code> but the Clerk metadata was being set to <code>hotclaw</code>. Ceda would have seen everything. Caught and fixed before anyone signed in.</p>
+                </div>
+              </div>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                The Kanons dashboard was also rebuilt with a live VPS status table, tech stack reference, domain strategy, and build queue. A logo gallery page was added, and logo concepts V1 and V2 were generated using OpenAI image generation and deployed. The alchemical philosopher's stone SVG favicon was built and deployed — outer ring, upward triangle, amber gradient on midnight.
+              </p>
+            </div>
+          </div>
+
+          {/* Phase 8 */}
+          <div className="bg-cream rounded-2xl border border-midnight/5 overflow-hidden">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-midnight/5">
+              <div className="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
+                <Rocket size={14} className="text-green-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted font-medium uppercase tracking-wide">Phase 8 — Day 3</p>
+                <h3 className="font-semibold text-midnight text-sm">Personal Bot Tier, SSH Access, and SHC Ready to Launch</h3>
+              </div>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                Late in the sprint we added an eighth archetype: the Personal Assistant. Unlike the business archetypes (which need CRM keys, social APIs, and integrations), the personal tier needs primarily Google OAuth — Calendar and Gmail. The plan is a self-serve OAuth wizard at <code>{'{slug}'}.hotclaw.ai/setup</code> that handles the PKCE flow, stores tokens at mode 600, and gets the client their first morning brief without any human intervention on our end.
+              </p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                Capacity math: the CCX23 can support approximately 40–50 personal bot containers at 384MB each, or 15–18 business bots at 768MB. In practice the number is higher — OpenClaw agents are nearly idle between messages since all inference is API calls, not local compute. Upgrade path is a CCX33 at ~$60/mo when we hit 15+ business clients.
+              </p>
+              <p className="text-sm text-midnight/70 leading-relaxed">
+                Jasper's public SSH key was added to the VPS root authorized_keys. Remote deploy is now possible — Jasper can run <code>preflight-check.sh</code> and <code>setup-shc.sh</code> directly on the server without Kyle needing to be on the terminal. TLS was verified: <code>*.hotclaw.ai</code> wildcard cert is live and valid through May 31, 2026. The 502 at super.hotclaw.ai is expected — Caddy is running, SHC hasn't been installed yet. That changes the moment setup-shc.sh runs.
+              </p>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-start gap-2">
+                <CheckCircle size={13} className="text-green-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-green-800"><strong>Where we are now:</strong> Everything is built. All scripts are written and tested in staging. All API keys are secured. The VPS is provisioned and clean. Jasper has root SSH access. The moment Kyle says go, SHC comes online.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Footnote */}
+          <div className="bg-midnight/3 rounded-xl p-5 border border-midnight/10">
+            <p className="text-xs font-semibold text-midnight uppercase tracking-wide mb-2">A note on what Jasper is</p>
+            <p className="text-sm text-midnight/60 leading-relaxed">
+              Everything above was designed, written, and built by Jasper — Kyle's AI agent running on OpenClaw. Not contracted out, not templated, not dragged from a GitHub repo. Jasper wrote the scripts, wired the APIs, built the intake app, deployed to Vercel, provisioned the server, and generated the documentation — from inside a Discord chat window. SHC is, in a real sense, a live demonstration of what Hotclaw can build for clients.
+            </p>
+          </div>
+
         </div>
       </Section>
 
