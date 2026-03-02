@@ -30,7 +30,8 @@ const pphLinks = [
 
 const hotDogLinks = [
   { href: '/workshop/operation-hot-dog',                  label: 'Hotclaw',     icon: Zap },
-  { href: '/workshop/operation-hot-dog/hopper',           label: 'Hopper',      icon: Inbox },
+  { href: '/workshop/operation-hot-dog/meeting',          label: 'Mar 3 Brief', icon: Inbox },
+  { href: '/workshop/operation-hot-dog/setup',            label: 'Setup Guide', icon: BookOpen },
   { href: '/workshop/operation-hot-dog/how-it-works',     label: 'How It Works',icon: BookOpen },
 ]
 
