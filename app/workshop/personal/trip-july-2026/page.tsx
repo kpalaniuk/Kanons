@@ -28,11 +28,11 @@ const DAYS: TripDay[] = [
   // ICELAND
   { date: 'Jun 27', label: 'Fly SAN → Reykjavik', sleep: 'Reykjavik, Iceland', sleepIcon: '🧊', stopId: 'iceland', type: 'transit' },
   { date: 'Jun 28', label: 'Iceland — Golden Circle, geysers', sleep: 'Reykjavik, Iceland', sleepIcon: '🧊', stopId: 'iceland', type: 'explore' },
-  { date: 'Jun 29', label: 'Iceland — hot springs, Kristjan guide day', sleep: 'Reykjavik, Iceland', sleepIcon: '🧊', stopId: 'iceland', type: 'explore' },
+  { date: 'Jun 29', label: 'Iceland — hot springs, explore', sleep: 'Reykjavik, Iceland — Audur\'s flat', sleepIcon: '🧊', stopId: 'iceland', type: 'explore' },
+  { date: 'Jun 30', label: 'Iceland — last day, pack for Scotland', sleep: 'Reykjavik, Iceland — Audur\'s flat', sleepIcon: '🧊', stopId: 'iceland', type: 'chill', booked: true },
 
   // SCOTLAND — GLASGOW
-  { date: 'Jun 30', label: 'Fly KEF → Glasgow, pick up car', sleep: 'Hotel near Glasgow Airport', sleepIcon: '🏨', stopId: 'glasgow-hotel', type: 'transit', note: 'HX check-in is Jul 1 — need 1 night near GLA airport' },
-  { date: 'Jul 1',  label: 'Check in to Bearsden — meet Honey 🐱', sleep: 'Glasgow HX — 25 Deepdene Rd, Bearsden', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'chill', booked: true },
+  { date: 'Jul 1',  label: 'Fly KEF → Glasgow 10:10am, check in to Bearsden 🐱', sleep: 'Glasgow HX — 25 Deepdene Rd, Bearsden', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'transit', booked: true, note: 'FI432 nonstop, arrives GLA 1:25pm. Pick up car, head to Bearsden.' },
   { date: 'Jul 2',  label: 'Glasgow city explore', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'explore' },
   { date: 'Jul 3',  label: 'Day trip — Loch Lomond or Stirling Castle', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'explore' },
   { date: 'Jul 4',  label: 'Kyle work day', sleep: 'Glasgow HX', sleepIcon: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', stopId: 'glasgow', type: 'work' },
@@ -89,21 +89,21 @@ const DAYS: TripDay[] = [
 
 const STOPS = [
   {
-    id: 'iceland', name: 'Reykjavik, Iceland', emoji: '🧊', nights: 3, dates: 'Jun 27–30',
-    status: 'pursuing', color: 'bg-sky-50 border-sky-200', dotColor: 'bg-sky-400', who: 'Core family',
-    details: "3 nights — Kristjan (local travel guide, Kyle's friend) wants the kids to properly explore. Golden Circle, geothermal soak, midnight sun. Fly SAN→KEF Jun 27, KEF→Glasgow Jun 30.",
-    highlights: ['Golden Circle / geysers', 'Blue Lagoon or local hot pools', 'Midnight sun', 'Kristjan as guide'],
-    action: 'Book SAN→KEF (Jun 27) and KEF→GLA (Jun 30) flights. Confirm stay with Kristjan.',
-    accommodation: 'Staying with Kristjan (local travel guide)',
+    id: 'iceland', name: 'Reykjavik, Iceland', emoji: '🧊', nights: 3, dates: 'Jun 28–Jul 1',
+    status: 'booked', color: 'bg-sky-50 border-sky-200', dotColor: 'bg-sky-400', who: 'Core family',
+    details: "3 nights — HX confirmed with Audur. Family flat in center of Reykjavikurborg. Fly SAN→KEF Jun 27 eve (arrives Jun 28 2pm), KEF→GLA Jul 1 10:10am nonstop. Private parking available if renting a car. Keybox code sent in advance.",
+    highlights: ['Golden Circle / geysers', 'Blue Lagoon or local hot pools', 'Midnight sun', 'Keybox entry — code sent in advance'],
+    action: 'BOOKED ✅ Iceland HX — Audur, "Family flat in center of Reykjavikurborg". Jun 28–Jul 1. 747 GP total.',
+    accommodation: 'Family flat in center of Reykjavikurborg — HomeExchange BOOKED ✅',
   },
   {
     id: 'glasgow', name: 'Bearsden, Glasgow', emoji: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', nights: 10, dates: 'Jul 1–11',
     status: 'booked', color: 'bg-indigo-50 border-indigo-200', dotColor: 'bg-indigo-500', who: 'Core family',
     details: "Scotland home base — 10 nights. Graeme Smith's home at 25 Deepdene Rd, G61 1NS, Bearsden (leafy suburb, 5 miles north of Glasgow city centre). HomeExchange #119179549, confirmed Mar 1. Graeme says the neighbourhood is very community-centred — similar to North Park, San Diego. 🐱 Honey the cat (4 months old, got him at Christmas) lives here — needs feeding morning + evening. Edinburgh 50 min by train. Loch Lomond 30 min. Paige departs Jul 7 for Athens (Claudia's 40th), returns Jul 10. Graeme arrives home evening Jul 11 — leave early, leave house tidy + Honey fed.",
     highlights: ['25 Deepdene Rd, Bearsden — confirmed ✅', '🐱 Honey the kitten (4 months)', 'Edinburgh 50 min by train', 'Loch Lomond 30 min', 'Stirling Castle 45 min', '~2.5 hrs to Skye'],
-    action: 'BOOKED ✅ Exchange #119179549. Graeme Smith: +447736832760 / shakermaker1983@gmail.com. ⚠️ Need 1 night hotel Jun 30 (arrival day — HX starts Jul 1).',
+    action: 'BOOKED ✅ Exchange #119179549. Graeme Smith: +447736832760 / shakermaker1983@gmail.com. Arrive directly Jul 1 from Iceland — no hotel needed.',
     accommodation: '25 Deepdene Rd, G61 1NS, Bearsden — HomeExchange BOOKED ✅',
-    alert: "⚠️ Need hotel Jun 30 near Glasgow Airport (HX check-in is Jul 1). Paige departs GLA Jul 7 → Athens, returns Jul 10. Graeme returns evening Jul 11 — leave early + leave Honey fed."
+    alert: "Paige departs GLA Jul 7 → Athens, returns Jul 10. Graeme returns evening Jul 11 — leave early + leave Honey fed."
   },
   {
     id: 'skye', name: 'Isle of Skye', emoji: '🏔️', nights: 2, dates: 'Jul 11–13',
@@ -197,12 +197,10 @@ const STATUS_BADGE: Record<string, { label: string; color: string }> = {
 }
 
 const OPEN_ITEMS = [
-  { urgent: true,  text: 'Flights SAN → KEF — Jun 27. Family of 4.',
-    url: 'https://www.google.com/travel/flights', label: 'Google Flights' },
-  { urgent: true,  text: 'Flights KEF → GLA — Jun 30 (Iceland → Glasgow).',
-    url: 'https://www.google.com/travel/flights', label: 'Google Flights' },
-  { urgent: true,  text: 'Hotel Jun 30 near Glasgow Airport — 1 night on arrival from Iceland (HX starts Jul 1).',
-    url: 'https://www.booking.com/searchresults.html?ss=Glasgow+Airport&checkin=2026-06-30&checkout=2026-07-01&group_adults=4', label: 'Booking.com' },
+  { urgent: true,  text: 'Flights SAN → KEF (Jun 27 eve) + KEF → GLA (Jul 1) — Icelandair stopover booking. ~$3,622 / 4 pax one-way. Still need to book.',
+    url: 'https://www.icelandair.com', label: 'Icelandair ↗' },
+  { urgent: false, text: '✅ Iceland HX confirmed — Audur, Family flat in Reykjavikurborg. Jun 28–Jul 1. 747 GP. Keybox entry.',
+    url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
   { urgent: false, text: '✅ Glasgow HX confirmed — Graeme Smith, 25 Deepdene Rd, Bearsden. Jul 1–11. Feed 🐱 Honey morning + evening.',
     url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
   { urgent: false, text: "✅ Dublin HX confirmed — 12 Adrian Ave, Harold's Cross. Jul 16–20. Exchange #119116132. Jennifer Redmond.",
@@ -217,7 +215,7 @@ const OPEN_ITEMS = [
     url: 'https://eaglebrae.co.uk', label: 'Eagle Brae ↗' },
   { urgent: false, text: 'Return flights DUB → SAN — Aug 1. Chase Ultimate Rewards.',
     url: 'https://www.google.com/travel/flights', label: 'Google Flights' },
-  { urgent: false, text: 'Scotland car rental — Glasgow Airport Jun 30, drop Inverness Jul 15.',
+  { urgent: false, text: 'Scotland car rental — Glasgow Airport Jul 1, drop Inverness Jul 15.',
     url: 'https://www.rentalcars.com/', label: 'RentalCars.com' },
   { urgent: false, text: 'Ireland car rental — Dublin Airport Jul 16, return Aug 1.',
     url: 'https://www.rentalcars.com/', label: 'RentalCars.com' },
