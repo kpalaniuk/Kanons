@@ -135,12 +135,12 @@ const STOPS = [
   },
   {
     id: 'dublin', name: 'Dublin, Ireland', emoji: '🍀', nights: 4, dates: 'Jul 16–20',
-    status: 'pursuing', color: 'bg-green-50 border-green-200', dotColor: 'bg-green-500', who: 'Core family',
-    details: 'HomeExchange Jul 16–20. Fly Aer Lingus INV→DUB direct (1h35m, checkout 11am → afternoon/evening departure). No car needed in Dublin. Pick up Ireland car rental for Johnsfort onward.',
-    highlights: ['Trinity College', 'Phoenix Park', 'Hop-On-Hop-Off bus', 'Temple Bar (daytime)'],
-    action: 'Confirm Dublin HX Jul 16–20. Book INV→DUB on Aer Lingus (use Chase UR → AerClub Avios).',
-    accommodation: 'HomeExchange — pursuing',
-    alert: 'Book INV→DUB Aer Lingus flight ASAP. Johnsfort collects Jul 20 morning.'
+    status: 'booked', color: 'bg-green-50 border-green-200', dotColor: 'bg-green-500', who: 'Core family',
+    details: "Jennifer's home — HomeExchange confirmed Feb 2026. Dublin city, 20 min bus to city centre (bus at top of road). Jennifer (professor) + husband away in Netherlands Jul 11–25. 🏡 Garden home office for Kyle — separate building, bathroom + WiFi. Pool & gym pass (15 min walk). Kids on the road to play with. Two locked offices in house (professor + IT — leave them). Cleaning fee paid separately.",
+    highlights: ['🏡 Garden home office for Kyle', 'Bus to city centre 20 min', 'Pool & gym pass', 'Trinity College', 'Phoenix Park', 'Hop-On-Hop-Off bus'],
+    action: 'BOOKED ✅ Confirm exact arrival with Jennifer (Jul 15 or 16). Book INV→DUB Aer Lingus (Chase UR → AerClub Avios).',
+    accommodation: "Jennifer's home, Dublin — HomeExchange BOOKED ✅",
+    alert: 'Book INV→DUB Aer Lingus flight — Jul 16, direct 1h35m. Johnsfort collects Jul 20 morning.'
   },
   {
     id: 'kells', name: 'Johnsfort Farm, Kells', emoji: '🐄', nights: 4, dates: 'Jul 20–24',
@@ -205,7 +205,7 @@ const OPEN_ITEMS = [
     url: 'https://www.booking.com/searchresults.html?ss=Glasgow+Airport&checkin=2026-06-30&checkout=2026-07-01&group_adults=4', label: 'Booking.com' },
   { urgent: false, text: '✅ Glasgow HX confirmed — Graeme Smith, 25 Deepdene Rd, Bearsden. Jul 1–11. Feed 🐱 Honey morning + evening.',
     url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
-  { urgent: true,  text: 'Dublin HX — confirm Jul 16–20 with host.',
+  { urgent: false, text: "✅ Dublin HX confirmed — Jennifer's home, Jul 16–20. Confirm exact arrival date (Jul 15 or 16) with Jennifer.",
     url: 'https://www.homeexchange.com/my-exchange', label: 'HomeExchange' },
   { urgent: true,  text: 'Flights INV → DUB — Jul 16. Aer Lingus direct. Chase UR → AerClub Avios.',
     url: 'https://www.aerlingus.com', label: 'Aer Lingus ↗' },
