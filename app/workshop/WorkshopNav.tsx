@@ -51,7 +51,7 @@ function useRoles(): string[] {
   return (meta?.roles as string[]) ?? []
 }
 
-function hasAccess(roles: string[], section: 'pph' | 'hot-dog' | 'personal') {
+function hasAccess(roles: string[], section: 'pph' | 'hotclaw' | 'personal') {
   if (roles.length === 0) return true // fail-open for uninitialized users
   if (roles.includes('admin')) return true
   if (section === 'personal') return false // personal = admin only
@@ -62,8 +62,8 @@ export default function WorkshopNav() {
   const pathname = usePathname()
   const roles = useRoles()
 
-  const canPPH     = hasAccess(roles, 'pph')
-  const canHotDog  = hasAccess(roles, 'hot-dog')
+  const canPPH      = hasAccess(roles, 'pph')
+  const canHotDog   = hasAccess(roles, 'hotclaw')
   const canPersonal = hasAccess(roles, 'personal')
 
   function linkClass(href: string, activeColor: string, baseColor: string) {

@@ -25,8 +25,8 @@ export default clerkMiddleware((auth, req) => {
       return NextResponse.redirect(new URL('/workshop', req.url))
     }
 
-    // Hot Dog section: admin or hot-dog role required
-    if (isHotDogRoute(req) && !isAdmin && !roles.includes('hot-dog')) {
+    // Hotclaw section: admin or hotclaw role required
+    if (isHotDogRoute(req) && !isAdmin && !roles.includes('hotclaw')) {
       return NextResponse.redirect(new URL('/workshop', req.url))
     }
 
