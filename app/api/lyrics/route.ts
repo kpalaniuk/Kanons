@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Client } from '@notionhq/client'
+
+export const dynamic = 'force-dynamic'
 import { BANDS, BAND_ORDER, type Band } from '@/app/lib/lyrics-config'
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY })
