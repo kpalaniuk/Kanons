@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^5.7.0",
+    "@google/model-viewer": "^4.1.0",
     "@notionhq/client": "^5.9.0",
     "@supabase/supabase-js": "^2.95.3",
     "@tailwindcss/typography": "^0.5.19",
