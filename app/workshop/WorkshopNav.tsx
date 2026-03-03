@@ -20,6 +20,7 @@ import {
   NotebookPen,
   Zap,
   Building2,
+  Activity,
 } from 'lucide-react'
 
 const pphLinks = [
@@ -44,6 +45,7 @@ const personalLinks = [
   { href: '/workshop/personal/focus',           label: 'Focus',     icon: Sparkles },
   { href: '/workshop/personal/fc-balboa',       label: 'FC Balboa', icon: Trophy },
   { href: '/workshop/personal/life',            label: 'Life',      icon: Leaf },
+  { href: '/workshop/personal/jasper-health',   label: 'Jasper ♥',  icon: Activity },
 ]
 
 function useRoles(): string[] {
