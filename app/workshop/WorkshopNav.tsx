@@ -3,11 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import { 
-  ClipboardList, 
-  Wrench, 
+import {
+  ClipboardList,
+  Wrench,
   Users,
-  CheckSquare, 
+  CheckSquare,
   Sparkles,
   Trophy,
   Leaf,
@@ -21,6 +21,7 @@ import {
   Zap,
   Building2,
   Activity,
+  ChevronRight,
 } from 'lucide-react'
 
 const pphLinks = [
@@ -30,22 +31,22 @@ const pphLinks = [
 ]
 
 const hotDogLinks = [
-  { href: '/workshop/operation-hot-dog',                  label: 'Hotclaw',     icon: Zap },
-  { href: '/workshop/operation-hot-dog/meeting',          label: 'Mar 3 Brief', icon: Inbox },
-  { href: '/workshop/operation-hot-dog/setup',            label: 'Setup Guide', icon: BookOpen },
-  { href: '/workshop/operation-hot-dog/how-it-works',     label: 'How It Works',icon: BookOpen },
+  { href: '/workshop/operation-hot-dog',                  label: 'Hotclaw',      icon: Zap },
+  { href: '/workshop/operation-hot-dog/meeting',          label: 'Mar 3 Brief',  icon: Inbox },
+  { href: '/workshop/operation-hot-dog/setup',            label: 'Setup Guide',  icon: BookOpen },
+  { href: '/workshop/operation-hot-dog/how-it-works',     label: 'How It Works', icon: BookOpen },
 ]
 
 const personalLinks = [
-  { href: '/workshop/personal/journal',         label: 'Journal',   icon: NotebookPen },
-  { href: '/workshop/personal/tasks',           label: 'Tasks',     icon: CheckSquare },
-  { href: '/workshop/personal/music',           label: 'Music',     icon: Music },
-  { href: '/workshop/personal/strongnome',      label: 'StronGnome',icon: Disc },
-  { href: '/workshop/personal/trip-july-2026',  label: 'July Trip', icon: Map },
-  { href: '/workshop/personal/focus',           label: 'Focus',     icon: Sparkles },
-  { href: '/workshop/personal/fc-balboa',       label: 'FC Balboa', icon: Trophy },
-  { href: '/workshop/personal/life',            label: 'Life',      icon: Leaf },
-  { href: '/workshop/personal/jasper-health',   label: 'Jasper ♥',  icon: Activity },
+  { href: '/workshop/personal/journal',        label: 'Journal',    icon: NotebookPen },
+  { href: '/workshop/personal/tasks',          label: 'Tasks',      icon: CheckSquare },
+  { href: '/workshop/personal/music',          label: 'Music',      icon: Music },
+  { href: '/workshop/personal/strongnome',     label: 'StronGnome', icon: Disc },
+  { href: '/workshop/personal/trip-july-2026', label: 'July Trip',  icon: Map },
+  { href: '/workshop/personal/focus',          label: 'Focus',      icon: Sparkles },
+  { href: '/workshop/personal/fc-balboa',      label: 'FC Balboa',  icon: Trophy },
+  { href: '/workshop/personal/life',           label: 'Life',       icon: Leaf },
+  { href: '/workshop/personal/jasper-health',  label: 'Jasper ♥',   icon: Activity },
 ]
 
 function useRoles(): string[] {
@@ -55,9 +56,9 @@ function useRoles(): string[] {
 }
 
 function hasAccess(roles: string[], section: 'pph' | 'hotclaw' | 'personal') {
-  if (roles.length === 0) return true // fail-open for uninitialized users
+  if (roles.length === 0) return true
   if (roles.includes('admin')) return true
-  if (section === 'personal') return false // personal = admin only
+  if (section === 'personal') return false
   return roles.includes(section)
 }
 
@@ -69,82 +70,78 @@ export default function WorkshopNav() {
   const canHotDog   = hasAccess(roles, 'hotclaw')
   const canPersonal = hasAccess(roles, 'personal')
 
-  function linkClass(href: string, activeColor: string, baseColor: string) {
-    const active = pathname === href || pathname?.startsWith(href + '/')
+  const inPPH      = pathname?.startsWith('/workshop/pph')
+  const inHotDog   = pathname?.startsWith('/workshop/operation-hot-dog')
+  const inPersonal = pathname?.startsWith('/workshop/personal')
+  const inKB       = pathname?.startsWith('/workshop/kb')
+
+  // Active sub-links
+  let subLinks: { href: string; label: string; icon: React.ElementType }[] = []
+  if (inPPH && canPPH)           subLinks = pphLinks
+  else if (inHotDog && canHotDog) subLinks = hotDogLinks
+  else if (inPersonal && canPersonal) subLinks = personalLinks
+
+  function sectionClass(active: boolean, color: string) {
     return `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-      active ? `${activeColor} text-cream` : `text-midnight/50 hover:text-midnight hover:bg-sand`
+      active ? `${color} text-cream` : 'text-midnight/50 hover:text-midnight hover:bg-sand'
     }`
   }
 
-  const isKBActive = pathname?.startsWith('/workshop/kb')
+  function subLinkClass(href: string, activeColor: string) {
+    const active = pathname === href || pathname?.startsWith(href + '/')
+    return `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+      active ? `${activeColor} text-cream` : 'text-midnight/50 hover:text-midnight hover:bg-sand'
+    }`
+  }
 
   return (
     <div className="bg-cream border-b border-midnight/10 sticky top-16 z-30">
+      {/* TOP BAR — section tabs */}
       <div className="max-w-7xl mx-auto px-6">
         <nav className="flex items-center gap-1 py-2 overflow-x-auto scrollbar-hide">
 
           {/* Home */}
           <Link
             href="/workshop"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-              pathname === '/workshop' ? 'bg-midnight text-cream' : 'text-midnight/60 hover:text-midnight hover:bg-sand'
-            }`}
+            className={sectionClass(pathname === '/workshop', 'bg-midnight')}
           >
             <LayoutDashboard size={14} />
             Home
           </Link>
 
-          {/* PPH SECTION */}
+          {/* PPH */}
           {canPPH && (
             <>
               <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
-              <span className={`text-xs font-bold uppercase tracking-wider px-2 flex-shrink-0 ${
-                pathname?.startsWith('/workshop/pph') ? 'text-ocean' : 'text-midnight/30'
-              }`}>
-                <Building2 size={11} className="inline mr-1" />PPH
-              </span>
-              {pphLinks.map(({ href, label, icon: Icon }) => (
-                <Link key={href} href={href} className={linkClass(href, 'bg-ocean', 'text-ocean')}>
-                  <Icon size={14} />
-                  {label}
-                </Link>
-              ))}
+              <Link href="/workshop/pph/pipeline" className={sectionClass(!!inPPH, 'bg-ocean')}>
+                <Building2 size={14} />
+                PPH
+                {inPPH && <ChevronRight size={12} className="opacity-60" />}
+              </Link>
             </>
           )}
 
-          {/* HOT DOG SECTION */}
+          {/* Hotclaw */}
           {canHotDog && (
             <>
               <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
-              <span className={`text-xs font-bold uppercase tracking-wider px-2 flex-shrink-0 ${
-                pathname?.startsWith('/workshop/operation-hot-dog') ? 'text-amber-500' : 'text-midnight/30'
-              }`}>
-                🌭
-              </span>
-              {hotDogLinks.map(({ href, label, icon: Icon }) => (
-                <Link key={href} href={href} className={linkClass(href, 'bg-amber-500', 'text-amber-500')}>
-                  <Icon size={14} />
-                  {label}
-                </Link>
-              ))}
+              <Link href="/workshop/operation-hot-dog" className={sectionClass(!!inHotDog, 'bg-amber-500')}>
+                <Zap size={14} />
+                Hotclaw
+                {inHotDog && <ChevronRight size={12} className="opacity-60" />}
+              </Link>
             </>
           )}
 
-          {/* PERSONAL SECTION */}
+          {/* Personal */}
           {canPersonal && (
             <>
               <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
-              <span className={`text-xs font-bold uppercase tracking-wider px-2 flex-shrink-0 ${
-                pathname?.startsWith('/workshop/personal') ? 'text-terracotta' : 'text-midnight/30'
-              }`}>
+              <Link href="/workshop/personal/journal" className={sectionClass(!!inPersonal, 'bg-terracotta')}>
+                <Leaf size={14} />
                 Personal
-              </span>
-              {personalLinks.map(({ href, label, icon: Icon }) => (
-                <Link key={href} href={href} className={linkClass(href, 'bg-terracotta', 'text-terracotta')}>
-                  <Icon size={14} />
-                  {label}
-                </Link>
-              ))}
+                {inPersonal && <ChevronRight size={12} className="opacity-60" />}
+              </Link>
             </>
           )}
 
@@ -152,9 +149,7 @@ export default function WorkshopNav() {
           <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
           <Link
             href="/workshop/kb"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-              isKBActive ? 'bg-ocean/10 text-ocean' : 'text-midnight/50 hover:text-midnight hover:bg-sand'
-            }`}
+            className={sectionClass(!!inKB, 'bg-ocean/80')}
           >
             <BookOpen size={14} />
             KB
@@ -162,6 +157,29 @@ export default function WorkshopNav() {
 
         </nav>
       </div>
+
+      {/* SUB-NAV — only shows when inside a section */}
+      {subLinks.length > 0 && (
+        <div className="border-t border-midnight/5 bg-sand/40">
+          <div className="max-w-7xl mx-auto px-6">
+            <nav className="flex items-center gap-1 py-1.5 overflow-x-auto scrollbar-hide">
+              {subLinks.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={subLinkClass(
+                    href,
+                    inPPH ? 'bg-ocean' : inHotDog ? 'bg-amber-500' : 'bg-terracotta'
+                  )}
+                >
+                  <Icon size={13} />
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
