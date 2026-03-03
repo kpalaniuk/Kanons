@@ -235,8 +235,8 @@ export default function PipelinePage() {
 
   const ClientCard = ({ client }: { client: Client }) => {
     const isExpanded = expandedClient === client.id
-    const statusStyle = STATUS_COLORS[client.stage]
-    const priorityStyle = PRIORITY_COLORS[client.priority]
+    const statusStyle = STATUS_COLORS[client.stage] ?? { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200' }
+    const priorityStyle = PRIORITY_COLORS[client.priority] ?? { bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-400', ring: 'ring-gray-200' }
     const daysSinceUpdate = client.lastTouched 
       ? Math.floor((new Date().getTime() - new Date(client.lastTouched).getTime()) / (1000 * 60 * 60 * 24))
       : 999
@@ -622,7 +622,7 @@ export default function PipelinePage() {
             const group = groupedClients[status]
             if (!group || group.length === 0) return null
 
-            const statusStyle = STATUS_COLORS[status]
+            const statusStyle = STATUS_COLORS[status] ?? { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200' }
 
             return (
               <div key={status}>
@@ -647,7 +647,7 @@ export default function PipelinePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {STATUS_ORDER.slice(0, 5).map(status => {
             const group = groupedClients[status] || []
-            const statusStyle = STATUS_COLORS[status]
+            const statusStyle = STATUS_COLORS[status] ?? { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200' }
 
             return (
               <div
