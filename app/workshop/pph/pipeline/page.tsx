@@ -89,6 +89,8 @@ export default function PipelinePage() {
   const [cashNet, setCashNet] = useState<string>('')
   const [editingCashNet, setEditingCashNet] = useState(false)
   const [cashNetDraft, setCashNetDraft] = useState('')
+  const [logContact, setLogContact] = useState<{ clientId: string; type: string } | null>(null)
+  const [logNote, setLogNote] = useState('')
 
   // Load cash net from localStorage
   useEffect(() => {
@@ -164,6 +166,29 @@ export default function PipelinePage() {
     setEditingField(null)
   }
 
+  function handleLogContactSave() {
+    if (!logContact) return
+    const { clientId, type } = logContact
+    const client = clients.find(c => c.id === clientId)
+    if (!client) return
+
+    const today = new Date()
+    const dateStr = `${today.getMonth() + 1}/${today.getDate()}`
+    const typeIcons: Record<string, string> = { Call: '📞', Text: '💬', Email: '📧', 'In Person': '🤝' }
+    const icon = typeIcons[type] || '📌'
+    const entry = logNote.trim()
+      ? `[${dateStr} — ${icon} ${type}] ${logNote.trim()}`
+      : `[${dateStr} — ${icon} ${type}]`
+    const updatedNotes = entry + (client.notes ? '\n' + client.notes : '')
+
+    updateClient(clientId, {
+      notes: updatedNotes,
+      lastTouched: new Date().toISOString().split('T')[0],
+    })
+    setLogContact(null)
+    setLogNote('')
+  }
+
   // Filter clients
   const filteredClients = useMemo(() => {
     let result = clients
@@ -193,8 +218,19 @@ export default function PipelinePage() {
     const hot = clients.filter(c => c.priority === 'Hot' && c.stage !== 'Closed' && c.stage !== 'Lost').length
     const active = clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost').length
     const waiting = clients.filter(c => c.stage === 'Waiting').length
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const overdue = clients.filter(c => {
+      if (c.stage === 'Closed' || c.stage === 'Lost') return false
+      const threshold = c.priority === 'Hot' ? 5 : c.priority === 'Active' ? 10 : 14
+      if (!c.lastTouched) return true
+      const last = new Date(c.lastTouched)
+      last.setHours(0, 0, 0, 0)
+      const days = Math.floor((today.getTime() - last.getTime()) / (1000 * 60 * 60 * 24))
+      return days >= threshold
+    }).length
     
-    return { hot, active, waiting }
+    return { hot, active, waiting, overdue }
   }, [clients])
 
   const ClientCard = ({ client }: { client: Client }) => {
@@ -312,14 +348,70 @@ export default function PipelinePage() {
             </div>
           )}
 
-          {/* Last Touched */}
-          <div className={`flex items-center gap-1.5 text-[11px] ${isStale ? 'text-amber-600' : 'text-midnight/40'}`}>
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Last touched {getRelativeTime(client.lastTouched)}
-            {isStale && ' ⚠️'}
-          </div>
+          {/* Quick Log Contact */}
+          {logContact?.clientId === client.id ? (
+            <div className="mt-3 bg-white border border-ocean/30 rounded-xl p-3 space-y-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {['Call', 'Text', 'Email', 'In Person'].map(type => (
+                  <button
+                    key={type}
+                    onClick={() => setLogContact({ clientId: client.id, type })}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                      logContact.type === type
+                        ? 'bg-ocean text-white'
+                        : 'bg-midnight/5 text-midnight/60 hover:bg-midnight/10'
+                    }`}
+                  >
+                    {type === 'Call' ? '📞' : type === 'Text' ? '💬' : type === 'Email' ? '📧' : '🤝'} {type}
+                  </button>
+                ))}
+                <button
+                  onClick={() => { setLogContact(null); setLogNote('') }}
+                  className="ml-auto text-midnight/30 hover:text-midnight/60 text-xs"
+                >✕</button>
+              </div>
+              <input
+                type="text"
+                placeholder="Quick note (optional)..."
+                value={logNote}
+                onChange={e => setLogNote(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleLogContactSave()
+                  if (e.key === 'Escape') { setLogContact(null); setLogNote('') }
+                }}
+                className="w-full bg-midnight/5 border-0 rounded-lg px-3 py-1.5 text-sm text-midnight placeholder-midnight/30 focus:outline-none focus:ring-1 focus:ring-ocean"
+                autoFocus
+              />
+              <button
+                onClick={handleLogContactSave}
+                className="w-full bg-ocean text-white text-xs font-medium py-1.5 rounded-lg hover:bg-ocean/90 transition-colors"
+              >
+                Log {logContact.type} — {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </button>
+            </div>
+          ) : (
+            <div className="mt-3 flex items-center gap-2">
+              <div className={`flex items-center gap-1.5 text-[11px] flex-1 ${isStale ? 'text-amber-600' : 'text-midnight/40'}`}>
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Last touched {getRelativeTime(client.lastTouched)}
+                {isStale && ' ⚠️'}
+              </div>
+              <div className="flex items-center gap-1">
+                {(['Call', 'Text', 'Email'] as const).map(type => (
+                  <button
+                    key={type}
+                    onClick={e => { e.stopPropagation(); setLogContact({ clientId: client.id, type }); setLogNote('') }}
+                    className="p-1.5 rounded-lg bg-midnight/5 hover:bg-ocean hover:text-white text-midnight/40 transition-colors"
+                    title={`Log ${type}`}
+                  >
+                    <span className="text-[13px]">{type === 'Call' ? '📞' : type === 'Text' ? '💬' : '📧'}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Expanded Details */}
@@ -392,8 +484,8 @@ export default function PipelinePage() {
           <div className="text-sm text-white/80">📊 Active Clients</div>
         </div>
         <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white">
-          <div className="text-3xl font-display font-bold">{stats.waiting}</div>
-          <div className="text-sm text-white/80">⏳ Waiting</div>
+          <div className="text-3xl font-display font-bold">{stats.overdue}</div>
+          <div className="text-sm text-white/80">⚠️ Need Contact</div>
         </div>
         <div
           className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-4 text-white cursor-pointer"
