@@ -129,6 +129,19 @@ interface WeatherData {
   wind_kph: number
 }
 
+interface PipelineClient {
+  id: string
+  name: string
+  stage: string
+  priority: string
+  loanType: string | null
+  loanAmount: number | null
+  nextAction: string
+  followUpDate: string | null
+  lastTouched: string | null
+  notes: string
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function getDayContext(): { greeting: string; dayNote: string; isCoachingDay: boolean } {
@@ -237,6 +250,7 @@ function getWardrobeSuggestion(weather: WeatherData): { outfit: string; note: st
 export default function MorningBriefPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [weather, setWeather] = useState<WeatherData | null>(null)
+  const [pipeline, setPipeline] = useState<PipelineClient[]>([])
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
   const [musicStreak, setMusicStreak] = useState<number>(0)
@@ -264,10 +278,11 @@ export default function MorningBriefPage() {
   const fetchAll = async () => {
     setLoading(true)
     try {
-      // Fetch tasks — top priority items
-      const [tasksRes, weatherRes] = await Promise.allSettled([
+      // Fetch tasks, weather, and pipeline
+      const [tasksRes, weatherRes, pipelineRes] = await Promise.allSettled([
         fetch('/api/tasks?status=Not%20Started&status=In%20Progress&limit=20'),
         fetch('https://wttr.in/San+Diego?format=j1'),
+        fetch('/api/pipeline'),
       ])
 
       if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
@@ -294,6 +309,11 @@ export default function MorningBriefPage() {
             wind_kph: parseInt(current.windspeedKmph),
           })
         }
+      }
+
+      if (pipelineRes.status === 'fulfilled' && pipelineRes.value.ok) {
+        const data = await pipelineRes.value.json()
+        setPipeline(data.clients || [])
       }
     } catch (err) {
       console.error('Error fetching morning brief data:', err)
@@ -456,11 +476,11 @@ export default function MorningBriefPage() {
               <span className="text-xl shrink-0">🏴󠁧󠁢󠁳󠁣󠁴󠁿</span>
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-midnight">Scotland &amp; Ireland — 7 bookings still open</p>
+                  <p className="text-sm font-semibold text-midnight">Scotland &amp; Ireland — flights + 3 stays still open</p>
                   <span className="text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">!</span>
                 </div>
                 <p className="text-xs text-midnight/45 mt-0.5">
-                  Flights (SAN→KEF · KEF→GLA · INV→DUB · DUB→SAN) · Hotel Jun 30 · Dromquinna Manor · Kilkenny
+                  Flights (SAN→KEF · INV→DUB · DUB→SAN) · Dromquinna Manor · Kilkenny
                 </p>
               </div>
             </div>
@@ -640,6 +660,78 @@ export default function MorningBriefPage() {
           </Link>
         </div>
       </div>
+
+      {/* ── Pipeline Health ── */}
+      {pipeline.length > 0 && (() => {
+        const today = new Date(); today.setHours(0,0,0,0)
+        const active = pipeline.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost')
+        const hot = active.filter(c => c.priority === 'Hot')
+        const needsContact = active.filter(c => {
+          const threshold = c.priority === 'Hot' ? 3 : c.priority === 'Active' ? 7 : 14
+          if (!c.lastTouched) return true
+          const last = new Date(c.lastTouched); last.setHours(0,0,0,0)
+          return Math.floor((today.getTime() - last.getTime()) / 86400000) >= threshold
+        })
+        const overdueFollowUp = active.filter(c => {
+          if (!c.followUpDate) return false
+          const d = new Date(c.followUpDate); d.setHours(0,0,0,0)
+          return d < today
+        })
+        const hasAlerts = needsContact.length > 0 || overdueFollowUp.length > 0
+        return (
+          <div className={`rounded-2xl p-6 border ${hasAlerts ? 'bg-amber-50 border-amber-200' : 'bg-cream border-midnight/5'}`}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <CheckSquare className={`w-4 h-4 ${hasAlerts ? 'text-amber-600' : 'text-ocean'}`} />
+                <h2 className="font-display text-lg text-midnight">Pipeline</h2>
+                {hasAlerts && (
+                  <span className="text-xs font-bold bg-amber-500 text-white px-2 py-0.5 rounded-full">
+                    {needsContact.length + overdueFollowUp.length} need attention
+                  </span>
+                )}
+              </div>
+              <Link href="/workshop/pph/pipeline" className="text-xs text-ocean hover:underline flex items-center gap-1">
+                Open <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-white/70 rounded-xl p-3 text-center border border-midnight/5">
+                <div className="text-xl font-display text-midnight">{active.length}</div>
+                <div className="text-[10px] text-midnight/40 mt-0.5 uppercase tracking-wide">Active</div>
+              </div>
+              <div className={`rounded-xl p-3 text-center border ${hot.length > 0 ? 'bg-red-50 border-red-100' : 'bg-white/70 border-midnight/5'}`}>
+                <div className={`text-xl font-display ${hot.length > 0 ? 'text-red-600' : 'text-midnight'}`}>{hot.length}</div>
+                <div className="text-[10px] text-midnight/40 mt-0.5 uppercase tracking-wide">Hot 🔥</div>
+              </div>
+              <div className={`rounded-xl p-3 text-center border ${needsContact.length > 0 ? 'bg-amber-50 border-amber-100' : 'bg-white/70 border-midnight/5'}`}>
+                <div className={`text-xl font-display ${needsContact.length > 0 ? 'text-amber-600' : 'text-midnight'}`}>{needsContact.length}</div>
+                <div className="text-[10px] text-midnight/40 mt-0.5 uppercase tracking-wide">Contact Due</div>
+              </div>
+            </div>
+
+            {/* Who needs contact */}
+            {needsContact.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-semibold text-midnight/40 uppercase tracking-wider">Call or text today</p>
+                {needsContact.slice(0, 4).map(c => (
+                  <div key={c.id} className="flex items-center gap-3 bg-white/80 rounded-xl px-3 py-2.5 border border-amber-100">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${c.priority === 'Hot' ? 'bg-red-500' : c.priority === 'Active' ? 'bg-orange-400' : 'bg-amber-400'}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-midnight truncate">{c.name}</p>
+                      <p className="text-xs text-midnight/40 truncate">{c.nextAction || c.stage}</p>
+                    </div>
+                    <span className="text-[10px] text-midnight/30 shrink-0">
+                      {c.lastTouched ? (() => { const d = new Date(c.lastTouched); d.setHours(0,0,0,0); const days = Math.floor((today.getTime() - d.getTime()) / 86400000); return days === 0 ? 'today' : `${days}d ago` })() : 'never'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
       {/* ── Quick Task Add ── */}
       <div className="bg-cream rounded-2xl p-6 border border-midnight/5">
