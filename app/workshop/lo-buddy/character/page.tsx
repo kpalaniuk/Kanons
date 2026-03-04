@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense, lazy } from 'react'
 import { Download, ChevronLeft, ChevronRight, X, RotateCcw } from 'lucide-react'
 import Link from 'next/link'
+
+const LOBuddyAvatar = lazy(() => import('./LOBuddyAvatar'))
 
 const BASE = '/assets/lo-buddy-character'
 const BASE3D = `${BASE}/3d`
@@ -101,6 +103,23 @@ export default function LOBuddyCharacter() {
           LO Buddy Character
         </h1>
         <p style={{ color: '#7A8F9E', marginTop: 8 }}>Pixar-style 3D chibi · navy suit · dark glasses · trustworthy smile</p>
+      </div>
+
+      {/* Animated Avatar */}
+      <div style={{ marginBottom: 40 }}>
+        <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 22, fontWeight: 600, color: '#0a0a0a', marginBottom: 12 }}>
+          🎭 Animated Avatar
+        </h2>
+        <p style={{ color: '#7A8F9E', marginBottom: 16, fontSize: 14 }}>
+          Rigged character with body + face animations. Click states or run the auto demo.
+        </p>
+        <Suspense fallback={
+          <div style={{ height: 500, background: '#0a0a0a', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ color: '#7A8F9E', fontSize: 14 }}>Loading 3D avatar...</div>
+          </div>
+        }>
+          <LOBuddyAvatar />
+        </Suspense>
       </div>
 
       {/* 3D Model Viewer */}
