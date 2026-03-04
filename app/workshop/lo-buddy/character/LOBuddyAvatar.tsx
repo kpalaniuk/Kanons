@@ -74,7 +74,7 @@ function Model({ state, url }: { state: AnimState; url: string }) {
 
   return (
     <group ref={group}>
-      <primitive object={scene} scale={1.2} position={[0, -1.2, 0]} />
+      <primitive object={scene} scale={1.8} position={[0, -1.8, 0]} />
     </group>
   )
 }
@@ -105,7 +105,7 @@ export default function LOBuddyAvatar() {
       {/* 3D Viewport */}
       <div style={{ height: 500, position: 'relative' }}>
         <Canvas
-          camera={{ position: [0, 0.2, 2.5], fov: 45 }}
+          camera={{ position: [0, 0.3, 3.8], fov: 40 }}
           style={{ background: 'linear-gradient(180deg, #0d1117 0%, #161b22 100%)' }}
         >
           <ambientLight intensity={0.6} />
@@ -115,14 +115,15 @@ export default function LOBuddyAvatar() {
             state={state}
             url="/assets/lo-buddy-character/3d/lo-buddy-animated.glb"
           />
-          <ContactShadows position={[0, -1.2, 0]} opacity={0.4} blur={2} />
+          <ContactShadows position={[0, -1.8, 0]} opacity={0.4} blur={2} />
           <Environment preset="city" />
           <OrbitControls
             enablePan={false}
-            minDistance={1.5}
-            maxDistance={4}
+            minDistance={2}
+            maxDistance={6}
             minPolarAngle={Math.PI / 6}
-            maxPolarAngle={Math.PI / 2}
+            maxPolarAngle={Math.PI / 1.8}
+            target={[0, 0.2, 0]}
           />
         </Canvas>
 
