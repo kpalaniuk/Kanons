@@ -37,6 +37,10 @@ const hotDogLinks = [
   { href: '/workshop/operation-hot-dog/how-it-works',     label: 'How It Works', icon: BookOpen },
 ]
 
+const loBuddyLinks = [
+  { href: '/workshop/lo-buddy/character', label: 'Character', icon: Sparkles },
+]
+
 const personalLinks = [
   { href: '/workshop/personal/journal',        label: 'Journal',    icon: NotebookPen },
   { href: '/workshop/personal/tasks',          label: 'Tasks',      icon: CheckSquare },
@@ -55,10 +59,11 @@ function useRoles(): string[] {
   return (meta?.roles as string[]) ?? []
 }
 
-function hasAccess(roles: string[], section: 'pph' | 'hotclaw' | 'personal') {
+function hasAccess(roles: string[], section: 'pph' | 'hotclaw' | 'personal' | 'lo-buddy') {
   if (roles.length === 0) return true
   if (roles.includes('admin')) return true
   if (section === 'personal') return false
+  if (section === 'lo-buddy') return roles.includes('hotclaw') || roles.includes('pph')
   return roles.includes(section)
 }
 
@@ -68,10 +73,12 @@ export default function WorkshopNav() {
 
   const canPPH      = hasAccess(roles, 'pph')
   const canHotDog   = hasAccess(roles, 'hotclaw')
+  const canLOBuddy  = hasAccess(roles, 'lo-buddy')
   const canPersonal = hasAccess(roles, 'personal')
 
   const inPPH      = pathname?.startsWith('/workshop/pph')
   const inHotDog   = pathname?.startsWith('/workshop/operation-hot-dog')
+  const inLOBuddy  = pathname?.startsWith('/workshop/lo-buddy')
   const inPersonal = pathname?.startsWith('/workshop/personal')
   const inKB       = pathname?.startsWith('/workshop/kb')
 
@@ -79,6 +86,7 @@ export default function WorkshopNav() {
   let subLinks: { href: string; label: string; icon: React.ElementType }[] = []
   if (inPPH && canPPH)           subLinks = pphLinks
   else if (inHotDog && canHotDog) subLinks = hotDogLinks
+  else if (inLOBuddy && canLOBuddy) subLinks = loBuddyLinks
   else if (inPersonal && canPersonal) subLinks = personalLinks
 
   function sectionClass(active: boolean, color: string) {
@@ -133,6 +141,18 @@ export default function WorkshopNav() {
             </>
           )}
 
+          {/* LO Buddy */}
+          {canLOBuddy && (
+            <>
+              <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
+              <Link href="/workshop/lo-buddy" className={sectionClass(!!inLOBuddy, 'bg-cyan-600')}>
+                <Sparkles size={14} />
+                LO Buddy
+                {inLOBuddy && <ChevronRight size={12} className="opacity-60" />}
+              </Link>
+            </>
+          )}
+
           {/* Personal */}
           {canPersonal && (
             <>
@@ -169,7 +189,7 @@ export default function WorkshopNav() {
                   href={href}
                   className={subLinkClass(
                     href,
-                    inPPH ? 'bg-ocean' : inHotDog ? 'bg-amber-500' : 'bg-terracotta'
+                    inPPH ? 'bg-ocean' : inHotDog ? 'bg-amber-500' : inLOBuddy ? 'bg-cyan-600' : 'bg-terracotta'
                   )}
                 >
                   <Icon size={13} />
