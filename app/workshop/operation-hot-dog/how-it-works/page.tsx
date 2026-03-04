@@ -59,7 +59,6 @@ function InfoCard({ icon: Icon, title, body, color = 'ocean' }: {
   return (
     <div className="bg-cream rounded-xl p-5 border border-midnight/5">
       <div className="flex items-center gap-3 mb-2">
-        {/* @ts-expect-error lucide */}
         <Icon className={`w-5 h-5 ${iconColors[color] || 'text-ocean'}`} />
         <h3 className="font-medium text-midnight text-sm">{title}</h3>
       </div>

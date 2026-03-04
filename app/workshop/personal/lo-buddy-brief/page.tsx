@@ -19,7 +19,6 @@ function SectionHeader({ icon: Icon, title, color = 'text-cyan-500' }: { icon: R
   return (
     <div className="flex items-center gap-3 mb-6">
       <div className="w-1 h-8 bg-cyan-500 rounded-full" />
-      {/* @ts-expect-error lucide */}
       <Icon className={`w-6 h-6 ${color}`} />
       <h2 className="font-display text-2xl text-midnight">{title}</h2>
     </div>
