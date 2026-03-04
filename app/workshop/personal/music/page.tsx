@@ -163,6 +163,7 @@ function InstrumentCard({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
+            {/* @ts-expect-error lucide */}
             <Icon size={20} className="text-cream" />
           </div>
           <div>

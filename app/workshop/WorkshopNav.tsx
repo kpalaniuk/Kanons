@@ -192,6 +192,7 @@ export default function WorkshopNav() {
                     inPPH ? 'bg-ocean' : inHotDog ? 'bg-amber-500' : inLOBuddy ? 'bg-cyan-600' : 'bg-terracotta'
                   )}
                 >
+                  {/* @ts-expect-error lucide icon size prop */}
                   <Icon size={13} />
                   {label}
                 </Link>
