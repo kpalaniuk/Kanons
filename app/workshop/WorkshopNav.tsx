@@ -91,14 +91,14 @@ export default function WorkshopNav() {
 
   function sectionClass(active: boolean, color: string) {
     return `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-      active ? `${color} text-cream` : 'text-midnight/50 hover:text-midnight hover:bg-sand'
+      active ? `bg-midnight/10 text-midnight border border-midnight/20` : 'text-midnight/50 hover:text-midnight hover:bg-sand'
     }`
   }
 
   function subLinkClass(href: string, activeColor: string) {
     const active = pathname === href || pathname?.startsWith(href + '/')
     return `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-      active ? `${activeColor} text-cream` : 'text-midnight/50 hover:text-midnight hover:bg-sand'
+      active ? `bg-midnight/10 text-midnight border border-midnight/20` : 'text-midnight/50 hover:text-midnight hover:bg-sand'
     }`
   }
 
