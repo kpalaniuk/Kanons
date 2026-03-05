@@ -5,6 +5,7 @@ const isProtectedRoute = createRouteMatcher(['/workshop(.*)', '/family(.*)'])
 const isPPHRoute = createRouteMatcher(['/workshop/pph(.*)'])
 const isHotDogRoute = createRouteMatcher(['/workshop/operation-hot-dog(.*)'])
 const isPersonalRoute = createRouteMatcher(['/workshop/personal(.*)'])
+const isLOBuddyRoute = createRouteMatcher(['/workshop/lo-buddy(.*)'])
 
 export default clerkMiddleware((auth, req) => {
   if (isProtectedRoute(req)) {
@@ -32,6 +33,11 @@ export default clerkMiddleware((auth, req) => {
 
     // Personal section: admin only (Kyle)
     if (isPersonalRoute(req) && !isAdmin) {
+      return NextResponse.redirect(new URL('/workshop', req.url))
+    }
+
+    // LO Buddy section: admin, hotclaw, or pph role required
+    if (isLOBuddyRoute(req) && !isAdmin && !roles.includes('hotclaw') && !roles.includes('pph')) {
       return NextResponse.redirect(new URL('/workshop', req.url))
     }
   }

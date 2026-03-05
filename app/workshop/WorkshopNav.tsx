@@ -38,7 +38,8 @@ const hotDogLinks = [
 ]
 
 const loBuddyLinks = [
-  { href: '/workshop/lo-buddy/character', label: 'Character', icon: Sparkles },
+  { href: '/workshop/lo-buddy',           label: 'Control Center', icon: LayoutDashboard },
+  { href: '/workshop/lo-buddy/character', label: 'Character',      icon: Sparkles },
 ]
 
 const personalLinks = [
