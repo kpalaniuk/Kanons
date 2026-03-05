@@ -231,7 +231,7 @@ const OPEN_ITEMS = [
 
 export default function TripPage() {
   const [activeStop, setActiveStop] = useState<string | null>(null)
-  const [view, setView] = useState<'calendar' | 'route' | 'open'>('calendar')
+  const [view, setView] = useState<'calendar' | 'route' | 'open' | 'flights'>('calendar')
 
   const bookedCount  = STOPS.filter(s => s.status === 'booked').length
   const urgentCount  = OPEN_ITEMS.filter(i => i.urgent).length
@@ -287,7 +287,7 @@ export default function TripPage() {
 
         {/* View toggle */}
         <div className="flex gap-2 flex-wrap">
-          {([['calendar', '📅 Every Night'], ['route', '📍 Stops'], ['open', '⚡ Open Items']] as const).map(([v, label]) => (
+          {([['calendar', '📅 Every Night'], ['route', '📍 Stops'], ['open', '⚡ Open Items'], ['flights', '✈️ INV→DUB']] as const).map(([v, label]) => (
             <button key={v} onClick={() => setView(v)}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                 view === v ? 'bg-midnight text-cream' : 'bg-cream text-midnight/50 hover:text-midnight border border-midnight/10'
@@ -443,6 +443,124 @@ export default function TripPage() {
                 ))}
               </ul>
             </div>
+          </div>
+        )}
+
+        {/* ── FLIGHTS: INV → DUB ── */}
+        {view === 'flights' && (
+          <div className="space-y-4">
+
+            {/* Route header */}
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <Plane size={16} className="text-green-700" />
+                <span className="font-display text-base text-midnight">Inverness → Dublin</span>
+                <span className="text-xs bg-green-100 text-green-700 border border-green-200 px-2 py-0.5 rounded-full font-medium">Jul 16 · Thursday</span>
+                <span className="text-xs bg-red-100 text-red-600 border border-red-200 px-2 py-0.5 rounded-full font-medium">Last open flight</span>
+              </div>
+              <p className="text-sm text-midnight/60 leading-relaxed">Aer Lingus Regional launched a brand-new direct INV→DUB service in May 2026. It only flies twice a week — and Thursday is one of those days. You got lucky.</p>
+            </div>
+
+            {/* Best option */}
+            <div>
+              <div className="text-xs font-semibold text-midnight/50 uppercase tracking-wide mb-2">Best Option — Direct</div>
+              <div className="bg-cream border-2 border-green-300 rounded-2xl p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-display text-base text-midnight">🍀 Aer Lingus Regional</span>
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium border border-green-200">Direct · 1h 35m</span>
+                    </div>
+                    <div className="text-sm text-midnight/55 mt-0.5">INV → DUB · Operated by Emerald Airlines · New route from May 21, 2026</div>
+                  </div>
+                  <CheckCircle size={16} className="text-green-500 flex-shrink-0 mt-1" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="bg-green-50 rounded-xl p-3">
+                    <div className="text-xs text-midnight/40 font-medium mb-0.5">Operates</div>
+                    <div className="text-midnight font-semibold">Thu & Sun only</div>
+                    <div className="text-xs text-green-700 font-semibold mt-1">✅ Jul 16 = Thursday</div>
+                  </div>
+                  <div className="bg-sky-50 rounded-xl p-3">
+                    <div className="text-xs text-midnight/40 font-medium mb-0.5">Avios estimate</div>
+                    <div className="text-midnight font-semibold">4,500–9,000/pp</div>
+                    <div className="text-xs text-midnight/50 mt-1">Chase UR → BA → AerClub</div>
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-900 leading-relaxed">
+                  <span className="font-semibold">💳 Points strategy: </span>Transfer Chase Ultimate Rewards to British Airways Executive Club (1:1). Use BA Avios to book Aer Lingus seats — short-haul EU band is 4,500–9,000 Avios + taxes per person one-way. 4 adults + 2 kids = ~27,000–54,000 Avios total.
+                </div>
+
+                <div className="flex gap-2">
+                  <a href="https://www.aerlingus.com/en-gb/flights-from-inverness-to-dublin" target="_blank" rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-midnight text-cream text-sm font-medium py-2.5 rounded-xl hover:bg-ocean transition-colors">
+                    Book on Aer Lingus <ExternalLink size={12} />
+                  </a>
+                  <a href="https://www.britishairways.com/travel/redeem/public/en_gb?eId=106021&tab=redeem" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-sm text-ocean border border-ocean/30 px-3 py-2.5 rounded-xl hover:bg-ocean/5 transition-colors whitespace-nowrap">
+                    BA Avios <ExternalLink size={11} />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Backup options */}
+            <div>
+              <div className="text-xs font-semibold text-midnight/50 uppercase tracking-wide mb-2">Backup Options</div>
+              <div className="space-y-2">
+                {[
+                  {
+                    title: 'Loganair: Aberdeen → Dublin',
+                    detail: 'Drive INV → ABZ (~2 hrs). Return Scotland car early at Aberdeen.',
+                    flag: '⚠️ Reliability concerns noted by travellers — use as last resort',
+                    url: 'https://www.loganair.co.uk/',
+                    label: 'Loganair',
+                  },
+                  {
+                    title: 'Train INV → Edinburgh + Ryanair EDI → DUB',
+                    detail: '~3h ScotRail train, then Ryanair 1h25m. Most affordable cash option.',
+                    flag: '✓ Flexible timing, two budget carriers',
+                    url: 'https://www.ryanair.com/gb/en/cheap-flights/edinburgh/dublin',
+                    label: 'Ryanair',
+                  },
+                  {
+                    title: 'Train INV → Glasgow + BA/easyJet GLA → DUB',
+                    detail: '~3h train, then fly GLA → DUB. Can drop Scotland rental at GLA Airport.',
+                    flag: '✓ Convenient if you need to return Scotland car at GLA',
+                    url: 'https://www.google.com/travel/flights?q=GLA+to+DUB+Jul+16+2026',
+                    label: 'Google Flights',
+                  },
+                ].map((opt, i) => (
+                  <div key={i} className="bg-cream border border-midnight/10 rounded-xl p-3 flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-midnight">{opt.title}</div>
+                      <div className="text-xs text-midnight/55 mt-0.5 leading-snug">{opt.detail}</div>
+                      <div className="text-xs text-midnight/35 mt-0.5 italic">{opt.flag}</div>
+                    </div>
+                    <a href={opt.url} target="_blank" rel="noopener noreferrer"
+                      className="flex-shrink-0 text-xs font-medium bg-slate-100 text-midnight px-2.5 py-1.5 rounded-lg hover:bg-slate-200 transition-colors flex items-center gap-1">
+                      {opt.label} <ExternalLink size={10} />
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Day-of context */}
+            <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 text-sm text-sky-900">
+              <div className="font-semibold mb-2">📋 Jul 16 day-of checklist</div>
+              <ul className="space-y-1.5 text-sky-800">
+                <li className="flex items-start gap-2"><span className="text-sky-400 flex-shrink-0">○</span>Checkout Inverness Highland Cow Apt by 11am (PIN: 7462)</li>
+                <li className="flex items-start gap-2"><span className="text-sky-400 flex-shrink-0">○</span>Return Scotland rental car at Inverness Airport before flight</li>
+                <li className="flex items-start gap-2"><span className="text-sky-400 flex-shrink-0">○</span>Flight INV → DUB (1h 35m · direct)</li>
+                <li className="flex items-start gap-2"><span className="text-sky-400 flex-shrink-0">○</span>Pick up Ireland rental car at Dublin Airport on arrival</li>
+                <li className="flex items-start gap-2"><span className="text-sky-400 flex-shrink-0">○</span>Drive to Dublin HX — 12 Adrian Ave, Harold's Cross (20 min from DUB)</li>
+                <li className="flex items-start gap-2"><span className="text-sky-400 flex-shrink-0">○</span>Johnsfort collects the family from Dublin on Jul 20</li>
+              </ul>
+            </div>
+
           </div>
         )}
 
