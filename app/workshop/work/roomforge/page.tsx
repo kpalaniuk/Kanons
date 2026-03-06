@@ -172,25 +172,8 @@ export default function RoomForgePage() {
   // ── Init ─────────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    // Try to load last project
-    try {
-      const list = JSON.parse(localStorage.getItem('roomforge-projects') || '[]') as SavedProjectEntry[]
-      if (list.length > 0) {
-        const last = list[0]
-        const raw = localStorage.getItem(`roomforge-project-${last.id}`)
-        if (raw) {
-          const loaded = JSON.parse(raw) as ProjectState
-          setProject(loaded)
-          // Restore chat history for current phase
-          const phaseHistory = loaded.chatHistory.find((h) => h.phase === loaded.phase)
-          if (phaseHistory) setChatMessages(phaseHistory.messages)
-          // Restore dimensionsComplete from history if phase > 2
-          if (loaded.phase > 2) setDimensionsComplete(true)
-          // Restore conceptLocked if concept exists and phase > 3
-          if (loaded.phase > 3 && loaded.concept?.style) setConceptLocked(true)
-        }
-      }
-    } catch { /* ignore */ }
+    // Do NOT auto-load — always start fresh on Phase 1 so user can choose
+    // User explicitly chooses: "Load existing project" or "Load House Project"
   }, [])
 
   // ── Auto-save ─────────────────────────────────────────────────────────────
