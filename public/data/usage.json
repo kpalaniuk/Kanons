@@ -1,15 +1,15 @@
 {
-  "lastUpdated": "2026-03-05T23:03:41.423Z",
-  "period": "2026-02-21 to 2026-03-05",
+  "lastUpdated": "2026-03-06T05:03:42.332Z",
+  "period": "2026-02-21 to 2026-03-06",
   "providers": [
     {
       "name": "anthropic",
       "model": "claude-sonnet-4-6",
       "status": "active",
-      "calls": 4434,
-      "tokensIn": 32895,
-      "tokensOut": 2467086,
-      "estimatedCost": 483.3085536999996,
+      "calls": 4461,
+      "tokensIn": 32932,
+      "tokensOut": 2481591,
+      "estimatedCost": 485.9430465999998,
       "notes": "Primary reasoning model. Claude Sonnet 4.5 for most tasks, Opus 4 for complex thinking."
     },
     {
@@ -36,22 +36,14 @@
       "name": "nexos",
       "model": "54b60359-f352-4b5d-9cb6-90b27ec9757b",
       "status": "active",
-      "calls": 124,
-      "tokensIn": 12961784,
-      "tokensOut": 44055,
+      "calls": 122,
+      "tokensIn": 12917845,
+      "tokensOut": 43913,
       "estimatedCost": 0,
       "notes": "Prepaid credits with zero marginal cost. Covers ~80% of traffic."
     }
   ],
   "daily": [
-    {
-      "date": "2026-02-23",
-      "provider": "openclaw",
-      "calls": 9,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
     {
       "date": "2026-02-23",
       "provider": "anthropic",
@@ -247,10 +239,10 @@
     {
       "date": "2026-03-04",
       "provider": "anthropic",
-      "calls": 295,
-      "tokensIn": 893,
-      "tokensOut": 107809,
-      "cost": 23.409020699999992
+      "calls": 292,
+      "tokensIn": 888,
+      "tokensOut": 107511,
+      "cost": 23.37058934999999
     },
     {
       "date": "2026-03-04",
@@ -263,9 +255,9 @@
     {
       "date": "2026-03-05",
       "provider": "nexos",
-      "calls": 124,
-      "tokensIn": 12961784,
-      "tokensOut": 44055,
+      "calls": 122,
+      "tokensIn": 12917845,
+      "tokensOut": 43913,
       "cost": 0
     },
     {
@@ -279,18 +271,26 @@
     {
       "date": "2026-03-05",
       "provider": "anthropic",
-      "calls": 323,
-      "tokensIn": 398,
-      "tokensOut": 133468,
-      "cost": 20.901175249999998
+      "calls": 349,
+      "tokensIn": 430,
+      "tokensOut": 147937,
+      "cost": 23.169885499999996
+    },
+    {
+      "date": "2026-03-06",
+      "provider": "anthropic",
+      "calls": 4,
+      "tokensIn": 10,
+      "tokensOut": 334,
+      "cost": 0.4042140000000001
     }
   ],
   "totals": {
-    "totalCalls": 4781,
-    "totalTokensIn": 21008048,
-    "totalTokensOut": 2530115,
-    "totalCost": 487.6860942999996,
-    "avgCallsPerDay": 368,
-    "avgTokensPerCall": 4923
+    "totalCalls": 4806,
+    "totalTokensIn": 20964146,
+    "totalTokensOut": 2544478,
+    "totalCost": 490.32058719999975,
+    "avgCallsPerDay": 343,
+    "avgTokensPerCall": 4892
   }
 }
