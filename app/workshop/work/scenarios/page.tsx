@@ -2,6 +2,13 @@ import Link from 'next/link'
 
 const scenarios = [
   {
+    href: '/workshop/work/income-qualifier',
+    title: 'Income Qualifier',
+    description: 'Reverse-qualify: given a target purchase price, what income does the buyer need?',
+    icon: '💰',
+    stats: ['4 DTI tiers', 'Price sensitivity table', 'PITIA breakdown']
+  },
+  {
     href: '/workshop/work/refi-builder',
     title: 'Refinance Builder',
     description: 'Model refinancing scenarios with custom terms, cash-out options, and ROI projections',
