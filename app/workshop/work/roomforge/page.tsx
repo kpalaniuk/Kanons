@@ -253,9 +253,11 @@ export default function RoomForgePage() {
     setChatMessages([...nextMsgs, placeholder])
 
     try {
-      const photosForApi = project.photos
-        .filter((p) => p.dataUrl)
-        .map((p) => ({ slot: p.slot, dataUrl: p.dataUrl }))
+      // Only send photo data in Phase 1 to avoid FUNCTION_PAYLOAD_TOO_LARGE
+      // In other phases, send captions only (already in chat history)
+      const photosForApi = project.phase === 1
+        ? project.photos.filter((p) => p.dataUrl).map((p) => ({ slot: p.slot, dataUrl: p.dataUrl }))
+        : project.photos.filter((p) => p.aiCaption).map((p) => ({ slot: p.slot, aiCaption: p.aiCaption }))
 
       const res = await fetch('/api/roomforge/chat', {
         method: 'POST',
