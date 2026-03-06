@@ -22,6 +22,7 @@ import {
   Building2,
   Activity,
   ChevronRight,
+  Box,
 } from 'lucide-react'
 
 const pphLinks = [
@@ -165,6 +166,16 @@ export default function WorkshopNav() {
               </Link>
             </>
           )}
+
+          {/* RoomForge */}
+          <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
+          <Link
+            href="/workshop/work/roomforge"
+            className={sectionClass(!!pathname?.startsWith('/workshop/work/roomforge'), 'bg-amber-700')}
+          >
+            <Box size={14} />
+            RoomForge
+          </Link>
 
           {/* KB */}
           <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
