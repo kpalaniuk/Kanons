@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
@@ -59,6 +59,9 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
   const controlsRef = useRef<OrbitControls | null>(null)
   const animFrameRef = useRef<number | null>(null)
   const roomGroupRef = useRef<THREE.Group | null>(null)
+  const wallGroupRef = useRef<THREE.Group | null>(null)
+
+  const [wallsVisible, setWallsVisible] = useState(true)
 
   // Touch state refs
   const touchStateRef = useRef<{
@@ -271,6 +274,51 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
     }
   }, [])
 
+  // Toggle wall visibility
+  useEffect(() => {
+    if (wallGroupRef.current) {
+      wallGroupRef.current.visible = wallsVisible
+    }
+  }, [wallsVisible])
+
+  // Helper: create diagonal hatch lines across a wall plane
+  function buildWallHatch(
+    width: number,
+    height: number,
+    position: THREE.Vector3,
+    rotation: THREE.Euler
+  ): THREE.LineSegments[] {
+    const lines: THREE.LineSegments[] = []
+    const mat = new THREE.LineBasicMaterial({ color: 0xaaaaaa, opacity: 0.2, transparent: true })
+    // Spacing every 24 inches = 0.24 units
+    const spacing = inToU(24)
+    // diagonal lines going from bottom-left to top-right (and bottom-right to top-left)
+    const diagonalCount = Math.ceil((width + height) / spacing)
+
+    for (let i = -diagonalCount; i <= diagonalCount; i++) {
+      const offset = i * spacing
+      // "/" direction lines
+      const x1 = Math.max(0, offset)
+      const y1 = Math.max(0, -offset)
+      const x2 = Math.min(width, offset + height)
+      const y2 = Math.min(height, height - offset)
+
+      if (x2 > x1 || y2 > y1) {
+        const pts = new Float32Array([
+          x1 - width / 2, y1 - height / 2, 0,
+          x2 - width / 2, y2 - height / 2, 0,
+        ])
+        const geo = new THREE.BufferGeometry()
+        geo.setAttribute('position', new THREE.BufferAttribute(pts, 3))
+        const seg = new THREE.LineSegments(geo, mat)
+        seg.position.copy(position)
+        seg.rotation.copy(rotation)
+        lines.push(seg)
+      }
+    }
+    return lines
+  }
+
   // Rebuild room geometry when spec changes
   useEffect(() => {
     const scene = sceneRef.current
@@ -288,7 +336,25 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
     roomGroupRef.current = group
     scene.add(group)
 
-    const wallMat = new THREE.MeshLambertMaterial({ color: 0xd4ccbb, side: THREE.DoubleSide })
+    // Wall group for visibility toggling
+    const wallGroup = new THREE.Group()
+    wallGroup.visible = wallsVisible
+    wallGroupRef.current = wallGroup
+    group.add(wallGroup)
+
+    // Very faint fill material for walls
+    const wallFillMat = new THREE.MeshLambertMaterial({
+      color: 0xd4ccbb,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.05,
+    })
+    const wallEdgeMat = new THREE.LineBasicMaterial({
+      color: 0x888888,
+      opacity: 0.6,
+      transparent: true,
+    })
+
     const ceilMat = new THREE.MeshLambertMaterial({
       color: 0xf0ece0,
       transparent: true,
@@ -339,14 +405,34 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
       return segments
     }
 
+    function addWallSegment(geo: THREE.BoxGeometry, mesh: THREE.Mesh) {
+      mesh.material = wallFillMat
+      wallGroup.add(mesh)
+
+      // Edge lines
+      const edges = new THREE.EdgesGeometry(geo)
+      const edgeLines = new THREE.LineSegments(edges, wallEdgeMat)
+      edgeLines.position.copy(mesh.position)
+      edgeLines.rotation.copy(mesh.rotation)
+      wallGroup.add(edgeLines)
+    }
+
     // --- LEFT WALL ---
     for (const seg of buildWallSegments(openingsByWall['left'], leftLen)) {
       const segLen = seg.end - seg.start
       if (segLen <= 0) continue
       const geo = new THREE.BoxGeometry(WALL_THICKNESS, hLeft, segLen)
-      const mesh = new THREE.Mesh(geo, wallMat)
+      const mesh = new THREE.Mesh(geo, wallFillMat)
       mesh.position.set(0, hLeft / 2, seg.start + segLen / 2)
-      group.add(mesh)
+      addWallSegment(geo, mesh)
+
+      // Diagonal hatch — on xz plane of left wall (rotated)
+      const hatchLines = buildWallHatch(
+        segLen, hLeft,
+        new THREE.Vector3(0, hLeft / 2, seg.start + segLen / 2),
+        new THREE.Euler(0, Math.PI / 2, 0)
+      )
+      hatchLines.forEach(l => wallGroup.add(l))
     }
 
     // --- RIGHT WALL ---
@@ -354,9 +440,16 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
       const segLen = seg.end - seg.start
       if (segLen <= 0) continue
       const geo = new THREE.BoxGeometry(WALL_THICKNESS, hRight, segLen)
-      const mesh = new THREE.Mesh(geo, wallMat)
+      const mesh = new THREE.Mesh(geo, wallFillMat)
       mesh.position.set(backLen, hRight / 2, seg.start + segLen / 2)
-      group.add(mesh)
+      addWallSegment(geo, mesh)
+
+      const hatchLines = buildWallHatch(
+        segLen, hRight,
+        new THREE.Vector3(backLen, hRight / 2, seg.start + segLen / 2),
+        new THREE.Euler(0, Math.PI / 2, 0)
+      )
+      hatchLines.forEach(l => wallGroup.add(l))
     }
 
     // --- BACK WALL ---
@@ -366,9 +459,16 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
       const t = (seg.start + seg.end) / 2 / backLen
       const h = hLeft + (hRight - hLeft) * t
       const geo = new THREE.BoxGeometry(segLen, h, WALL_THICKNESS)
-      const mesh = new THREE.Mesh(geo, wallMat)
+      const mesh = new THREE.Mesh(geo, wallFillMat)
       mesh.position.set(seg.start + segLen / 2, h / 2, 0)
-      group.add(mesh)
+      addWallSegment(geo, mesh)
+
+      const hatchLines = buildWallHatch(
+        segLen, h,
+        new THREE.Vector3(seg.start + segLen / 2, h / 2, 0),
+        new THREE.Euler(0, 0, 0)
+      )
+      hatchLines.forEach(l => wallGroup.add(l))
     }
 
     // --- FRONT WALL ---
@@ -378,27 +478,49 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
       const t = (seg.start + seg.end) / 2 / frontLen
       const h = hLeft + (hRight - hLeft) * t
       const geo = new THREE.BoxGeometry(segLen, h, WALL_THICKNESS)
-      const mesh = new THREE.Mesh(geo, wallMat)
+      const mesh = new THREE.Mesh(geo, wallFillMat)
       mesh.position.set(seg.start + segLen / 2, h / 2, leftLen)
-      group.add(mesh)
+      addWallSegment(geo, mesh)
+
+      const hatchLines = buildWallHatch(
+        segLen, h,
+        new THREE.Vector3(seg.start + segLen / 2, h / 2, leftLen),
+        new THREE.Euler(0, 0, 0)
+      )
+      hatchLines.forEach(l => wallGroup.add(l))
     }
 
-    // --- FLOOR ---
-    const gridHelper = new THREE.GridHelper(
-      Math.max(backLen, leftLen) * 1.2,
-      20,
-      0x333333,
-      0x222222
-    )
-    gridHelper.position.set(backLen / 2, 0, leftLen / 2)
-    group.add(gridHelper)
-
+    // --- FLOOR: refined grid ---
     const floorGeo = new THREE.PlaneGeometry(backLen, leftLen)
-    const floorMat = new THREE.MeshLambertMaterial({ color: 0x1a1a1a })
+    const floorMat = new THREE.MeshLambertMaterial({ color: 0xc8c8c8 })
     const floor = new THREE.Mesh(floorGeo, floorMat)
     floor.rotation.x = -Math.PI / 2
     floor.position.set(backLen / 2, 0, leftLen / 2)
     group.add(floor)
+
+    // Fine grid — every 12 inches (1 foot)
+    const fineGrid = new THREE.GridHelper(
+      Math.max(backLen, leftLen) * 1.5,
+      Math.ceil(Math.max(backLen, leftLen) * 1.5 / inToU(12)),
+      0xaaaaaa,
+      0xaaaaaa
+    )
+    fineGrid.position.set(backLen / 2, 0.001, leftLen / 2)
+    ;(fineGrid.material as THREE.LineBasicMaterial).opacity = 0.5
+    ;(fineGrid.material as THREE.LineBasicMaterial).transparent = true
+    group.add(fineGrid)
+
+    // Coarse grid — every 48 inches (4 feet)
+    const coarseGrid = new THREE.GridHelper(
+      Math.max(backLen, leftLen) * 1.5,
+      Math.ceil(Math.max(backLen, leftLen) * 1.5 / inToU(48)),
+      0x888888,
+      0x888888
+    )
+    coarseGrid.position.set(backLen / 2, 0.002, leftLen / 2)
+    ;(coarseGrid.material as THREE.LineBasicMaterial).opacity = 0.8
+    ;(coarseGrid.material as THREE.LineBasicMaterial).transparent = true
+    group.add(coarseGrid)
 
     // --- CEILING ---
     if (roomSpec.ceiling.type === 'flat') {
@@ -427,7 +549,10 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
     for (const cab of cabinets) {
       const cabColor = cab.color || '#C4975A'
       const cabMat = new THREE.MeshLambertMaterial({ color: new THREE.Color(cabColor) })
-      const edgeMat = new THREE.LineBasicMaterial({ color: 0x5a3a1a })
+
+      // Darker edge color: darken the cabinet color
+      const baseColor = new THREE.Color(cabColor)
+      const edgeColor = baseColor.clone().multiplyScalar(0.6)
 
       const w = inToU(cab.width)
       const d = inToU(cab.depth)
@@ -437,8 +562,11 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
 
       const geo = new THREE.BoxGeometry(w, h, d)
       const mesh = new THREE.Mesh(geo, cabMat)
-      const edges = new THREE.EdgesGeometry(geo)
-      const edgeLines = new THREE.LineSegments(edges, edgeMat)
+      const cabinetEdges = new THREE.EdgesGeometry(geo)
+      const edgeLines = new THREE.LineSegments(
+        cabinetEdges,
+        new THREE.LineBasicMaterial({ color: edgeColor, linewidth: 1 })
+      )
 
       let cx = 0,
         cy = oF + h / 2,
@@ -479,7 +607,18 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
         controlsRef.current.update()
       }
     }
-  }, [roomSpec, cabinets])
+  }, [roomSpec, cabinets]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <div ref={mountRef} className="w-full h-full bg-[#0f0f0f]" />
+  return (
+    <div ref={mountRef} className="w-full h-full bg-[#0f0f0f] relative">
+      {/* Wall visibility toggle */}
+      <button
+        onClick={() => setWallsVisible((v) => !v)}
+        className="absolute top-3 right-3 z-10 px-3 py-1.5 rounded-lg bg-black/70 border border-white/20 text-white text-xs font-medium hover:bg-black/90 transition-colors"
+        style={{ backdropFilter: 'blur(4px)' }}
+      >
+        {wallsVisible ? 'Walls ●' : 'Walls ○'}
+      </button>
+    </div>
+  )
 }

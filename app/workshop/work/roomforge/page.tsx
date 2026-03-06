@@ -20,6 +20,7 @@ import {
   FolderOpen,
 } from 'lucide-react'
 import type { RoomSpec, Cabinet } from '@/components/roomforge/RoomCanvas'
+import FloorPlan2D from '@/components/roomforge/FloorPlan2D'
 
 const RoomCanvas = dynamic(() => import('@/components/roomforge/RoomCanvas'), {
   ssr: false,
@@ -153,6 +154,13 @@ export default function RoomForgePage() {
   const [savedProjects, setSavedProjects] = useState<SavedProjectEntry[]>([])
   // Seed loading state
   const [seedLoading, setSeedLoading] = useState(false)
+  // 2D plan toggle (Phase 4)
+  const [show2DPlan, setShow2DPlan] = useState(false)
+  // Polycam import state
+  const [showPolycamImport, setShowPolycamImport] = useState(false)
+  const [polycamJson, setPolycamJson] = useState('')
+  const [polycamError, setPolycamError] = useState('')
+  const polycamFileRef = useRef<HTMLInputElement | null>(null)
 
   const chatBottomRef = useRef<HTMLDivElement>(null)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -612,6 +620,85 @@ export default function RoomForgePage() {
     alert('Share link copied to clipboard!')
   }
 
+  // ── Polycam import ────────────────────────────────────────────────────────
+
+  function parsePolycamJson(raw: string): boolean {
+    setPolycamError('')
+    try {
+      const data = JSON.parse(raw)
+
+      // Simple format: { width, depth, ceilingHeight, peakHeight }
+      if (typeof data.width === 'number' || typeof data.depth === 'number') {
+        const newSpec: RoomSpec = {
+          walls: {
+            left: { length: data.depth || data.width || 120 },
+            back: { length: data.width || 120 },
+            right: { length: data.depth || data.width || 120 },
+            front: { length: data.width || 120 },
+          },
+          ceiling: {
+            type: data.peakHeight ? 'shed-vault' : 'flat',
+            height: data.ceilingHeight || 108,
+            peakHeight: data.peakHeight,
+          },
+          openings: [],
+        }
+        updateProject({ roomSpec: newSpec })
+        setDimensionsComplete(true)
+        setShowPolycamImport(false)
+        goToPhase(3)
+        return true
+      }
+
+      // Polycam rooms format: { rooms: [{ walls: [{ length, height }], floor_area }] }
+      if (data.rooms && Array.isArray(data.rooms) && data.rooms.length > 0) {
+        const room = data.rooms[0]
+        const walls = room.walls || []
+        const wallLengths = walls.map((w: { length: number }) => w.length || 120)
+        const ceilingH = walls[0]?.height || 108
+
+        const newSpec: RoomSpec = {
+          walls: {
+            left: { length: wallLengths[1] || wallLengths[0] || 120 },
+            back: { length: wallLengths[0] || 120 },
+            right: { length: wallLengths[3] || wallLengths[1] || wallLengths[0] || 120 },
+            front: { length: wallLengths[2] || wallLengths[0] || 120 },
+          },
+          ceiling: {
+            type: 'flat',
+            height: ceilingH,
+          },
+          openings: [],
+        }
+        updateProject({ roomSpec: newSpec })
+        setDimensionsComplete(true)
+        setShowPolycamImport(false)
+        goToPhase(3)
+        return true
+      }
+
+      setPolycamError('Unrecognized JSON format. See placeholder for expected structure.')
+      return false
+    } catch {
+      setPolycamError('Invalid JSON. Check your input and try again.')
+      return false
+    }
+  }
+
+  function handlePolycamFile(file: File) {
+    if (file.name.endsWith('.usdz')) {
+      setPolycamError('USDZ import coming soon — export as JSON from Polycam instead.')
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const text = e.target?.result as string
+      setPolycamJson(text)
+      parsePolycamJson(text)
+    }
+    reader.readAsText(file)
+  }
+
   // ── Scroll chat ───────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -927,6 +1014,54 @@ export default function RoomForgePage() {
         >
           <SkipForward size={16} /> Skip photos — I&apos;ll describe instead
         </button>
+
+        {/* Polycam import */}
+        <button
+          onClick={() => { setShowPolycamImport((v) => !v); setPolycamError('') }}
+          className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 text-sm flex items-center justify-center gap-2 transition-colors border border-white/10"
+        >
+          📐 Import from Polycam
+        </button>
+
+        {showPolycamImport && (
+          <div className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 border border-white/10">
+            <p className="text-xs text-white/50">Upload a Polycam JSON export, or paste/type dimensions directly:</p>
+            <input
+              ref={polycamFileRef}
+              type="file"
+              accept=".json,.usdz"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handlePolycamFile(file)
+              }}
+            />
+            <button
+              onClick={() => polycamFileRef.current?.click()}
+              className="w-full py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-medium border border-amber-500/30 transition-colors"
+            >
+              📁 Choose file (.json or .usdz)
+            </button>
+            <textarea
+              value={polycamJson}
+              onChange={(e) => setPolycamJson(e.target.value)}
+              rows={4}
+              placeholder={`{ "width": 160, "depth": 212, "ceilingHeight": 121, "peakHeight": 144 }`}
+              className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-xs text-white/80 placeholder:text-white/25 font-mono focus:outline-none focus:border-amber-500/40 resize-none"
+            />
+            {polycamError && (
+              <p className="text-xs text-red-400">{polycamError}</p>
+            )}
+            <button
+              onClick={() => parsePolycamJson(polycamJson)}
+              disabled={!polycamJson.trim()}
+              className="w-full py-2 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-white text-xs font-medium transition-colors"
+            >
+              Import dimensions →
+            </button>
+          </div>
+        )}
+
         {/* Load saved project */}
         <button
           onClick={openProjectPicker}
@@ -1049,7 +1184,7 @@ export default function RoomForgePage() {
       <RoomCanvas roomSpec={project.roomSpec} cabinets={project.cabinets} />
 
       {/* Cabinet count badge */}
-      <div className="absolute top-3 right-3 bg-black/70 border border-white/20 rounded-lg px-2 py-1 text-xs text-white/70">
+      <div className="absolute top-3 left-3 bg-black/70 border border-white/20 rounded-lg px-2 py-1 text-xs text-white/70">
         {project.cabinets.length} cabinets
       </div>
 
@@ -1066,19 +1201,37 @@ export default function RoomForgePage() {
     </div>
   ) : (
     <div className="flex-1 flex flex-col min-h-0">
+      {/* 2D floor plan (when toggled) */}
+      {show2DPlan && (
+        <div className="flex-shrink-0 overflow-y-auto border-b border-white/10 p-3 bg-[#111]">
+          <FloorPlan2D roomSpec={project.roomSpec} cabinets={project.cabinets} containerWidth={320} />
+        </div>
+      )}
+
       {chatUI(
-        <div className="mx-4 mb-2">
+        <div className="mx-4 mb-2 flex gap-2">
           <button
             onClick={() => updateProject({ phase4Mode: '3d' })}
-            className="w-full py-2 rounded-xl bg-white/8 hover:bg-white/12 text-white/70 text-sm flex items-center justify-center gap-2 transition-colors"
+            className="flex-1 py-2 rounded-xl bg-white/8 hover:bg-white/12 text-white/70 text-sm flex items-center justify-center gap-2 transition-colors"
           >
             <Box size={14} className="text-amber-400" />
             Switch to 3D view
           </button>
+          <button
+            onClick={() => setShow2DPlan((v) => !v)}
+            className={`px-3 py-2 rounded-xl text-sm flex items-center gap-1 transition-colors ${
+              show2DPlan
+                ? 'bg-amber-500/30 text-amber-300 border border-amber-500/40'
+                : 'bg-white/8 hover:bg-white/12 text-white/70'
+            }`}
+            title="Toggle 2D floor plan view"
+          >
+            2D Plan ⬡
+          </button>
         </div>
       )}
 
-      {/* Floating 3D toggle */}
+      {/* Floating render button */}
       <div className="absolute bottom-20 right-4 z-10">
         <button
           onClick={() => goToPhase(5)}
