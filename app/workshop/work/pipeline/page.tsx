@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 
 interface Client {
   id: string
@@ -44,16 +44,27 @@ const LOAN_TYPE_ICONS: Record<string, string> = {
   Other: '📋',
 }
 
+// ── Empty form state ───────────────────────────────────────────────────────────
+
+const EMPTY_FORM = {
+  name: '',
+  stage: 'New Lead' as Client['stage'],
+  priority: 'Active' as Client['priority'],
+  loanType: '',
+  loanAmount: '',
+  nextAction: '',
+  followUpDate: '',
+  referralSource: '',
+  notes: '',
+}
+
 function getRelativeTime(dateStr: string | null): string {
   if (!dateStr) return 'Never'
-  
   const date = new Date(dateStr)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   date.setHours(0, 0, 0, 0)
-  
   const diff = Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-  
   if (diff === 0) return 'Today'
   if (diff === 1) return 'Yesterday'
   if (diff === -1) return 'Tomorrow'
@@ -65,18 +76,288 @@ function getRelativeTime(dateStr: string | null): string {
 
 function getFollowUpColor(dateStr: string | null): string {
   if (!dateStr) return 'text-midnight/40'
-  
   const date = new Date(dateStr)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   date.setHours(0, 0, 0, 0)
-  
   const diff = Math.floor((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  
-  if (diff < 0) return 'text-red-600 font-semibold' // overdue
-  if (diff === 0) return 'text-amber-600 font-semibold' // today
-  return 'text-emerald-600' // future
+  if (diff < 0) return 'text-red-600 font-semibold'
+  if (diff === 0) return 'text-amber-600 font-semibold'
+  return 'text-emerald-600'
 }
+
+// ── Add Client Modal ──────────────────────────────────────────────────────────
+
+function AddClientModal({
+  open,
+  onClose,
+  onSuccess,
+}: {
+  open: boolean
+  onClose: () => void
+  onSuccess: () => void
+}) {
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const nameRef = useRef<HTMLInputElement>(null)
+
+  // Focus name field when modal opens
+  useEffect(() => {
+    if (open) {
+      setForm(EMPTY_FORM)
+      setError(null)
+      setTimeout(() => nameRef.current?.focus(), 80)
+    }
+  }, [open])
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [open, onClose])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.name.trim()) {
+      setError('Client name is required.')
+      return
+    }
+
+    setSaving(true)
+    setError(null)
+
+    try {
+      const payload: Record<string, unknown> = {
+        name: form.name.trim(),
+        stage: form.stage,
+        priority: form.priority,
+        nextAction: form.nextAction.trim(),
+        referralSource: form.referralSource.trim(),
+        notes: form.notes.trim(),
+        lastTouched: new Date().toISOString().split('T')[0],
+      }
+      if (form.loanType) payload.loanType = form.loanType
+      if (form.loanAmount) payload.loanAmount = parseFloat(form.loanAmount)
+      if (form.followUpDate) payload.followUpDate = form.followUpDate
+
+      const res = await fetch('/api/pipeline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Failed to create client')
+      }
+
+      onSuccess()
+      onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const inputClass = 'w-full bg-white border border-midnight/15 rounded-lg px-3 py-2 text-sm text-midnight focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-colors'
+  const labelClass = 'block text-[10px] font-semibold text-midnight/50 uppercase tracking-wider mb-1'
+
+  return (
+    <>
+      {/* Overlay */}
+      <div
+        className={`fixed inset-0 bg-midnight/40 z-40 transition-opacity duration-200 ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={onClose}
+      />
+
+      {/* Slide-over panel */}
+      <div
+        className={`fixed top-0 right-0 h-full w-full max-w-md bg-paper shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        style={{ background: '#f8f7f4' }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-midnight/10">
+          <div>
+            <h2 className="font-display text-xl text-midnight">Add Client</h2>
+            <p className="text-xs text-midnight/40 mt-0.5">Saves directly to Notion</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-midnight/5 hover:bg-midnight/10 transition-colors text-midnight/50"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
+          {/* Name */}
+          <div>
+            <label className={labelClass}>Client Name *</label>
+            <input
+              ref={nameRef}
+              type="text"
+              value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              placeholder="First Last"
+              className={inputClass}
+              required
+            />
+          </div>
+
+          {/* Stage + Priority row */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Stage</label>
+              <select
+                value={form.stage}
+                onChange={e => setForm(f => ({ ...f, stage: e.target.value as Client['stage'] }))}
+                className={inputClass}
+              >
+                {STATUS_ORDER.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Priority</label>
+              <select
+                value={form.priority}
+                onChange={e => setForm(f => ({ ...f, priority: e.target.value as Client['priority'] }))}
+                className={inputClass}
+              >
+                {['Hot', 'Active', 'Warm', 'Monitoring'].map(p => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Loan Type + Amount row */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Loan Type</label>
+              <select
+                value={form.loanType}
+                onChange={e => setForm(f => ({ ...f, loanType: e.target.value }))}
+                className={inputClass}
+              >
+                <option value="">— none —</option>
+                {['Purchase', 'Refinance', 'DSCR', 'Other'].map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Loan Amount ($)</label>
+              <input
+                type="number"
+                value={form.loanAmount}
+                onChange={e => setForm(f => ({ ...f, loanAmount: e.target.value }))}
+                placeholder="500000"
+                className={inputClass}
+                min={0}
+                step={1000}
+              />
+            </div>
+          </div>
+
+          {/* Next Action */}
+          <div>
+            <label className={labelClass}>Next Action</label>
+            <input
+              type="text"
+              value={form.nextAction}
+              onChange={e => setForm(f => ({ ...f, nextAction: e.target.value }))}
+              placeholder="Call re: appraisal status"
+              className={inputClass}
+            />
+          </div>
+
+          {/* Follow Up Date */}
+          <div>
+            <label className={labelClass}>Follow Up Date</label>
+            <input
+              type="date"
+              value={form.followUpDate}
+              onChange={e => setForm(f => ({ ...f, followUpDate: e.target.value }))}
+              className={inputClass}
+            />
+          </div>
+
+          {/* Referral Source */}
+          <div>
+            <label className={labelClass}>Referral Source</label>
+            <input
+              type="text"
+              value={form.referralSource}
+              onChange={e => setForm(f => ({ ...f, referralSource: e.target.value }))}
+              placeholder="Susan R. / cold call / Zillow"
+              className={inputClass}
+            />
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className={labelClass}>Notes</label>
+            <textarea
+              value={form.notes}
+              onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+              placeholder="DSCR — 4-unit in Chula Vista. Waiting on appraisal."
+              rows={4}
+              className={inputClass + ' resize-none'}
+            />
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+        </form>
+
+        {/* Footer */}
+        <div className="px-6 py-5 border-t border-midnight/10 flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-4 py-2.5 rounded-lg border border-midnight/15 text-sm font-medium text-midnight/60 hover:bg-midnight/5 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving || !form.name.trim()}
+            className="flex-1 px-4 py-2.5 rounded-lg bg-ocean text-cream text-sm font-medium hover:bg-ocean/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+          >
+            {saving ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Saving…
+              </>
+            ) : (
+              'Add to Pipeline →'
+            )}
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ── Main Page ──────────────────────────────────────────────────────────────────
 
 export default function PipelinePage() {
   const [clients, setClients] = useState<Client[]>([])
@@ -89,6 +370,8 @@ export default function PipelinePage() {
   const [cashNet, setCashNet] = useState<string>('')
   const [editingCashNet, setEditingCashNet] = useState(false)
   const [cashNetDraft, setCashNetDraft] = useState('')
+  const [addModalOpen, setAddModalOpen] = useState(false)
+  const [addSuccess, setAddSuccess] = useState(false)
 
   // Load cash net from localStorage
   useEffect(() => {
@@ -106,7 +389,6 @@ export default function PipelinePage() {
       setLoading(true)
       const response = await fetch('/api/pipeline')
       if (!response.ok) throw new Error('Failed to fetch clients')
-      
       const data = await response.json()
       setClients(data.clients)
     } catch (error) {
@@ -123,10 +405,7 @@ export default function PipelinePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...updates }),
       })
-
       if (!response.ok) throw new Error('Failed to update client')
-
-      // Update local state
       setClients(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c))
     } catch (error) {
       console.error('Error updating client:', error)
@@ -138,8 +417,7 @@ export default function PipelinePage() {
     const currentIndex = STATUS_ORDER.indexOf(client.stage)
     const nextIndex = (currentIndex + 1) % STATUS_ORDER.length
     const nextStatus = STATUS_ORDER[nextIndex]
-    
-    updateClient(client.id, { 
+    updateClient(client.id, {
       stage: nextStatus,
       lastTouched: new Date().toISOString().split('T')[0]
     })
@@ -151,9 +429,8 @@ export default function PipelinePage() {
 
   function handleFieldSave() {
     if (!editingField) return
-    
     const { clientId, field, value } = editingField
-    updateClient(clientId, { 
+    updateClient(clientId, {
       [field]: value,
       lastTouched: new Date().toISOString().split('T')[0]
     })
@@ -164,18 +441,17 @@ export default function PipelinePage() {
     setEditingField(null)
   }
 
+  function handleAddSuccess() {
+    fetchClients()
+    setAddSuccess(true)
+    setTimeout(() => setAddSuccess(false), 3000)
+  }
+
   // Filter clients
   const filteredClients = useMemo(() => {
     let result = clients
-
-    if (filterStatus !== 'all') {
-      result = result.filter(c => c.stage === filterStatus)
-    }
-
-    if (filterPriority !== 'all') {
-      result = result.filter(c => c.priority === filterPriority)
-    }
-
+    if (filterStatus !== 'all') result = result.filter(c => c.stage === filterStatus)
+    if (filterPriority !== 'all') result = result.filter(c => c.priority === filterPriority)
     return result
   }, [clients, filterStatus, filterPriority])
 
@@ -193,7 +469,6 @@ export default function PipelinePage() {
     const hot = clients.filter(c => c.priority === 'Hot' && c.stage !== 'Closed' && c.stage !== 'Lost').length
     const active = clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost').length
     const waiting = clients.filter(c => c.stage === 'Waiting').length
-    
     return { hot, active, waiting }
   }, [clients])
 
@@ -201,7 +476,7 @@ export default function PipelinePage() {
     const isExpanded = expandedClient === client.id
     const statusStyle = STATUS_COLORS[client.stage]
     const priorityStyle = PRIORITY_COLORS[client.priority]
-    const daysSinceUpdate = client.lastTouched 
+    const daysSinceUpdate = client.lastTouched
       ? Math.floor((new Date().getTime() - new Date(client.lastTouched).getTime()) / (1000 * 60 * 60 * 24))
       : 999
     const isStale = daysSinceUpdate > 7
@@ -210,22 +485,17 @@ export default function PipelinePage() {
     const isEditingNotes = editingField?.clientId === client.id && editingField.field === 'notes'
 
     return (
-      <div
-        className={`bg-cream rounded-xl border-2 ${statusStyle.border} hover:shadow-md transition-all`}
-      >
+      <div className={`bg-cream rounded-xl border-2 ${statusStyle.border} hover:shadow-md transition-all`}>
         <div className="p-4">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-display text-lg font-bold text-midnight truncate">
-                  {client.name}
-                </h3>
+                <h3 className="font-display text-lg font-bold text-midnight truncate">{client.name}</h3>
                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${priorityStyle.bg} ${priorityStyle.text} ring-1 ${priorityStyle.ring}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${priorityStyle.dot}`} />
                   {client.priority}
                 </span>
               </div>
-              
               <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={() => handleStatusCycle(client)}
@@ -246,16 +516,13 @@ export default function PipelinePage() {
                 )}
               </div>
             </div>
-
             <button
               onClick={() => setExpandedClient(isExpanded ? null : client.id)}
               className="text-midnight/30 hover:text-midnight/60 transition-colors shrink-0"
             >
-              <svg 
-                className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
+              <svg
+                className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                fill="none" viewBox="0 0 24 24" stroke="currentColor"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -282,7 +549,7 @@ export default function PipelinePage() {
                 <div className="text-[10px] text-midnight/40">Press Enter to save, Esc to cancel</div>
               </div>
             ) : (
-              <div 
+              <div
                 onClick={() => handleFieldEdit(client.id, 'nextAction', client.nextAction)}
                 className="flex items-start gap-2 cursor-text hover:bg-midnight/5 rounded p-1 -m-1 transition-colors"
               >
@@ -297,7 +564,7 @@ export default function PipelinePage() {
             <div className="mb-3">
               <div className="text-[10px] uppercase tracking-wider text-midnight/40 mb-1">Follow Up</div>
               <div className={`text-sm font-medium ${getFollowUpColor(client.followUpDate)}`}>
-                📅 {getRelativeTime(client.followUpDate)} 
+                📅 {getRelativeTime(client.followUpDate)}
                 {new Date(client.followUpDate) < new Date() && ' (OVERDUE)'}
               </div>
             </div>
@@ -326,7 +593,6 @@ export default function PipelinePage() {
         {isExpanded && (
           <div className="overflow-hidden border-t-2 border-midnight/5">
             <div className="p-4 space-y-4">
-              {/* Notes - Inline Editable */}
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-midnight/40 mb-2">Notes</div>
                 {isEditingNotes ? (
@@ -345,7 +611,7 @@ export default function PipelinePage() {
                     <div className="text-[10px] text-midnight/40">Click outside to save, Esc to cancel</div>
                   </div>
                 ) : (
-                  <div 
+                  <div
                     onClick={() => handleFieldEdit(client.id, 'notes', client.notes)}
                     className="bg-midnight/5 rounded-lg p-3 cursor-text hover:bg-midnight/10 transition-colors"
                   >
@@ -374,220 +640,250 @@ export default function PipelinePage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto pb-24">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="font-display text-3xl text-midnight mb-1">Client Pipeline</h1>
-        <p className="text-midnight/50 text-sm">Mortgage client tracker — who needs what, when</p>
-      </div>
+    <>
+      {/* Add Client Modal */}
+      <AddClientModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onSuccess={handleAddSuccess}
+      />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-red-500 to-orange-500 rounded-xl p-4 text-white">
-          <div className="text-3xl font-display font-bold">{stats.hot}</div>
-          <div className="text-sm text-white/80">🔥 Hot Deals</div>
+      <div className="max-w-6xl mx-auto pb-24">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6 gap-4">
+          <div>
+            <h1 className="font-display text-3xl text-midnight mb-1">Client Pipeline</h1>
+            <p className="text-midnight/50 text-sm">Mortgage client tracker — who needs what, when</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {addSuccess && (
+              <span className="inline-flex items-center gap-1.5 text-emerald-700 text-xs font-medium bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+                Client added!
+              </span>
+            )}
+            <button
+              onClick={() => setAddModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-ocean text-cream rounded-xl text-sm font-medium hover:bg-ocean/90 transition-colors shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+              </svg>
+              Add Client
+            </button>
+          </div>
         </div>
-        <div className="bg-gradient-to-br from-ocean to-cyan rounded-xl p-4 text-white">
-          <div className="text-3xl font-display font-bold">{stats.active}</div>
-          <div className="text-sm text-white/80">📊 Active Clients</div>
-        </div>
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white">
-          <div className="text-3xl font-display font-bold">{stats.waiting}</div>
-          <div className="text-sm text-white/80">⏳ Waiting</div>
-        </div>
-        <div
-          className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-4 text-white cursor-pointer"
-          onClick={() => { setEditingCashNet(true); setCashNetDraft(cashNet) }}
-        >
-          {editingCashNet ? (
-            <input
-              autoFocus
-              type="text"
-              inputMode="decimal"
-              value={cashNetDraft}
-              onChange={e => setCashNetDraft(e.target.value)}
-              onBlur={() => {
-                setCashNet(cashNetDraft)
-                localStorage.setItem('pipeline-cash-net', cashNetDraft)
-                setEditingCashNet(false)
-              }}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div className="bg-gradient-to-br from-red-500 to-orange-500 rounded-xl p-4 text-white">
+            <div className="text-3xl font-display font-bold">{stats.hot}</div>
+            <div className="text-sm text-white/80">🔥 Hot Deals</div>
+          </div>
+          <div className="bg-gradient-to-br from-ocean to-cyan rounded-xl p-4 text-white">
+            <div className="text-3xl font-display font-bold">{stats.active}</div>
+            <div className="text-sm text-white/80">📊 Active Clients</div>
+          </div>
+          <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl p-4 text-white">
+            <div className="text-3xl font-display font-bold">{stats.waiting}</div>
+            <div className="text-sm text-white/80">⏳ Waiting</div>
+          </div>
+          <div
+            className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-4 text-white cursor-pointer"
+            onClick={() => { setEditingCashNet(true); setCashNetDraft(cashNet) }}
+          >
+            {editingCashNet ? (
+              <input
+                autoFocus
+                type="text"
+                inputMode="decimal"
+                value={cashNetDraft}
+                onChange={e => setCashNetDraft(e.target.value)}
+                onBlur={() => {
                   setCashNet(cashNetDraft)
                   localStorage.setItem('pipeline-cash-net', cashNetDraft)
                   setEditingCashNet(false)
-                }
-                if (e.key === 'Escape') setEditingCashNet(false)
-              }}
-              className="w-full bg-white/20 text-white text-3xl font-display font-bold rounded-md px-1 outline-none placeholder-white/50"
-              placeholder="$0"
-              onClick={e => e.stopPropagation()}
-            />
-          ) : (
-            <div className="text-3xl font-display font-bold">
-              {cashNet ? (cashNet.startsWith('$') ? cashNet : `$${cashNet}`) : '—'}
-            </div>
-          )}
-          <div className="text-sm text-white/80">💵 Cash Net</div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3 flex-wrap mb-3">
-          {/* Status Filter */}
-          <div className="flex items-center gap-2 overflow-x-auto">
-            <button
-              onClick={() => setFilterStatus('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                filterStatus === 'all'
-                  ? 'bg-midnight text-cream'
-                  : 'bg-cream text-midnight/60 hover:bg-midnight/5 border border-midnight/10'
-              }`}
-            >
-              All Statuses ({clients.length})
-            </button>
-            {STATUS_ORDER.map(status => {
-              const count = clients.filter(c => c.stage === status).length
-              const style = STATUS_COLORS[status]
-              return (
-                <button
-                  key={status}
-                  onClick={() => setFilterStatus(status)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                    filterStatus === status
-                      ? `${style.bg} ${style.text} ring-1 ring-current/20`
-                      : 'bg-cream text-midnight/60 hover:bg-midnight/5 border border-midnight/10'
-                  }`}
-                >
-                  {status} ({count})
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Priority Filter */}
-          <div className="flex items-center gap-2">
-            {['all', 'Hot', 'Active', 'Warm', 'Monitoring'].map(priority => {
-              const statusFilteredClients = filterStatus !== 'all' 
-                ? clients.filter(c => c.stage === filterStatus)
-                : clients
-              const count = priority === 'all' 
-                ? statusFilteredClients.length 
-                : statusFilteredClients.filter(c => c.priority === priority).length
-              const style = priority !== 'all' ? PRIORITY_COLORS[priority as keyof typeof PRIORITY_COLORS] : null
-              
-              return (
-                <button
-                  key={priority}
-                  onClick={() => setFilterPriority(priority)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                    filterPriority === priority
-                      ? style ? `${style.bg} ${style.text}` : 'bg-midnight text-cream'
-                      : 'bg-cream text-midnight/60 hover:bg-midnight/5 border border-midnight/10'
-                  }`}
-                >
-                  {style && <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />}
-                  {priority === 'all' ? 'All' : priority} ({count})
-                </button>
-              )
-            })}
-          </div>
-
-          {/* View Mode Toggle */}
-          <div className="ml-auto flex items-center gap-2">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-colors ${
-                viewMode === 'list' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight'
-              }`}
-              title="List view"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setViewMode('kanban')}
-              className={`p-2 rounded-lg transition-colors ${
-                viewMode === 'kanban' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight'
-              }`}
-              title="Kanban view"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 4H5a2 2 0 00-2 2v14a2 2 0 002 2h4m0-18v18m0-18l6 0m-6 0v18m6-18h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m0-18v18" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Clients Display */}
-      {viewMode === 'list' ? (
-        // List View
-        <div className="space-y-6">
-          {STATUS_ORDER.map(status => {
-            const group = groupedClients[status]
-            if (!group || group.length === 0) return null
-
-            const statusStyle = STATUS_COLORS[status]
-
-            return (
-              <div key={status}>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium ${statusStyle.bg} ${statusStyle.text}`}>
-                    {status}
-                  </span>
-                  <span className="text-sm text-midnight/40">{group.length} client{group.length !== 1 ? 's' : ''}</span>
-                </div>
-
-                <div className="space-y-3">
-                  {group.map(client => (
-                    <ClientCard key={client.id} client={client} />
-                  ))}
-                </div>
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    setCashNet(cashNetDraft)
+                    localStorage.setItem('pipeline-cash-net', cashNetDraft)
+                    setEditingCashNet(false)
+                  }
+                  if (e.key === 'Escape') setEditingCashNet(false)
+                }}
+                className="w-full bg-white/20 text-white text-3xl font-display font-bold rounded-md px-1 outline-none placeholder-white/50"
+                placeholder="$0"
+                onClick={e => e.stopPropagation()}
+              />
+            ) : (
+              <div className="text-3xl font-display font-bold">
+                {cashNet ? (cashNet.startsWith('$') ? cashNet : `$${cashNet}`) : '—'}
               </div>
-            )
-          })}
+            )}
+            <div className="text-sm text-white/80">💵 Cash Net</div>
+          </div>
         </div>
-      ) : (
-        // Kanban View
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {STATUS_ORDER.slice(0, 5).map(status => {
-            const group = groupedClients[status] || []
-            const statusStyle = STATUS_COLORS[status]
 
-            return (
-              <div
-                key={status}
-                className="bg-midnight/5 rounded-xl p-4 min-h-[400px]"
+        {/* Filters */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 flex-wrap mb-3">
+            {/* Status Filter */}
+            <div className="flex items-center gap-2 overflow-x-auto">
+              <button
+                onClick={() => setFilterStatus('all')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                  filterStatus === 'all'
+                    ? 'bg-midnight text-cream'
+                    : 'bg-cream text-midnight/60 hover:bg-midnight/5 border border-midnight/10'
+                }`}
               >
-                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium mb-4 ${statusStyle.bg} ${statusStyle.text}`}>
-                  {status}
-                  <span className="ml-1 opacity-60">({group.length})</span>
-                </div>
+                All Statuses ({clients.length})
+              </button>
+              {STATUS_ORDER.map(status => {
+                const count = clients.filter(c => c.stage === status).length
+                const style = STATUS_COLORS[status]
+                return (
+                  <button
+                    key={status}
+                    onClick={() => setFilterStatus(status)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                      filterStatus === status
+                        ? `${style.bg} ${style.text} ring-1 ring-current/20`
+                        : 'bg-cream text-midnight/60 hover:bg-midnight/5 border border-midnight/10'
+                    }`}
+                  >
+                    {status} ({count})
+                  </button>
+                )
+              })}
+            </div>
 
-                <div className="space-y-3">
-                  {group.map(client => (
-                    <ClientCard key={client.id} client={client} />
-                  ))}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+            {/* Priority Filter */}
+            <div className="flex items-center gap-2">
+              {['all', 'Hot', 'Active', 'Warm', 'Monitoring'].map(priority => {
+                const statusFilteredClients = filterStatus !== 'all'
+                  ? clients.filter(c => c.stage === filterStatus)
+                  : clients
+                const count = priority === 'all'
+                  ? statusFilteredClients.length
+                  : statusFilteredClients.filter(c => c.priority === priority).length
+                const style = priority !== 'all' ? PRIORITY_COLORS[priority as keyof typeof PRIORITY_COLORS] : null
 
-      {/* Empty State */}
-      {filteredClients.length === 0 && (
-        <div className="bg-cream rounded-2xl p-12 text-center">
-          <div className="w-20 h-20 bg-ocean/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">📋</span>
+                return (
+                  <button
+                    key={priority}
+                    onClick={() => setFilterPriority(priority)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                      filterPriority === priority
+                        ? style ? `${style.bg} ${style.text}` : 'bg-midnight text-cream'
+                        : 'bg-cream text-midnight/60 hover:bg-midnight/5 border border-midnight/10'
+                    }`}
+                  >
+                    {style && <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />}
+                    {priority === 'all' ? 'All' : priority} ({count})
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === 'list' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight'
+                }`}
+                title="List view"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode('kanban')}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === 'kanban' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight'
+                }`}
+                title="Kanban view"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 4H5a2 2 0 00-2 2v14a2 2 0 002 2h4m0-18v18m0-18l6 0m-6 0v18m6-18h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m0-18v18" />
+                </svg>
+              </button>
+            </div>
           </div>
-          <h2 className="font-display text-xl text-midnight mb-2">No clients found</h2>
-          <p className="text-midnight/50 text-sm">Try adjusting your filters</p>
         </div>
-      )}
-    </div>
+
+        {/* Clients Display */}
+        {viewMode === 'list' ? (
+          <div className="space-y-6">
+            {STATUS_ORDER.map(status => {
+              const group = groupedClients[status]
+              if (!group || group.length === 0) return null
+              const statusStyle = STATUS_COLORS[status]
+              return (
+                <div key={status}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium ${statusStyle.bg} ${statusStyle.text}`}>
+                      {status}
+                    </span>
+                    <span className="text-sm text-midnight/40">{group.length} client{group.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="space-y-3">
+                    {group.map(client => (
+                      <ClientCard key={client.id} client={client} />
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {STATUS_ORDER.slice(0, 5).map(status => {
+              const group = groupedClients[status] || []
+              const statusStyle = STATUS_COLORS[status]
+              return (
+                <div key={status} className="bg-midnight/5 rounded-xl p-4 min-h-[400px]">
+                  <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium mb-4 ${statusStyle.bg} ${statusStyle.text}`}>
+                    {status}
+                    <span className="ml-1 opacity-60">({group.length})</span>
+                  </div>
+                  <div className="space-y-3">
+                    {group.map(client => (
+                      <ClientCard key={client.id} client={client} />
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {filteredClients.length === 0 && !loading && (
+          <div className="bg-cream rounded-2xl p-12 text-center">
+            <div className="w-20 h-20 bg-ocean/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-4xl">📋</span>
+            </div>
+            <h2 className="font-display text-xl text-midnight mb-2">No clients found</h2>
+            <p className="text-midnight/50 text-sm mb-6">
+              {clients.length === 0 ? 'Add your first client to get started.' : 'Try adjusting your filters'}
+            </p>
+            {clients.length === 0 && (
+              <button
+                onClick={() => setAddModalOpen(true)}
+                className="px-6 py-3 bg-ocean text-cream rounded-xl font-medium hover:bg-ocean/90 transition-colors"
+              >
+                Add First Client
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </>
   )
 }
