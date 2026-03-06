@@ -2,6 +2,18 @@ import { NextRequest } from 'next/server'
 
 export const runtime = 'nodejs'
 
+const EMERGENCY_OVERRIDE = `
+EMERGENCY OVERRIDE: If you find yourself writing any of the following, STOP and rewrite as plain prose max 2 sentences:
+- Option lists (Option A, Option B, etc.)
+- Export format menus
+- Markdown headers (##, ###)
+- ASCII art or table art (|, ─, ┌, etc.)
+- Numbered export steps
+- "Here's what you can do" type summaries
+- Any response longer than 3 sentences in phases 1-4
+
+You are a CONVERSATION partner, not a document generator. Speak like a human.`
+
 const BASE_SYSTEM = `You are RoomForge, a custom cabinetry design assistant.
 
 ABSOLUTE FORMATTING RULES — never break these:
@@ -14,7 +26,8 @@ ABSOLUTE FORMATTING RULES — never break these:
 
 Material note: all cabinet boxes use 3/4 inch material. Account for this in all interior dimensions.
 
-Use inches for all measurements. 1 foot = 12 inches. 13'4" = 160 inches.`
+Use inches for all measurements. 1 foot = 12 inches. 13'4" = 160 inches.
+${EMERGENCY_OVERRIDE}`
 
 const PHASE_PROMPTS: Record<number, string> = {
   1: `Analyze the room photo. Write 1-2 plain sentences only. Note the key feature visible (appliance, window, door, etc.) and whether the photo is clear enough. No markdown. No headers. No lists. Example: "Clear view of the back wall — I can see the washer and dryer on the right side and a butcher block countertop above them."`,
@@ -71,6 +84,45 @@ Never use markdown. Never offer options. Never summarize. Just place what the us
   5: `Help evaluate the render. 1-2 sentences. Plain text only. No markdown.`,
 
   6: `Celebrate briefly in 1-2 plain sentences. Mention next steps (save, export, share).`,
+}
+
+// Strip markdown formatting from a line/chunk of text
+function stripMarkdown(text: string): string {
+  // Process line by line for line-level filters
+  const lines = text.split('\n')
+  const filtered = lines.filter((line) => {
+    const trimmed = line.trim()
+    // Remove lines that start with markdown block indicators
+    if (/^#{1,6}\s/.test(trimmed)) return false       // ## Headers
+    if (/^\*{2,}/.test(trimmed)) return false          // **bold lines
+    if (/^---+$/.test(trimmed)) return false            // --- dividers
+    if (/^===+$/.test(trimmed)) return false            // === dividers
+    if (/^```/.test(trimmed)) return false              // code fence starts (non-json)
+    if (/^\|/.test(trimmed)) return false               // table rows
+    if (/^>\s/.test(trimmed)) return false              // blockquotes
+    if (/^─{3,}/.test(trimmed)) return false            // ASCII art horizontal rules
+    if (/^┌/.test(trimmed)) return false                // ASCII art boxes
+    if (/^│/.test(trimmed)) return false                // ASCII art vertical
+    if (/^└/.test(trimmed)) return false                // ASCII art bottom
+    if (/^Option [A-Z][\s:—–-]/.test(trimmed)) return false  // Option A, Option B
+    if (/^\d+\.\s.+[—–-]/.test(trimmed)) return false  // Numbered list with em-dash
+    // Keep lines that are inside json code blocks (let the display layer handle those)
+    return true
+  })
+
+  // Inline cleanup on the joined text
+  let result = filtered.join('\n')
+  // Remove bold/italic markers inline
+  result = result.replace(/\*\*(.+?)\*\*/g, '$1')
+  result = result.replace(/\*(.+?)\*/g, '$1')
+  result = result.replace(/__(.+?)__/g, '$1')
+  result = result.replace(/_(.+?)_/g, '$1')
+  // Remove standalone dashes used as bullet-like separators at line start
+  result = result.replace(/^[-•]\s+/gm, '')
+  // Collapse multiple blank lines into one
+  result = result.replace(/\n{3,}/g, '\n\n')
+
+  return result
 }
 
 export async function POST(req: NextRequest) {
@@ -174,11 +226,15 @@ export async function POST(req: NextRequest) {
     })
   }
 
+  // Buffer lines so we can apply line-level filters across chunk boundaries
   const stream = new ReadableStream({
     async start(controller) {
       const reader = orResponse.body?.getReader()
       if (!reader) { controller.close(); return }
       const decoder = new TextDecoder()
+      let lineBuffer = ''           // accumulates partial line content
+      let insideJsonBlock = false   // track if we're inside a ```json block
+
       try {
         while (true) {
           const { done, value } = await reader.read()
@@ -192,8 +248,45 @@ export async function POST(req: NextRequest) {
             try {
               const parsed = JSON.parse(data)
               const content = parsed.choices?.[0]?.delta?.content
-              if (content) controller.enqueue(new TextEncoder().encode(content))
-            } catch { /* ignore */ }
+              if (!content) continue
+
+              // Track json fences so we don't strip content inside them
+              if (content.includes('```json')) insideJsonBlock = true
+              if (insideJsonBlock && content.includes('```') && !content.includes('```json')) {
+                insideJsonBlock = false
+                // Pass through closing fence
+                controller.enqueue(new TextEncoder().encode(content))
+                continue
+              }
+
+              if (insideJsonBlock) {
+                // Inside a JSON block — pass through unfiltered
+                controller.enqueue(new TextEncoder().encode(content))
+                continue
+              }
+
+              // Buffer content until we have complete lines to filter
+              lineBuffer += content
+              const bufLines = lineBuffer.split('\n')
+              // Keep the last (potentially incomplete) line in buffer
+              lineBuffer = bufLines.pop() ?? ''
+
+              // Filter and emit complete lines
+              if (bufLines.length > 0) {
+                const filtered = stripMarkdown(bufLines.join('\n'))
+                if (filtered) {
+                  controller.enqueue(new TextEncoder().encode(filtered + '\n'))
+                }
+              }
+            } catch { /* ignore parse errors */ }
+          }
+        }
+
+        // Flush remaining buffer
+        if (lineBuffer) {
+          const filtered = stripMarkdown(lineBuffer)
+          if (filtered) {
+            controller.enqueue(new TextEncoder().encode(filtered))
           }
         }
       } finally {

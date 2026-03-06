@@ -14,10 +14,10 @@ import {
   Sparkles,
   Download,
   Share2,
-  Copy,
   Edit3,
   ArrowLeft,
   X,
+  FolderOpen,
 } from 'lucide-react'
 import type { RoomSpec, Cabinet } from '@/components/roomforge/RoomCanvas'
 
@@ -73,6 +73,13 @@ interface ProjectState {
   renders: string[]
   chatHistory: { phase: Phase; messages: Message[] }[]
   savedAt?: string
+}
+
+interface SavedProjectEntry {
+  id: string
+  name: string
+  savedAt: string
+  phase: Phase
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -141,6 +148,11 @@ export default function RoomForgePage() {
   const [dimensionsComplete, setDimensionsComplete] = useState(false)
   const [editingName, setEditingName] = useState(false)
   const [saveKey, setSaveKey] = useState('')
+  // Load saved project picker
+  const [showProjectPicker, setShowProjectPicker] = useState(false)
+  const [savedProjects, setSavedProjects] = useState<SavedProjectEntry[]>([])
+  // Seed loading state
+  const [seedLoading, setSeedLoading] = useState(false)
 
   const chatBottomRef = useRef<HTMLDivElement>(null)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -152,7 +164,7 @@ export default function RoomForgePage() {
   useEffect(() => {
     // Try to load last project
     try {
-      const list = JSON.parse(localStorage.getItem('roomforge-projects') || '[]') as { id: string; name: string; savedAt: string; phase: Phase }[]
+      const list = JSON.parse(localStorage.getItem('roomforge-projects') || '[]') as SavedProjectEntry[]
       if (list.length > 0) {
         const last = list[0]
         const raw = localStorage.getItem(`roomforge-project-${last.id}`)
@@ -162,6 +174,10 @@ export default function RoomForgePage() {
           // Restore chat history for current phase
           const phaseHistory = loaded.chatHistory.find((h) => h.phase === loaded.phase)
           if (phaseHistory) setChatMessages(phaseHistory.messages)
+          // Restore dimensionsComplete from history if phase > 2
+          if (loaded.phase > 2) setDimensionsComplete(true)
+          // Restore conceptLocked if concept exists and phase > 3
+          if (loaded.phase > 3 && loaded.concept?.style) setConceptLocked(true)
         }
       }
     } catch { /* ignore */ }
@@ -176,7 +192,7 @@ export default function RoomForgePage() {
         // 1. Always save to localStorage first (instant, reliable)
         const key = `roomforge-project-${p.id}`
         localStorage.setItem(key, JSON.stringify(p))
-        const list = JSON.parse(localStorage.getItem('roomforge-projects') || '[]') as { id: string; name: string; savedAt: string; phase: Phase }[]
+        const list = JSON.parse(localStorage.getItem('roomforge-projects') || '[]') as SavedProjectEntry[]
         const existing = list.findIndex((x) => x.id === p.id)
         const entry = { id: p.id, name: p.name, savedAt: new Date().toISOString(), phase: p.phase }
         if (existing >= 0) list[existing] = entry
@@ -257,6 +273,76 @@ export default function RoomForgePage() {
     }, 400)
   }
 
+  // ── Load saved project picker ─────────────────────────────────────────────
+
+  function openProjectPicker() {
+    try {
+      const list = JSON.parse(localStorage.getItem('roomforge-projects') || '[]') as SavedProjectEntry[]
+      setSavedProjects(list)
+    } catch {
+      setSavedProjects([])
+    }
+    setShowProjectPicker(true)
+  }
+
+  function loadSavedProject(entry: SavedProjectEntry) {
+    try {
+      const raw = localStorage.getItem(`roomforge-project-${entry.id}`)
+      if (!raw) return
+      const loaded = JSON.parse(raw) as ProjectState
+      setProject(loaded)
+      // Determine which phase to jump to based on saved state
+      const targetPhase: Phase = loaded.concept?.style
+        ? 4  // concept exists → jump to modeling
+        : loaded.phase > 2
+          ? 3  // dimensions done → jump to concept
+          : loaded.phase
+      const jumpPhase = Math.max(targetPhase, loaded.phase) as Phase
+      setProject((prev) => ({ ...prev, phase: jumpPhase }))
+      const phaseHistory = loaded.chatHistory.find((h) => h.phase === jumpPhase)
+      setChatMessages(phaseHistory?.messages || [])
+      if (jumpPhase > 2) setDimensionsComplete(true)
+      if (loaded.concept?.style) setConceptLocked(true)
+      setShowProjectPicker(false)
+    } catch { /* ignore */ }
+  }
+
+  // ── Load house project from seed API ─────────────────────────────────────
+
+  async function loadHouseProject() {
+    setSeedLoading(true)
+    try {
+      const res = await fetch('/api/roomforge/seed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: 'house' }),
+      })
+      const data = await res.json()
+      if (!data.ok) throw new Error('Seed failed')
+
+      const newProject: ProjectState = {
+        ...makeProject(),
+        id: crypto.randomUUID(),
+        name: "Kyle's House Project",
+        phase: 4,
+        phase4Mode: 'chat',
+        roomSpec: data.roomSpec,
+        cabinets: data.cabinets,
+        concept: data.concept,
+      }
+      setProject(newProject)
+      setChatMessages([])
+      setDimensionsComplete(true)
+      setConceptLocked(true)
+      saveProject(newProject)
+    } catch (err) {
+      console.error('Failed to load house project:', err)
+      alert('Failed to load house project. Check console.')
+    } finally {
+      setSeedLoading(false)
+    }
+  }
+
   // ── Chat ──────────────────────────────────────────────────────────────────
 
   const sendPhaseOpenMessage = useCallback(async (phase: Phase) => {
@@ -326,8 +412,8 @@ export default function RoomForgePage() {
 
         hasViewUpdate = parseAndApplyJSON(fullText)
 
-        // Check for phase signals
-        if (fullText.includes('DIMENSIONS_COMPLETE')) {
+        // Check for phase signals — scan full accumulated text each chunk
+        if (!dimensionsComplete && fullText.includes('DIMENSIONS_COMPLETE')) {
           setDimensionsComplete(true)
         }
       }
@@ -341,7 +427,9 @@ export default function RoomForgePage() {
       })
 
       if (fullText.includes('DIMENSIONS_COMPLETE')) setDimensionsComplete(true)
-      if (fullText.includes('"style"') && fullText.includes('"finish"')) {
+
+      // Detect concept JSON block in phase 3
+      if (project.phase === 3 && fullText.includes('"style"') && fullText.includes('"finish"')) {
         setConceptLocked(true)
         extractConcept(fullText)
       }
@@ -357,7 +445,7 @@ export default function RoomForgePage() {
     } finally {
       setStreaming(false)
     }
-  }, [input, chatMessages, streaming, project])
+  }, [input, chatMessages, streaming, project, dimensionsComplete])
 
   function parseAndApplyJSON(text: string): boolean {
     const regex = /```json\s*([\s\S]*?)```/g
@@ -668,6 +756,47 @@ export default function RoomForgePage() {
   )
 
   // ─────────────────────────────────────────────────────────────────────────
+  // PROJECT PICKER MODAL
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const projectPickerModal = showProjectPicker && (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
+      <div className="w-full max-w-lg bg-[#1a1a1a] border border-white/10 rounded-t-2xl p-4 pb-8 max-h-[70vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-semibold text-white">Load Saved Project</h3>
+          <button
+            onClick={() => setShowProjectPicker(false)}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+        {savedProjects.length === 0 ? (
+          <p className="text-sm text-white/40 text-center py-8">No saved projects found.</p>
+        ) : (
+          <div className="space-y-2">
+            {savedProjects.map((entry) => (
+              <button
+                key={entry.id}
+                onClick={() => loadSavedProject(entry)}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/40 transition-all text-left"
+              >
+                <div>
+                  <p className="text-sm font-medium text-white">{entry.name}</p>
+                  <p className="text-xs text-white/40 mt-0.5">
+                    Phase {entry.phase}: {PHASE_NAMES[entry.phase]} · {new Date(entry.savedAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <ChevronRight size={16} className="text-white/30 flex-shrink-0" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
+  // ─────────────────────────────────────────────────────────────────────────
   // PHASE 1: PHOTOGRAPH
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -798,6 +927,24 @@ export default function RoomForgePage() {
         >
           <SkipForward size={16} /> Skip photos — I&apos;ll describe instead
         </button>
+        {/* Load saved project */}
+        <button
+          onClick={openProjectPicker}
+          className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 text-sm flex items-center justify-center gap-2 transition-colors border border-white/10"
+        >
+          <FolderOpen size={16} /> Load existing project →
+        </button>
+        {/* Load house project directly */}
+        <button
+          onClick={loadHouseProject}
+          disabled={seedLoading}
+          className="w-full py-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-sm flex items-center justify-center gap-2 transition-colors border border-amber-500/30 disabled:opacity-50"
+        >
+          {seedLoading
+            ? <><Loader2 size={16} className="animate-spin" /> Loading...</>
+            : <><Box size={16} /> Load House Project</>
+          }
+        </button>
       </div>
     </div>
   )
@@ -818,19 +965,22 @@ export default function RoomForgePage() {
     </div>
   ) : null
 
+  // Large, prominent "Continue to Design" button — fixed above input when dimensionsComplete
+  const dimensionsContinueButton = dimensionsComplete ? (
+    <div className="flex-shrink-0 px-4 pb-3 pt-1">
+      <button
+        onClick={() => goToPhase(3)}
+        className="w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-white font-semibold text-base flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30 transition-all"
+      >
+        <CheckCircle size={20} /> Continue to Design →
+      </button>
+    </div>
+  ) : null
+
   const phase2 = chatUI(
     <>
       {dimTracker}
-      {dimensionsComplete && (
-        <div className="mx-4 mb-3">
-          <button
-            onClick={() => goToPhase(3)}
-            className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-medium text-sm flex items-center justify-center gap-2"
-          >
-            <CheckCircle size={16} /> Looks complete — let&apos;s talk design
-          </button>
-        </div>
-      )}
+      {dimensionsContinueButton}
     </>
   )
 
@@ -858,7 +1008,7 @@ export default function RoomForgePage() {
           onClick={() => goToPhase(4)}
           className="flex-1 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium"
         >
-          Looks good
+          Start Modeling →
         </button>
         <button
           onClick={() => setConceptLocked(false)}
@@ -870,7 +1020,25 @@ export default function RoomForgePage() {
     </div>
   ) : null
 
-  const phase3 = chatUI(conceptSummary)
+  // Also show a prominent "Start Modeling" button when concept JSON detected
+  // even if conceptSummary isn't showing the full panel
+  const phase3StartModelingButton = conceptLocked ? (
+    <div className="flex-shrink-0 px-4 pb-3 pt-1">
+      <button
+        onClick={() => goToPhase(4)}
+        className="w-full py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-white font-semibold text-base flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30 transition-all"
+      >
+        <Box size={20} /> Start Modeling →
+      </button>
+    </div>
+  ) : null
+
+  const phase3 = chatUI(
+    <>
+      {conceptSummary}
+      {!conceptSummary && phase3StartModelingButton}
+    </>
+  )
 
   // ─────────────────────────────────────────────────────────────────────────
   // PHASE 4: MODEL
@@ -1103,6 +1271,7 @@ export default function RoomForgePage() {
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {phaseContent[phase]}
       </div>
+      {projectPickerModal}
     </div>
   )
 }
