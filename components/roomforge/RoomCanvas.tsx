@@ -607,13 +607,26 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
       const baseColor = new THREE.Color(cabColor)
       const edgeColor = baseColor.clone().multiplyScalar(0.6)
 
-      const w = inToU(cab.width)
-      const d = inToU(cab.depth)
+      const cabW = inToU(cab.width)   // width = runs ALONG the wall
+      const cabD = inToU(cab.depth)   // depth = sticks OUT from the wall
       const h = inToU(cab.height)
       const oL = inToU(cab.offsetFromLeft)
       const oF = inToU(cab.offsetFromFloor)
 
-      const geo = new THREE.BoxGeometry(w, h, d)
+      // For left/right walls: cabinet runs along Z axis (width=Z, depth=X)
+      // For back/front walls: cabinet runs along X axis (width=X, depth=Z)
+      let geoW: number, geoH: number, geoD: number
+      if (cab.wall === 'left' || cab.wall === 'right') {
+        geoW = cabD   // X axis = depth (into room)
+        geoH = h
+        geoD = cabW   // Z axis = width (along wall)
+      } else {
+        geoW = cabW   // X axis = width (along wall)
+        geoH = h
+        geoD = cabD   // Z axis = depth (into room)
+      }
+
+      const geo = new THREE.BoxGeometry(geoW, geoH, geoD)
       const mesh = new THREE.Mesh(geo, cabMat)
       const cabinetEdges = new THREE.EdgesGeometry(geo)
       const edgeLines = new THREE.LineSegments(
@@ -626,19 +639,18 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
         cz = 0
 
       if (cab.wall === 'left') {
-        cx = d / 2
-        cz = oL + w / 2
+        cx = cabD / 2                   // depth/2 from left wall (x=0)
+        cz = oL + cabW / 2              // offset + width/2 along Z
       } else if (cab.wall === 'right') {
-        cx = backLen - d / 2
-        cz = oL + w / 2
+        cx = backLen - cabD / 2         // depth/2 from right wall (x=backLen)
+        cz = oL + cabW / 2
       } else if (cab.wall === 'back') {
-        cx = oL + w / 2
-        cz = d / 2
+        cx = oL + cabW / 2              // offset + width/2 along X
+        cz = cabD / 2                   // depth/2 from back wall (z=0)
       } else if (cab.wall === 'front') {
-        cx = oL + w / 2
-        cz = leftLen - d / 2
+        cx = oL + cabW / 2
+        cz = leftLen - cabD / 2         // depth/2 from front wall (z=leftLen)
       } else {
-        // island
         cx = backLen / 2
         cz = leftLen / 2
       }
@@ -663,16 +675,16 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
           const shelfGeo = new THREE.BufferGeometry()
 
           if (cab.wall === 'left' || cab.wall === 'right') {
-            // Shelf line runs along Z (cabinet width axis for left/right walls)
+            // Shelf runs along Z (the wall length axis)
             shelfGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
-              cx, shelfY, cz - w / 2,
-              cx, shelfY, cz + w / 2,
+              cx, shelfY, cz - cabW / 2,
+              cx, shelfY, cz + cabW / 2,
             ]), 3))
           } else {
-            // Shelf line runs along X (cabinet width axis for back/front walls)
+            // Shelf runs along X (the wall length axis)
             shelfGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
-              cx - w / 2, shelfY, cz,
-              cx + w / 2, shelfY, cz,
+              cx - cabW / 2, shelfY, cz,
+              cx + cabW / 2, shelfY, cz,
             ]), 3))
           }
 
