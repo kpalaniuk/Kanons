@@ -16,8 +16,8 @@ const sprint = {
 const blocking: { id: string; title: string; detail: string; sql: string; where: string }[] = []
 
 const inProgress = [
-  { id: 'V-08', title: 'State machine tuning + edge cases', owner: 'Ceda + LOB-Jasper', priority: 'high' },
-  { id: 'V-09', title: 'State machine live testing + edge case tuning', owner: 'Ceda + LOB-Jasper', priority: 'high' },
+  { id: 'V-08', title: 'Live testing — intent classifier + state machine + cold-start', owner: 'Ceda + LOB-Jasper', priority: 'high' },
+  { id: 'V-09', title: 'Interrupt handling (stop mid-sentence, redirect)', owner: 'LOB-Jasper', priority: 'medium' },
 ]
 
 const done = [
@@ -33,6 +33,9 @@ const done = [
   { id: 'V-12', title: 'Short-circuit responses (zero LLM call for predictable actions)', owner: 'LOB-Jasper', commit: 'ed07471' },
   { id: 'V-13', title: 'Active entity tracking (no more duplicate leads)', owner: 'LOB-Jasper', commit: 'ed07471' },
   { id: 'DB-01', title: 'Supabase migration — flow_state + active_entity columns ✅', owner: 'Kyle' },
+  { id: 'V-14', title: 'Intent classifier — zero-LLM pattern matching for 11 intent types', owner: 'LOB-Jasper', commit: '1fe8166' },
+  { id: 'V-15', title: 'Memory namespace fallback — Pinecone always works (no more silent failures)', owner: 'LOB-Jasper', commit: '1fe8166' },
+  { id: 'V-16', title: 'Cold-start session recall — AI remembers last 3 sessions on new conversation', owner: 'LOB-Jasper', commit: '1fe8166' },
   { id: 'S1-01', title: 'Sprint 1 audit completed', owner: 'LOB-Jasper' },
   { id: 'S1-02', title: 'Inbox threading API', owner: 'LOB-Jasper' },
   { id: 'S1-03', title: 'Unknown contact classification UI', owner: 'LOB-Jasper' },
@@ -41,10 +44,10 @@ const done = [
 ]
 
 const backlog = [
-  { id: 'V-14', title: 'Wake word / push-to-talk toggle', owner: '', priority: 'low' },
-  { id: 'V-15', title: 'LOB character animation while listening', owner: '', priority: 'medium' },
-  { id: 'V-16', title: 'WhatsApp-style voice note playback in inbox', owner: '', priority: 'low' },
-  { id: 'V-17', title: 'Auto-detect command vs. note vs. follow-up intent', owner: '', priority: 'medium' },
+  { id: 'V-20', title: 'Wake word / push-to-talk toggle', owner: '', priority: 'low' },
+  { id: 'V-21', title: 'LOB character animation while listening', owner: '', priority: 'medium' },
+  { id: 'V-22', title: 'WhatsApp-style voice note playback in inbox', owner: '', priority: 'low' },
+  { id: 'V-23', title: 'Mobile-first one-handed voice UX (driving between appointments)', owner: '', priority: 'high' },
 ]
 
 const ideas = [
@@ -234,7 +237,6 @@ export default function LOBuddyControlCenter() {
           <div>
             <p className="font-semibold text-midnight mb-1">🧠 Conversation State Machine — commit ed07471</p>
             <ul className="space-y-1 pl-4 list-disc text-midnight/60">
-              <li>New file: <code className="bg-midnight/10 px-1 rounded text-xs">services/voice-state-machine.ts</code></li>
               <li>Tracks flow state: idle → lead_creation:awaiting_contact → lead_creation:complete → etc.</li>
               <li>Short-circuits LLM for predictable responses (zero cost, zero latency)</li>
               <li>Injects context into AI when it does need to run ("you're working on Chad Clinton")</li>
@@ -243,7 +245,17 @@ export default function LOBuddyControlCenter() {
               <li>After: tap "I'll add later" → instant "Got it, Chad Clinton is in your pipeline" → buttons flip ✅</li>
             </ul>
           </div>
-          <p className="text-midnight/50 text-xs">⚠️ State machine needs the DB migration above before it persists flow state. Falls back gracefully without it.</p>
+          <div>
+            <p className="font-semibold text-midnight mb-1">⚡ Intent Classifier + Memory Fixes — commit 1fe8166</p>
+            <ul className="space-y-1 pl-4 list-disc text-midnight/60">
+              <li><strong>Intent classifier</strong>: 11 LO-specific patterns — greetings, help, and navigation return <em>instantly</em> with zero LLM call</li>
+              <li>High-confidence intents (new lead, log call, pipeline, scenario, etc.) auto-route to the right AI module</li>
+              <li><strong>Memory namespace fallback</strong>: Pinecone was silently failing when team membership query failed — now falls back to user-level namespace. Memory always works.</li>
+              <li><strong>Cold-start session recall</strong>: New conversations inject snippets from last 3 sessions so the AI isn't flying blind</li>
+              <li>Result: say "Hey" → instant response, zero latency, zero cost. Say "New lead" → routes straight to capture module, no model-selection overhead</li>
+            </ul>
+          </div>
+          <p className="text-midnight/50 text-xs">✅ DB migration done. State machine fully live. All 3 systems (classifier → state machine → memory) deployed to chad branch.</p>
         </div>
       </div>
 
