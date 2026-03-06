@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { requireAuth } from "@/lib/auth";
+
+function isAuthorized(req: Request): boolean {
+  const { userId } = auth();
+  if (userId) return true;
+  return requireAuth(req);
+}
 import { getScenario, updateScenario, deleteScenario } from "@/lib/kv";
 
 export async function GET(_req: Request, { params }: { params: { slug: string } }) {
@@ -16,7 +23,7 @@ export async function GET(_req: Request, { params }: { params: { slug: string } 
 }
 
 export async function PUT(req: Request, { params }: { params: { slug: string } }) {
-  if (!requireAuth(req)) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
@@ -33,7 +40,7 @@ export async function PUT(req: Request, { params }: { params: { slug: string } }
 }
 
 export async function DELETE(req: Request, { params }: { params: { slug: string } }) {
-  if (!requireAuth(req)) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {

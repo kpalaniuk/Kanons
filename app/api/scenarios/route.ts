@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { requireAuth } from "@/lib/auth";
 import { listScenarios, createScenario, getScenario } from "@/lib/kv";
 
+function isAuthorized(req: Request): boolean {
+  // Accept either Clerk session or legacy Bearer token
+  const { userId } = auth();
+  if (userId) return true;
+  return requireAuth(req);
+}
+
 export async function GET(req: Request) {
-  if (!requireAuth(req)) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
@@ -16,7 +24,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  if (!requireAuth(req)) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
