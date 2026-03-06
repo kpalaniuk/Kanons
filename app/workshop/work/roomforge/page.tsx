@@ -156,6 +156,8 @@ export default function RoomForgePage() {
   const [seedLoading, setSeedLoading] = useState(false)
   // 2D plan toggle (Phase 4)
   const [show2DPlan, setShow2DPlan] = useState(false)
+  // Pasted screenshot for Phase 4 vision
+  const [pastedImage, setPastedImage] = useState<string | null>(null)
   // Polycam import state
   const [showPolycamImport, setShowPolycamImport] = useState(false)
   const [polycamJson, setPolycamJson] = useState('')
@@ -388,6 +390,10 @@ export default function RoomForgePage() {
         ? project.photos.filter((p) => p.dataUrl).map((p) => ({ slot: p.slot, dataUrl: p.dataUrl }))
         : project.photos.filter((p) => p.aiCaption).map((p) => ({ slot: p.slot, aiCaption: p.aiCaption }))
 
+      // Attach pasted screenshot if present (phase 4 vision)
+      const pastedImageForApi = pastedImage
+      if (pastedImage) setPastedImage(null)
+
       const res = await fetch('/api/roomforge/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -397,6 +403,7 @@ export default function RoomForgePage() {
           cabinets: project.cabinets,
           phase: project.phase,
           photos: photosForApi,
+          ...(pastedImageForApi ? { screenshotDataUrl: pastedImageForApi } : {}),
         }),
       })
 
@@ -809,6 +816,19 @@ export default function RoomForgePage() {
       {footer}
 
       <div className="flex-shrink-0 p-3 border-t border-white/10">
+        {/* Pasted image preview */}
+        {pastedImage && (
+          <div className="mb-2 relative inline-block">
+            <img src={pastedImage} alt="Pasted screenshot" className="h-16 rounded-lg border border-amber-500/40 object-cover" />
+            <button
+              onClick={() => setPastedImage(null)}
+              className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-black/80 border border-white/20 text-white/80 flex items-center justify-center text-[10px] hover:bg-red-500/80 transition-colors"
+              title="Remove screenshot"
+            >
+              <X size={8} />
+            </button>
+          </div>
+        )}
         <div className="flex gap-2 items-end">
           <textarea
             value={input}
@@ -816,7 +836,26 @@ export default function RoomForgePage() {
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
             }}
-            placeholder="Type a message..."
+            onPaste={(e) => {
+              const items = e.clipboardData?.items
+              if (!items) return
+              for (const item of Array.from(items)) {
+                if (item.type.startsWith('image/')) {
+                  e.preventDefault()
+                  const file = item.getAsFile()
+                  if (!file) return
+                  const reader = new FileReader()
+                  reader.onload = (ev) => {
+                    const dataUrl = ev.target?.result as string
+                    setPastedImage(dataUrl)
+                    setInput(prev => prev + ' [screenshot attached]')
+                  }
+                  reader.readAsDataURL(file)
+                  break
+                }
+              }
+            }}
+            placeholder="Type a message... (paste a screenshot to attach)"
             rows={1}
             style={{ maxHeight: '120px' }}
             className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white/90 placeholder:text-white/30 focus:outline-none focus:border-amber-500/50 resize-none leading-relaxed"
