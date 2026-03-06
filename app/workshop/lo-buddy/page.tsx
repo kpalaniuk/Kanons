@@ -13,21 +13,11 @@ const sprint = {
   preview: 'https://lo-buddy-git-chad-kyle-palaniuks-projects.vercel.app',
 }
 
-const blocking = [
-  {
-    id: 'DB-01',
-    title: 'Supabase DB migration needed',
-    detail: 'Two columns must be added to voice_conversations before the state machine goes live. Without them it falls back gracefully, but state tracking won\'t persist.',
-    sql: `ALTER TABLE voice_conversations ADD COLUMN IF NOT EXISTS flow_state TEXT DEFAULT 'idle';
-ALTER TABLE voice_conversations ADD COLUMN IF NOT EXISTS active_entity JSONB DEFAULT NULL;
-CREATE INDEX IF NOT EXISTS idx_voice_conversations_flow_state ON voice_conversations(flow_state) WHERE flow_state != 'idle';`,
-    where: 'Supabase Dashboard → SQL Editor',
-  },
-]
+const blocking: { id: string; title: string; detail: string; sql: string; where: string }[] = []
 
 const inProgress = [
   { id: 'V-08', title: 'State machine tuning + edge cases', owner: 'Ceda + LOB-Jasper', priority: 'high' },
-  { id: 'V-09', title: 'Supabase token refresh (expired)', owner: 'Kyle', priority: 'high' },
+  { id: 'V-09', title: 'State machine live testing + edge case tuning', owner: 'Ceda + LOB-Jasper', priority: 'high' },
 ]
 
 const done = [
@@ -42,6 +32,7 @@ const done = [
   { id: 'V-11', title: 'Structured action buttons (gold/outlined/ghost hierarchy)', owner: 'LOB-Jasper', commit: 'ed07471' },
   { id: 'V-12', title: 'Short-circuit responses (zero LLM call for predictable actions)', owner: 'LOB-Jasper', commit: 'ed07471' },
   { id: 'V-13', title: 'Active entity tracking (no more duplicate leads)', owner: 'LOB-Jasper', commit: 'ed07471' },
+  { id: 'DB-01', title: 'Supabase migration — flow_state + active_entity columns ✅', owner: 'Kyle' },
   { id: 'S1-01', title: 'Sprint 1 audit completed', owner: 'LOB-Jasper' },
   { id: 'S1-02', title: 'Inbox threading API', owner: 'LOB-Jasper' },
   { id: 'S1-03', title: 'Unknown contact classification UI', owner: 'LOB-Jasper' },
