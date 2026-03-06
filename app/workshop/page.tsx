@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import { 
   ClipboardList,
   Wrench,
@@ -101,9 +103,22 @@ const quickLinks = [
 
 export default function WorkshopPage() {
   const roles = useRoles()
+  const router = useRouter()
   const canPPH      = hasAccess(roles, 'pph')
   const canHotDog   = hasAccess(roles, 'hot-dog')
   const canPersonal = hasAccess(roles, 'personal')
+
+  // Redirect pph-only users straight to /workshop/pph — they have no reason to be here
+  useEffect(() => {
+    if (roles.length > 0 && roles.includes('pph') && !roles.includes('admin')) {
+      router.replace('/workshop/pph')
+    }
+  }, [roles, router])
+
+  // Show nothing while redirecting pph users
+  if (roles.length > 0 && roles.includes('pph') && !roles.includes('admin')) {
+    return null
+  }
 
   return (
     <div className="space-y-12">
