@@ -7,17 +7,19 @@ import {
 } from 'lucide-react'
 
 const sprint = {
-  name: 'Sprint 2 — Voice System Overhaul',
-  goal: 'Rebuild the voice AI with stateful conversation architecture. The AI now knows what flow you\'re in, tracks active entities, and short-circuits to instant responses when it doesn\'t need to call the LLM.',
-  status: 'In Progress',
+  name: 'Sprint 2 — Voice Intelligence + Soul',
+  goal: 'Full voice AI overhaul: state machine, intent classifier, cross-session memory, and SOUL.md deployed. LO Buddy now knows who it is, who it serves, and what it will never do.',
+  status: 'In Progress — GH Group testing next',
   preview: 'https://lo-buddy-git-chad-kyle-palaniuks-projects.vercel.app',
 }
 
 const blocking: { id: string; title: string; detail: string; sql: string; where: string }[] = []
 
 const inProgress = [
-  { id: 'V-08', title: 'Live testing — intent classifier + state machine + cold-start', owner: 'Ceda + LOB-Jasper', priority: 'high' },
-  { id: 'V-09', title: 'Interrupt handling (stop mid-sentence, redirect)', owner: 'LOB-Jasper', priority: 'medium' },
+  { id: 'T-01', title: 'GH Group live testing — onboarding → new leads → pipeline', owner: 'Kyle + Ceda', priority: 'high' },
+  { id: 'T-02', title: 'GHL outbound messaging end-to-end test', owner: 'LOB-Jasper', priority: 'high' },
+  { id: 'T-03', title: 'KB → AI integration (AI pulls lender guides into responses)', owner: 'LOB-Jasper', priority: 'medium' },
+  { id: 'T-04', title: 'SDMC onboarding — after GH Group results', owner: 'Kyle', priority: 'medium' },
 ]
 
 const done = [
@@ -36,6 +38,10 @@ const done = [
   { id: 'V-14', title: 'Intent classifier — zero-LLM pattern matching for 11 intent types', owner: 'LOB-Jasper', commit: '1fe8166' },
   { id: 'V-15', title: 'Memory namespace fallback — Pinecone always works (no more silent failures)', owner: 'LOB-Jasper', commit: '1fe8166' },
   { id: 'V-16', title: 'Cold-start session recall — AI remembers last 3 sessions on new conversation', owner: 'LOB-Jasper', commit: '1fe8166' },
+  { id: 'S-01', title: 'SOUL.md — full identity, security protocols, account + user customization', owner: 'LOB-Jasper', commit: 'baaecdd' },
+  { id: 'S-02', title: 'Full soul injection into every prompt (was 4 lines, now complete document)', owner: 'LOB-Jasper', commit: 'baaecdd' },
+  { id: 'S-03', title: 'Per-team soul config wired (tone, cadence, geography, loan focus)', owner: 'LOB-Jasper', commit: 'baaecdd' },
+  { id: 'S-04', title: 'Per-user preferences injected (first name, verbosity, loan types)', owner: 'LOB-Jasper', commit: 'baaecdd' },
   { id: 'S1-01', title: 'Sprint 1 audit completed', owner: 'LOB-Jasper' },
   { id: 'S1-02', title: 'Inbox threading API', owner: 'LOB-Jasper' },
   { id: 'S1-03', title: 'Unknown contact classification UI', owner: 'LOB-Jasper' },
@@ -44,10 +50,15 @@ const done = [
 ]
 
 const backlog = [
-  { id: 'V-20', title: 'Wake word / push-to-talk toggle', owner: '', priority: 'low' },
+  { id: 'N-01', title: 'GH Group contact bulk import from GHL', owner: '', priority: 'high' },
+  { id: 'N-02', title: 'Communications inbox — full SMS + email unification', owner: '', priority: 'high' },
+  { id: 'N-03', title: 'Scenario PDF export (branded)', owner: '', priority: 'medium' },
+  { id: 'N-04', title: 'Rate stack parser (lender rate sheet → auto-populate scenarios)', owner: '', priority: 'medium' },
+  { id: 'N-05', title: 'Proactive follow-up nudges (AI texts LO when deal goes stale)', owner: '', priority: 'medium' },
+  { id: 'N-06', title: 'Custom fee sheets per lender', owner: '', priority: 'medium' },
+  { id: 'N-07', title: 'Weekly pipeline digest (Monday morning summary)', owner: '', priority: 'low' },
+  { id: 'V-20', title: 'Mobile-first one-handed voice UX (driving between appointments)', owner: '', priority: 'high' },
   { id: 'V-21', title: 'LOB character animation while listening', owner: '', priority: 'medium' },
-  { id: 'V-22', title: 'WhatsApp-style voice note playback in inbox', owner: '', priority: 'low' },
-  { id: 'V-23', title: 'Mobile-first one-handed voice UX (driving between appointments)', owner: '', priority: 'high' },
 ]
 
 const ideas = [
