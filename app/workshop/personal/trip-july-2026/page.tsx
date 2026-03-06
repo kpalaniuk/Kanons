@@ -78,11 +78,12 @@ const DAYS: TripDay[] = [
   { date: 'Jul 30', label: 'Galway → Kenmare, Co. Kerry (~3 hrs south)', sleep: 'Dromquinna Manor, Kenmare', sleepIcon: '⛺', stopId: 'dromquinna', type: 'transit', note: 'Wild Atlantic Way drive. Luxury tent check-in.' },
 
   // KILKENNY AREA
-  { date: 'Jul 31', label: 'Kenmare → outside Kilkenny (~3.5 hrs east)', sleep: 'Kilkenny area — TBD', sleepIcon: '🏰', stopId: 'kilkenny', type: 'transit', note: 'Drive through Kerry + Tipperary. Last night before home.' },
+  { date: 'Jul 31', label: 'Kenmare → Hunter\'s Yard, Mt Juliet Estate (~3.5 hrs east)', sleep: 'Hunter\'s Yard, Mt Juliet Estate, Thomastown', sleepIcon: '🏰', stopId: 'kilkenny', type: 'transit', booked: true, note: 'Drive through Kerry + Tipperary. Check in to 5-star Mount Juliet Estate. Confirmation #80308377.' },
 
   // FLY HOME
-  { date: 'Aug 1',  label: 'Drive Kilkenny → Dublin (~1.5 hrs). Fly home.', sleep: 'In flight → SAN', sleepIcon: '✈️', stopId: 'home', type: 'transit', note: 'Return car at Dublin Airport.' },
-  { date: 'Aug 2',  label: 'Land San Diego 🏠', sleep: 'Home, San Diego', sleepIcon: '🏠', stopId: 'home', type: 'chill' },
+  { date: 'Aug 1',  label: 'Last morning at Hunter\'s Yard — drive to Dublin (~90 min)', sleep: 'Hunter\'s Yard, Mt Juliet Estate', sleepIcon: '🏰', stopId: 'kilkenny', type: 'chill', booked: true, note: 'Checkout Aug 2 morning. Fly DUB→KEF→SEA→SAN (departs 12:15pm).' },
+  { date: 'Aug 2',  label: 'Checkout → Dublin Airport → fly home ✈️', sleep: 'In flight → SAN', sleepIcon: '✈️', stopId: 'home', type: 'transit', note: 'Return Ireland rental car at DUB. Depart 12:15pm, arrive SAN 11:03pm.' },
+  { date: 'Aug 3',  label: 'Land San Diego 🏠', sleep: 'Home, San Diego', sleepIcon: '🏠', stopId: 'home', type: 'chill' },
 ]
 
 // ─── Stops ────────────────────────────────────────────────────────────────────
@@ -169,12 +170,13 @@ const STOPS = [
     accommodation: 'Dromquinna Manor luxury tent — open | dromquinnamanor.com',
   },
   {
-    id: 'kilkenny', name: 'Outside Kilkenny', emoji: '🏰', nights: 1, dates: 'Jul 31–Aug 1',
-    status: 'open', color: 'bg-purple-50 border-purple-200', dotColor: 'bg-purple-500', who: 'Core family',
-    details: "Last night before flying home. ~3.5 hr drive from Kenmare (Kerry → Tipperary → Kilkenny). Looking for something rural/charming outside the city rather than in it. Easy 1.5 hr drive to Dublin Airport the next morning.",
-    highlights: ['Outside Kilkenny city', 'Rural / charming', '1.5 hrs to Dublin Airport', 'Final Ireland night'],
-    action: 'Find rural B&B, farmhouse, or glamping near Kilkenny for Jul 31–Aug 1.',
-    accommodation: 'Rural accommodation outside Kilkenny — open',
+    id: 'kilkenny', name: "Hunter's Yard, Mt Juliet Estate", emoji: '🏰', nights: 2, dates: 'Jul 31–Aug 2',
+    status: 'booked', color: 'bg-purple-50 border-purple-200', dotColor: 'bg-purple-500', who: 'Core family',
+    details: "5-star Hunter's Yard at Mount Juliet Estate, Thomastown, Co. Kilkenny. 18th-century estate overlooking the River Nore — 93-room luxury hotel. Booked by Paige via Amex Fine Hotels & Resorts. ~90 min to Dublin Airport for the Aug 2 flight home. Double/Double Garden View room.",
+    highlights: ["Mount Juliet Estate — 5-star ✅", 'River Nore views', '90 min to Dublin Airport', 'Amex FHR benefits (upgrade/breakfast/late checkout)', 'Thomastown, Co. Kilkenny'],
+    action: 'BOOKED ✅ Confirmation #80308377. Booked by Paige via Amex Fine Hotels & Resorts. Jul 31–Aug 2. Checkout Aug 2 morning → Dublin Airport.',
+    accommodation: "Hunter's Yard, Mount Juliet Estate, Thomastown, Co. Kilkenny — BOOKED ✅",
+    cost: 'Amex Fine Hotels & Resorts (rate details TBD)',
   },
 ]
 
@@ -209,11 +211,11 @@ const OPEN_ITEMS = [
     url: 'https://www.aerlingus.com', label: 'Aer Lingus ↗' },
   { urgent: true,  text: 'Dromquinna Manor luxury tent — Jul 30–31, family of 4.',
     url: 'https://www.dromquinnamanor.com/luxury-tents/', label: 'Dromquinna ↗' },
-  { urgent: true,  text: 'Outside Kilkenny — rural B&B / farmhouse / glamping, Jul 31–Aug 1.',
-    url: 'https://www.booking.com/searchresults.html?ss=Kilkenny&checkin=2026-07-31&checkout=2026-08-01&group_adults=4', label: 'Booking.com' },
+  { urgent: false, text: "✅ Hunter's Yard, Mt Juliet Estate — Jul 31–Aug 2. Booked by Paige via Amex FHR. Conf #80308377.",
+    url: 'https://www.mountjuliet.ie', label: 'Mount Juliet' },
   { urgent: false, text: '⚠️ Eagle Brae balance — £1,161.20 due May 4, 2026.',
     url: 'https://eaglebrae.co.uk', label: 'Eagle Brae ↗' },
-  { urgent: false, text: 'Return flights DUB → SAN — Aug 1. Chase Ultimate Rewards.',
+  { urgent: false, text: '✅ Return flights DUB→KEF→SEA→SAN — Aug 2, departs 12:15pm, arrives SAN 11:03pm. Icelandair booked.',
     url: 'https://www.google.com/travel/flights', label: 'Google Flights' },
   { urgent: false, text: 'Scotland car rental — Glasgow Airport Jul 1, drop Inverness Jul 15.',
     url: 'https://www.rentalcars.com/', label: 'RentalCars.com' },
