@@ -560,7 +560,18 @@ export default function RoomForgePage() {
                   : 'bg-white/8 text-white/85 rounded-bl-sm'
               }`}
             >
-              {msg.content || (
+              {msg.content ? (
+                // Strip JSON code blocks from display — show only conversational text
+                (() => {
+                  const displayText = msg.content
+                    .replace(/```json[\s\S]*?```/g, '')
+                    .replace(/```[\s\S]*?```/g, '')
+                    .trim()
+                  return displayText || (
+                    <span className="text-white/30 italic text-xs">Model updated ✓</span>
+                  )
+                })()
+              ) : (
                 <span className="flex items-center gap-2 text-white/40">
                   <Loader2 size={12} className="animate-spin" /> Thinking...
                 </span>
@@ -582,7 +593,7 @@ export default function RoomForgePage() {
       {footer}
 
       <div className="flex-shrink-0 p-3 border-t border-white/10">
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-end">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -590,16 +601,25 @@ export default function RoomForgePage() {
               if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
             }}
             placeholder="Type a message..."
-            rows={2}
-            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white/90 placeholder:text-white/30 focus:outline-none focus:border-amber-500/50 resize-none"
+            rows={1}
+            style={{ maxHeight: '120px' }}
+            className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white/90 placeholder:text-white/30 focus:outline-none focus:border-amber-500/50 resize-none leading-relaxed"
             disabled={streaming}
+            onInput={(e) => {
+              const t = e.currentTarget
+              t.style.height = 'auto'
+              t.style.height = Math.min(t.scrollHeight, 120) + 'px'
+            }}
           />
           <button
             onClick={() => sendMessage()}
             disabled={streaming || !input.trim()}
-            className="self-end w-10 h-10 flex items-center justify-center rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-40 transition-colors"
+            className="flex-shrink-0 w-11 h-11 flex items-center justify-center rounded-2xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 disabled:opacity-40 transition-colors touch-manipulation"
           >
-            {streaming ? <Loader2 size={14} className="animate-spin text-white" /> : <Send size={14} className="text-white" />}
+            {streaming
+              ? <Loader2 size={16} className="animate-spin text-white" />
+              : <Send size={16} className="text-white" />
+            }
           </button>
         </div>
       </div>
@@ -747,34 +767,19 @@ export default function RoomForgePage() {
 
   const dimCount = Object.keys(project.dimensions).length
 
-  // Simple SVG room diagram
-  const roomDiagram = (
-    <div className="mx-4 mt-3 p-3 bg-white/5 rounded-xl border border-white/10">
-      <p className="text-[10px] text-white/40 mb-2 uppercase tracking-wider">Room Diagram</p>
-      <svg viewBox="0 0 200 160" className="w-full h-24">
-        <rect x="20" y="10" width="160" height="140" fill="none" stroke="#f59e0b" strokeWidth="2" opacity="0.5" />
-        {/* Labels */}
-        {project.dimensions['frontWidth'] && (
-          <text x="100" y="165" textAnchor="middle" fill="#f59e0b" fontSize="9">
-            {Math.round(project.dimensions['frontWidth'] / 12)}′
-          </text>
-        )}
-        {project.dimensions['leftDepth'] && (
-          <text x="8" y="80" textAnchor="middle" fill="#f59e0b" fontSize="9" transform="rotate(-90,8,80)">
-            {Math.round(project.dimensions['leftDepth'] / 12)}′
-          </text>
-        )}
-        <text x="100" y="88" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="8">
-          {dimCount}/6 dims
-        </text>
-      </svg>
-      <p className="text-xs text-white/50 mt-1">Got {dimCount} of 6 key dimensions</p>
+  // Compact dimension tracker — just a pill, not a big SVG
+  const dimTracker = dimCount > 0 ? (
+    <div className="mx-4 mt-2 flex items-center gap-2">
+      <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5 border border-white/10">
+        <div className="w-2 h-2 rounded-full bg-amber-500" />
+        <span className="text-xs text-white/60">{dimCount} dimension{dimCount !== 1 ? 's' : ''} captured</span>
+      </div>
     </div>
-  )
+  ) : null
 
   const phase2 = chatUI(
     <>
-      {roomDiagram}
+      {dimTracker}
       {dimensionsComplete && (
         <div className="mx-4 mb-3">
           <button
