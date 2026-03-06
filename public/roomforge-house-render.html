@@ -272,9 +272,9 @@ ptLight.castShadow = false;
 scene.add(ptLight);
 
 // ─── Materials ───────────────────────────────────────────────────────────────
-const matWall       = new THREE.MeshLambertMaterial({ color: 0xe8e8e8, side: THREE.DoubleSide });
+const matWall       = new THREE.MeshLambertMaterial({ color: 0xe8e8e8, side: THREE.DoubleSide, transparent: true, opacity: 0.15 });
 const matFloor      = new THREE.MeshLambertMaterial({ color: 0x6b6b6b });
-const matCeiling    = new THREE.MeshLambertMaterial({ color: 0xf0f0f0, side: THREE.DoubleSide });
+const matCeiling    = new THREE.MeshLambertMaterial({ color: 0xf0f0f0, side: THREE.DoubleSide, transparent: true, opacity: 0.10 });
 const matCabFace    = new THREE.MeshPhongMaterial({ color: 0x8FAF6F, shininess: 30 });
 const matCabSide    = new THREE.MeshPhongMaterial({ color: 0x6B8A52, shininess: 20 });
 const matCountertop = new THREE.MeshPhongMaterial({ color: 0xd4c9b8, shininess: 60 });
@@ -637,7 +637,7 @@ cabinetFaceNegX(16, 57, 27, 160 - 16, 54, 27);
   const screenMat = new THREE.MeshPhongMaterial({ color: 0x223344, emissive: 0x112233, shininess: 120 });
   const tvMesh = new THREE.Mesh(new THREE.BoxGeometry(tvD, tvH, tvW), [tvMat, tvMat, tvMat, tvMat, tvMat, screenMat]);
   // Center at z=128", bottom at 54"
-  tvMesh.position.set(LW_DEPTH * S + tvD / 2, (54 + 14) * S, 128 * S);
+  tvMesh.position.set(0.005, (54 + 14) * S, 128 * S);
   scene.add(tvMesh);
 }
 
@@ -708,6 +708,9 @@ window.addEventListener('resize', resize);
 
 document.getElementById('loading').style.opacity = '0';
 setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 600);
+
+// Mirror the room so left wall appears on the left from the viewer's perspective
+scene.scale.x = -1;
 
 function animate() {
   requestAnimationFrame(animate);
