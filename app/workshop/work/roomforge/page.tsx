@@ -171,8 +171,9 @@ export default function RoomForgePage() {
 
   const saveProject = useCallback((p: ProjectState) => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-    saveTimerRef.current = setTimeout(() => {
+    saveTimerRef.current = setTimeout(async () => {
       try {
+        // 1. Always save to localStorage first (instant, reliable)
         const key = `roomforge-project-${p.id}`
         localStorage.setItem(key, JSON.stringify(p))
         const list = JSON.parse(localStorage.getItem('roomforge-projects') || '[]') as { id: string; name: string; savedAt: string; phase: Phase }[]
@@ -182,8 +183,42 @@ export default function RoomForgePage() {
         else list.unshift(entry)
         localStorage.setItem('roomforge-projects', JSON.stringify(list.slice(0, 20)))
         setSaveKey(key)
-      } catch { /* ignore */ }
-    }, 1000)
+      } catch { /* ignore localStorage errors */ }
+
+      // 2. Also save to Supabase (async, best-effort — photos stripped to save space)
+      try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        if (!supabaseUrl || !supabaseKey) return
+
+        const payload = {
+          id: p.id,
+          user_id: 'kyle', // single-user MVP
+          name: p.name,
+          phase: p.phase,
+          room_spec: p.roomSpec,
+          cabinets: p.cabinets,
+          // Strip photo dataUrls (too large) — save only captions and slots
+          photos_meta: p.photos.map(ph => ({ slot: ph.slot, label: ph.label, aiCaption: ph.aiCaption, hasPhoto: !!ph.url })),
+          concept: p.concept,
+          dimensions: p.dimensions,
+          renders: p.renders,
+          chat_history: p.chatHistory,
+          updated_at: new Date().toISOString(),
+        }
+
+        await fetch(`${supabaseUrl}/rest/v1/roomforge_projects`, {
+          method: 'POST',
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates',
+          },
+          body: JSON.stringify(payload),
+        })
+      } catch { /* Supabase save is best-effort — localStorage is the source of truth */ }
+    }, 2000) // 2s debounce
   }, [])
 
   function updateProject(updates: Partial<ProjectState>) {
@@ -527,9 +562,15 @@ export default function RoomForgePage() {
         Phase {phase}: {PHASE_NAMES[phase]}
       </span>
 
-      {/* Progress */}
+      {/* Save indicator + progress */}
       <div className="flex items-center gap-2">
-        <div className="w-20 h-1 bg-white/10 rounded-full overflow-hidden">
+        {saveKey && (
+          <span className="text-[10px] text-green-400/70 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400/70 inline-block" />
+            saved
+          </span>
+        )}
+        <div className="w-16 h-1 bg-white/10 rounded-full overflow-hidden">
           <div
             className="h-full bg-amber-400 rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
