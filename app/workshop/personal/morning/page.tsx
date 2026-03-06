@@ -6,7 +6,7 @@ import {
   Sun, Cloud, CloudRain, Droplets, Wind,
   CheckSquare, AlertCircle, Clock, Trophy,
   Map, Music, Mic, ArrowRight, RefreshCw,
-  Calendar, Zap, Heart, Plus, Check,
+  Calendar, Zap, Heart, Plus, Check, ExternalLink, Plane,
 } from 'lucide-react'
 
 // ── Gratitude Prompts ─────────────────────────────────────────────────────────
@@ -174,6 +174,9 @@ function getDayContext(): { greeting: string; dayNote: string; isCoachingDay: bo
     isCoachingDay,
   }
 }
+
+// Set to true once Kyle books the Inverness → Dublin flight (Jul 16)
+const INV_DUB_BOOKED = false
 
 function getTripCountdown(): { days: number; label: string; dest: string } {
   const now = new Date()
@@ -489,6 +492,43 @@ export default function MorningBriefPage() {
             </div>
           </div>
         </Link>
+      )}
+
+      {/* ── INV→DUB Flight Alert ── */}
+      {!INV_DUB_BOOKED && trip.days > 0 && trip.days < 200 && (
+        <div className="bg-sky-50 border-2 border-sky-300 rounded-2xl p-5">
+          <div className="flex items-start gap-3">
+            <Plane className="w-5 h-5 text-sky-600 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <p className="text-sm font-bold text-midnight">Book: INV → DUB — Jul 16</p>
+                <span className="text-xs bg-green-100 text-green-700 border border-green-200 px-2 py-0.5 rounded-full font-medium">Thu ✅ · Direct · 1h 35m</span>
+                <span className="text-xs bg-red-100 text-red-600 border border-red-200 px-2 py-0.5 rounded-full font-medium">Last open flight</span>
+              </div>
+              <p className="text-xs text-midnight/60 leading-snug">
+                Aer Lingus Regional (Emerald Airlines) — new route from May 2026.{' '}
+                <strong className="text-midnight/80">Only flies Thursdays & Sundays.</strong>{' '}
+                Chase UR → BA Avios → AerClub (~4,500–9,000 Avios/pp).
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-3">
+            <a
+              href="https://www.aerlingus.com/en-gb/flights-from-inverness-to-dublin"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-1.5 bg-midnight text-cream text-xs font-semibold py-2 rounded-xl hover:bg-ocean transition-colors"
+            >
+              Book Aer Lingus <ExternalLink className="w-3 h-3" />
+            </a>
+            <Link
+              href="/workshop/personal/trip-july-2026"
+              className="flex items-center gap-1 text-xs text-sky-700 border border-sky-300 px-3 py-2 rounded-xl hover:bg-sky-100 transition-colors whitespace-nowrap"
+            >
+              Flight options <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </div>
       )}
 
       {/* ── Sunday Weekly Review ── */}
