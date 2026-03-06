@@ -3,32 +3,57 @@
 import { useState } from 'react'
 import {
   Sparkles, Mic, Zap, GitBranch, CheckSquare, Lightbulb,
-  Clock, AlertCircle, ArrowRight, ExternalLink
+  Clock, AlertCircle, ArrowRight, ExternalLink, Database
 } from 'lucide-react'
 
 const sprint = {
-  name: 'Sprint 2 — Voice Overhaul',
-  goal: 'Rebuild voice input using OpenClaw-style architecture. Mobile-first, interrupt-capable, persistent context.',
+  name: 'Sprint 2 — Voice System Overhaul',
+  goal: 'Rebuild the voice AI with stateful conversation architecture. The AI now knows what flow you\'re in, tracks active entities, and short-circuits to instant responses when it doesn\'t need to call the LLM.',
   status: 'In Progress',
+  preview: 'https://lo-buddy-git-chad-kyle-palaniuks-projects.vercel.app',
 }
 
-const inProgress = [
-  { id: 'V-01', title: 'Voice input architecture review', owner: 'Ceda + LOB-Jasper', priority: 'high' },
-  { id: 'V-02', title: 'OpenClaw voice pattern research', owner: 'LOB-Jasper', priority: 'high' },
+const blocking = [
+  {
+    id: 'DB-01',
+    title: 'Supabase DB migration needed',
+    detail: 'Two columns must be added to voice_conversations before the state machine goes live. Without them it falls back gracefully, but state tracking won\'t persist.',
+    sql: `ALTER TABLE voice_conversations ADD COLUMN IF NOT EXISTS flow_state TEXT DEFAULT 'idle';
+ALTER TABLE voice_conversations ADD COLUMN IF NOT EXISTS active_entity JSONB DEFAULT NULL;
+CREATE INDEX IF NOT EXISTS idx_voice_conversations_flow_state ON voice_conversations(flow_state) WHERE flow_state != 'idle';`,
+    where: 'Supabase Dashboard → SQL Editor',
+  },
 ]
 
-const backlog = [
-  { id: 'V-03', title: 'Replace current mic button with streaming input', owner: '', priority: 'high' },
-  { id: 'V-04', title: 'Interrupt handling (stop mid-sentence)', owner: '', priority: 'high' },
-  { id: 'V-05', title: 'Persistent context across voice turns', owner: '', priority: 'medium' },
-  { id: 'V-06', title: 'Mobile-first voice UX pass', owner: '', priority: 'medium' },
-  { id: 'V-07', title: 'Wake word / push-to-talk toggle', owner: '', priority: 'low' },
+const inProgress = [
+  { id: 'V-08', title: 'State machine tuning + edge cases', owner: 'Ceda + LOB-Jasper', priority: 'high' },
+  { id: 'V-09', title: 'Supabase token refresh (expired)', owner: 'Kyle', priority: 'high' },
 ]
 
 const done = [
-  { id: 'S1-01', title: 'Sprint 1 audit completed', owner: 'Jasper' },
-  { id: 'S1-02', title: 'Inbox threading API', owner: 'Jasper' },
-  { id: 'S1-03', title: 'Unknown contact classification UI', owner: 'Jasper' },
+  { id: 'V-01', title: 'Page context → AI (knows what page you\'re on)', owner: 'LOB-Jasper' },
+  { id: 'V-02', title: 'Dynamic action buttons (change after lead creation)', owner: 'LOB-Jasper' },
+  { id: 'V-03', title: '12-message history (doubled from 6)', owner: 'LOB-Jasper' },
+  { id: 'V-04', title: 'Last-action tracking (AI knows who "they" refers to)', owner: 'LOB-Jasper' },
+  { id: 'V-05', title: 'Structured quick capture (no ambiguous text to AI)', owner: 'LOB-Jasper' },
+  { id: 'V-06', title: 'Transcript review (editable, 3s auto-send)', owner: 'LOB-Jasper' },
+  { id: 'V-07', title: 'Timeout + cancel (5s cancel button, 20s hard timeout)', owner: 'LOB-Jasper' },
+  { id: 'V-10', title: 'Conversation State Machine — voice-state-machine.ts', owner: 'LOB-Jasper', commit: 'ed07471' },
+  { id: 'V-11', title: 'Structured action buttons (gold/outlined/ghost hierarchy)', owner: 'LOB-Jasper', commit: 'ed07471' },
+  { id: 'V-12', title: 'Short-circuit responses (zero LLM call for predictable actions)', owner: 'LOB-Jasper', commit: 'ed07471' },
+  { id: 'V-13', title: 'Active entity tracking (no more duplicate leads)', owner: 'LOB-Jasper', commit: 'ed07471' },
+  { id: 'S1-01', title: 'Sprint 1 audit completed', owner: 'LOB-Jasper' },
+  { id: 'S1-02', title: 'Inbox threading API', owner: 'LOB-Jasper' },
+  { id: 'S1-03', title: 'Unknown contact classification UI', owner: 'LOB-Jasper' },
+  { id: 'S2-01', title: 'Scenario Comparison component', owner: 'LOB-Jasper' },
+  { id: 'S2-02', title: 'Underwriter Knowledge Base', owner: 'LOB-Jasper' },
+]
+
+const backlog = [
+  { id: 'V-14', title: 'Wake word / push-to-talk toggle', owner: '', priority: 'low' },
+  { id: 'V-15', title: 'LOB character animation while listening', owner: '', priority: 'medium' },
+  { id: 'V-16', title: 'WhatsApp-style voice note playback in inbox', owner: '', priority: 'low' },
+  { id: 'V-17', title: 'Auto-detect command vs. note vs. follow-up intent', owner: '', priority: 'medium' },
 ]
 
 const ideas = [
@@ -40,8 +65,9 @@ const ideas = [
 
 const links = [
   { label: 'GitHub — LO Buddy', href: 'https://github.com/kpalaniuk/lo-buddy', icon: GitBranch },
-  { label: 'Vercel Deployments', href: 'https://vercel.com/hotclaw', icon: ExternalLink },
+  { label: 'Vercel Preview', href: sprint.preview, icon: ExternalLink },
   { label: 'Character Page', href: '/workshop/lo-buddy/character', icon: Sparkles },
+  { label: 'Supabase SQL Editor', href: 'https://supabase.com/dashboard/project/vzkjlgcpggwyxcewukaq/sql', icon: Database },
 ]
 
 const priorityColor = (p: string) =>
@@ -52,11 +78,18 @@ const priorityColor = (p: string) =>
 export default function LOBuddyControlCenter() {
   const [newIdea, setNewIdea] = useState('')
   const [localIdeas, setLocalIdeas] = useState(ideas)
+  const [sqlCopied, setSqlCopied] = useState(false)
 
   function addIdea() {
     if (!newIdea.trim()) return
     setLocalIdeas(prev => [{ text: newIdea.trim(), tag: 'Idea' }, ...prev])
     setNewIdea('')
+  }
+
+  function copySql(sql: string) {
+    navigator.clipboard.writeText(sql)
+    setSqlCopied(true)
+    setTimeout(() => setSqlCopied(false), 2000)
   }
 
   return (
@@ -86,8 +119,37 @@ export default function LOBuddyControlCenter() {
           <span className="text-sm font-medium text-amber-400 uppercase tracking-wide">Current Sprint</span>
         </div>
         <h2 className="font-display text-2xl mb-2">{sprint.name}</h2>
-        <p className="text-cream/70 text-sm max-w-2xl">{sprint.goal}</p>
+        <p className="text-cream/70 text-sm max-w-2xl mb-4">{sprint.goal}</p>
+        <a
+          href={sprint.preview}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-3 py-1.5 bg-cream/10 hover:bg-cream/20 border border-cream/20 rounded-lg text-sm text-cream transition-colors"
+        >
+          <ExternalLink size={13} /> View Preview Build
+        </a>
       </div>
+
+      {/* Blocker */}
+      {blocking.map(b => (
+        <div key={b.id} className="bg-red-50 border border-red-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertCircle size={16} className="text-red-600" />
+            <span className="text-sm font-semibold text-red-700">🚨 Action Required — {b.title}</span>
+          </div>
+          <p className="text-sm text-red-700 mb-3">{b.detail}</p>
+          <p className="text-xs font-medium text-red-600 mb-2">Run in: {b.where}</p>
+          <div className="relative">
+            <pre className="bg-red-100 text-red-800 text-xs rounded-xl p-4 overflow-x-auto font-mono">{b.sql}</pre>
+            <button
+              onClick={() => copySql(b.sql)}
+              className="absolute top-3 right-3 px-2 py-1 bg-red-200 hover:bg-red-300 text-red-800 text-xs rounded-lg transition-colors"
+            >
+              {sqlCopied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        </div>
+      ))}
 
       {/* Sprint Board */}
       <div>
@@ -139,18 +201,58 @@ export default function LOBuddyControlCenter() {
           <div className="bg-cream rounded-2xl p-4 border border-midnight/10">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-2 h-2 bg-green-500 rounded-full" />
-              <span className="text-xs font-semibold text-midnight/50 uppercase tracking-wide">Done</span>
+              <span className="text-xs font-semibold text-midnight/50 uppercase tracking-wide">Done ({done.length})</span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-96 overflow-y-auto">
               {done.map(t => (
                 <div key={t.id} className="bg-white rounded-xl p-3 border border-midnight/5 opacity-60">
-                  <span className="text-xs text-midnight/30 font-mono">{t.id}</span>
+                  <div className="flex items-start justify-between gap-1 mb-1">
+                    <span className="text-xs text-midnight/30 font-mono">{t.id}</span>
+                    {'commit' in t && t.commit && (
+                      <span className="text-xs text-midnight/20 font-mono">{t.commit}</span>
+                    )}
+                  </div>
                   <p className="text-sm text-midnight line-through">{t.title}</p>
                   {t.owner && <p className="text-xs text-midnight/40 mt-1">{t.owner}</p>}
                 </div>
               ))}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* What We Built Tonight */}
+      <div className="bg-midnight/5 border border-midnight/10 rounded-2xl p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Zap size={16} className="text-cyan-600" />
+          <h2 className="font-display text-lg text-midnight">What We Built Tonight (Ceda + LOB-Jasper)</h2>
+        </div>
+        <div className="space-y-4 text-sm text-midnight/80">
+          <div>
+            <p className="font-semibold text-midnight mb-1">🔧 7 Voice Fixes — deployed to chad branch</p>
+            <ul className="space-y-1 pl-4 list-disc text-midnight/60">
+              <li>AI now knows what page you're on — no more "which opportunity?"</li>
+              <li>Buttons change after actions (post-lead: "Set Follow-up / Build Scenario")</li>
+              <li>History doubled from 6 → 12 messages</li>
+              <li>AI tracks last action so "they" / "it" always resolves correctly</li>
+              <li>Structured quick capture — no ambiguous text sent to AI</li>
+              <li>Editable transcript review after voice — auto-sends in 3s</li>
+              <li>Processing timeout + cancel button at 5s / hard stop at 20s</li>
+            </ul>
+          </div>
+          <div>
+            <p className="font-semibold text-midnight mb-1">🧠 Conversation State Machine — commit ed07471</p>
+            <ul className="space-y-1 pl-4 list-disc text-midnight/60">
+              <li>New file: <code className="bg-midnight/10 px-1 rounded text-xs">services/voice-state-machine.ts</code></li>
+              <li>Tracks flow state: idle → lead_creation:awaiting_contact → lead_creation:complete → etc.</li>
+              <li>Short-circuits LLM for predictable responses (zero cost, zero latency)</li>
+              <li>Injects context into AI when it does need to run ("you're working on Chad Clinton")</li>
+              <li>Structured buttons: gold primary / outlined secondary / ghost</li>
+              <li>Before: tap "I'll add later" → AI re-creates lead → 2 Chad Clintons 🤦</li>
+              <li>After: tap "I'll add later" → instant "Got it, Chad Clinton is in your pipeline" → buttons flip ✅</li>
+            </ul>
+          </div>
+          <p className="text-midnight/50 text-xs">⚠️ State machine needs the DB migration above before it persists flow state. Falls back gracefully without it.</p>
         </div>
       </div>
 
@@ -215,12 +317,12 @@ export default function LOBuddyControlCenter() {
           <span className="text-sm font-semibold text-amber-700">For LOB-Jasper</span>
         </div>
         <p className="text-sm text-amber-700">
-          You have deploy access to Kanons via the deploy key at <code className="bg-amber-100 px-1 rounded">/root/.ssh/dashboard-deploy</code>.
-          Repo at <code className="bg-amber-100 px-1 rounded">/data/projects/kanons/</code>.
-          Always <code className="bg-amber-100 px-1 rounded">git pull</code> before editing. Run{' '}
-          <code className="bg-amber-100 px-1 rounded">npx tsc --noEmit</code> before pushing.
-          Add new sprint items by editing <code className="bg-amber-100 px-1 rounded">app/workshop/lo-buddy/page.tsx</code>.
-          Full deployment guide: <code className="bg-amber-100 px-1 rounded">/data/super/workspace/KANONS-DEPLOY.md</code>
+          Deploy key: <code className="bg-amber-100 px-1 rounded">/data/.ssh/dashboard-deploy</code> · 
+          Repo: <code className="bg-amber-100 px-1 rounded">/data/projects/kanons/</code> · 
+          SSH alias: <code className="bg-amber-100 px-1 rounded">github.com-kanons-lob</code> · 
+          Always <code className="bg-amber-100 px-1 rounded">git pull</code> before editing. 
+          Run <code className="bg-amber-100 px-1 rounded">npx tsc --noEmit</code> before pushing. 
+          Vercel auto-deploys from main. LO Buddy branch: <code className="bg-amber-100 px-1 rounded">chad</code>.
         </p>
       </div>
 
