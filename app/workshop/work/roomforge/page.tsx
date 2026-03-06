@@ -49,6 +49,7 @@ interface PhotoSlot {
   dataUrl: string
   aiCaption: string
   analyzing: boolean
+  feedback?: string  // conversational feedback shown below the grid
 }
 
 interface ConceptState {
@@ -77,10 +78,11 @@ interface ProjectState {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const PHOTO_SLOTS: Omit<PhotoSlot, 'url' | 'dataUrl' | 'aiCaption' | 'analyzing'>[] = [
-  { slot: 'entry', label: 'Entry view' },
+  { slot: 'entry', label: 'Wall facing you (entry)' },
   { slot: 'left', label: 'Left wall' },
   { slot: 'back', label: 'Back wall' },
   { slot: 'right', label: 'Right wall' },
+  { slot: 'front', label: 'Wall behind you (front)' },
   { slot: 'ceiling', label: 'Ceiling', optional: true },
   { slot: 'floor', label: 'Floor', optional: true },
 ]
@@ -621,10 +623,15 @@ export default function RoomForgePage() {
         </div>
       </div>
 
+      {/* Orientation hint */}
+      <div className="px-4 pb-2">
+        <p className="text-xs text-white/30 text-center">Stand in the doorway. The wall facing you = entry view. Turn left, right, back, then spin to capture the wall behind you.</p>
+      </div>
+
       {/* Photo grid */}
-      <div className="grid grid-cols-2 gap-3 p-4">
+      <div className="grid grid-cols-2 gap-3 px-4 pb-2">
         {project.photos.map((photo) => (
-          <div key={photo.slot} className="relative">
+          <div key={photo.slot} className="flex flex-col gap-1">
             <input
               ref={(el) => { fileInputRefs.current[photo.slot] = el }}
               type="file"
@@ -636,42 +643,83 @@ export default function RoomForgePage() {
                 if (file) handlePhotoUpload(photo.slot, file)
               }}
             />
+            {/* Photo thumbnail */}
             <button
               onClick={() => fileInputRefs.current[photo.slot]?.click()}
-              className={`w-full aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden transition-all ${
+              className={`w-full aspect-video rounded-xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden transition-all ${
                 photo.url
                   ? 'border-amber-500/40 bg-black'
-                  : 'border-white/20 bg-white/5 hover:border-amber-500/40 hover:bg-white/8'
+                  : 'border-white/20 bg-white/5 hover:border-amber-500/40'
               }`}
             >
               {photo.url ? (
                 <img src={photo.url} alt={photo.label} className="w-full h-full object-cover" />
               ) : (
                 <>
-                  <Camera size={24} className="text-white/30 mb-2" />
-                  <span className="text-xs text-white/50">{photo.label}</span>
+                  <Camera size={20} className="text-white/30 mb-1.5" />
+                  <span className="text-xs text-white/50 text-center px-1 leading-tight">{photo.label}</span>
                   {photo.optional && <span className="text-[10px] text-white/25 mt-0.5">optional</span>}
                 </>
               )}
             </button>
 
-            {/* Caption overlay */}
-            {photo.url && (
-              <div className="absolute bottom-0 left-0 right-0 bg-black/80 rounded-b-xl p-2">
-                {photo.analyzing ? (
-                  <div className="flex items-center gap-1.5 text-xs text-white/50">
-                    <Loader2 size={10} className="animate-spin" /> Analyzing...
-                  </div>
-                ) : photo.aiCaption ? (
-                  <p className="text-[10px] text-white/70 line-clamp-2">{photo.aiCaption}</p>
-                ) : (
-                  <p className="text-[10px] text-white/40">{photo.label}</p>
-                )}
-              </div>
+            {/* Below thumbnail: label + status + retake */}
+            <div className="flex items-center justify-between px-0.5">
+              <span className="text-[10px] text-white/40 truncate flex-1">{photo.label}</span>
+              {photo.analyzing && (
+                <span className="flex items-center gap-1 text-[10px] text-amber-400">
+                  <Loader2 size={8} className="animate-spin" /> analyzing
+                </span>
+              )}
+              {photo.url && !photo.analyzing && (
+                <button
+                  onClick={() => {
+                    // Clear this photo slot
+                    setProject(prev => ({
+                      ...prev,
+                      photos: prev.photos.map(p => p.slot === photo.slot
+                        ? { ...p, url: '', dataUrl: '', aiCaption: '', feedback: '' }
+                        : p
+                      )
+                    }))
+                    // Reset file input
+                    if (fileInputRefs.current[photo.slot]) {
+                      fileInputRefs.current[photo.slot]!.value = ''
+                    }
+                  }}
+                  className="text-[10px] text-white/30 hover:text-amber-400 transition-colors ml-2"
+                >
+                  Retake
+                </button>
+              )}
+            </div>
+
+            {/* AI caption below thumbnail */}
+            {photo.aiCaption && !photo.analyzing && (
+              <p className="text-[10px] text-white/50 leading-relaxed px-0.5">{photo.aiCaption}</p>
             )}
           </div>
         ))}
       </div>
+
+      {/* AI feedback dialogue after photos analyzed */}
+      {project.photos.some(p => p.aiCaption && !p.analyzing) && (
+        <div className="mx-4 mb-2 bg-white/5 rounded-xl p-3 border border-white/10">
+          <div className="flex items-start gap-2">
+            <div className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0 text-xs">⚡</div>
+            <div className="text-xs text-white/70 leading-relaxed">
+              {(() => {
+                const done = project.photos.filter(p => p.url && !p.optional)
+                const missing = project.photos.filter(p => !p.url && !p.optional)
+                if (missing.length > 0) {
+                  return `Good start — I can see ${done.length} wall${done.length !== 1 ? 's' : ''}. Still need: ${missing.map(p => p.label).join(', ')}. Tap each slot to add them.`
+                }
+                return `I have all the walls. Looking good — tap "Continue" when you're happy with the photos, or retake any that are blurry.`
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Actions */}
       <div className="px-4 pb-6 flex flex-col gap-2">
