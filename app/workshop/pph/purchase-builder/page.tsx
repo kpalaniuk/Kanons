@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { ScenarioDescribeInput } from '../_components/ScenarioDescribeInput'
+import { Save, Copy, Check, ExternalLink, Loader2 } from 'lucide-react'
 
 type LoanProgram = 'Conventional' | 'FHA' | 'VA'
 type PropertyType = 'Single Family' | 'Condo' | '2-Unit' | '3-4 Unit'
@@ -62,8 +63,59 @@ export default function PurchaseScenarioBuilderPage() {
   const [annualInsurance, setAnnualInsurance] = useState(1800)
   const [monthlyHOA, setMonthlyHOA] = useState(0)
 
+  // MI overrides — annual rate % per down payment tier (overrides lookup table)
+  const [miOverrides, setMiOverrides] = useState<Record<number, string>>({
+    5: '', 10: '', 15: '',
+  })
+
+  // Save/share state
+  const [savedSlug, setSavedSlug] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [copied, setCopied] = useState(false)
+
   // View toggle
   const [viewMode, setViewMode] = useState<'grid' | 'cards'>('grid')
+
+  async function saveScenario() {
+    setSaving(true)
+    setSaveError('')
+    const lo = LOAN_OFFICERS[selectedLO]
+    const baseName = clientName.trim() || 'scenario'
+    const slug = `${baseName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`
+    const payload = {
+      slug,
+      type: 'purchase-grid',
+      clientName: clientName || 'Client',
+      loanOfficer: lo.name,
+      loanOfficerNMLS: lo.nmls,
+      loanOfficerPhone: lo.phone,
+      loanOfficerEmail: lo.email,
+      ficoScore, monthlyIncome, monthlyDebts, availableAssets,
+      priceMin, priceMax, interestRate, loanProgram, propertyType,
+      propertyTaxRate, annualInsurance, monthlyHOA,
+      amortization, highCostArea, miOverrides,
+    }
+    const res = await fetch('/api/scenarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (res.ok) {
+      setSavedSlug(slug)
+    } else {
+      const d = await res.json()
+      setSaveError(d.error || 'Save failed')
+    }
+    setSaving(false)
+  }
+
+  function copyLink() {
+    if (!savedSlug) return
+    navigator.clipboard.writeText(`https://kyle.palaniuk.net/clients/purchase/${savedSlug}`)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   function handleParsed(data: Record<string, unknown>) {
     if (data.clientName)      setClientName(String(data.clientName))
@@ -163,9 +215,12 @@ export default function PurchaseScenarioBuilderPage() {
         // Calculate monthly P&I
         const monthlyPI = calculateMonthlyPayment(totalLoanAmount, interestRate, amortization)
 
-        // Calculate PMI/MI
-        const annualPMIRate = getPMIRate(ltv, ficoScore, loanProgram)
-        const monthlyPMI = (loanAmount * annualPMIRate) / 100 / 12
+        // Calculate PMI/MI — use manual override if set, else lookup table
+        const overrideVal = miOverrides[dpPercent]
+        const annualPMIRate = (overrideVal !== '' && overrideVal !== undefined && !isNaN(Number(overrideVal)))
+          ? Number(overrideVal)
+          : getPMIRate(ltv, ficoScore, loanProgram)
+        const monthlyPMI = dpPercent >= 20 ? 0 : (loanAmount * annualPMIRate) / 100 / 12
 
         // Calculate PITIA
         const monthlyTax = (price * propertyTaxRate / 100) / 12
@@ -203,7 +258,7 @@ export default function PurchaseScenarioBuilderPage() {
     }
 
     return results
-  }, [priceMin, priceMax, ficoScore, monthlyIncome, monthlyDebts, interestRate, amortization, propertyTaxRate, annualInsurance, monthlyHOA, loanProgram, highCostArea])
+  }, [priceMin, priceMax, ficoScore, monthlyIncome, monthlyDebts, interestRate, amortization, propertyTaxRate, annualInsurance, monthlyHOA, loanProgram, highCostArea, miOverrides])
 
   // Get qualification color
   const getQualificationStyle = (scenario: Scenario) => {
@@ -636,6 +691,87 @@ export default function PurchaseScenarioBuilderPage() {
             </div>
           </div>
         </section>
+
+        {/* MI Override Section */}
+        <section className="bg-cream rounded-2xl border-2 border-midnight/5 p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+              <span className="text-xl">🛡️</span>
+            </div>
+            <div>
+              <h2 className="font-display text-xl text-midnight">Mortgage Insurance Rates</h2>
+              <p className="text-xs text-midnight/50 mt-0.5">Override automatic PMI estimates with actual MI quotes (annual % of loan amount). Leave blank to use FICO/LTV table.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {[5, 10, 15].map((dp) => (
+              <div key={dp}>
+                <label className="block text-sm font-medium text-midnight mb-2">{dp}% Down MI Rate</label>
+                <div className="relative">
+                  <input
+                    type="number" step="0.01" min="0" max="5"
+                    value={miOverrides[dp]}
+                    onChange={(e) => setMiOverrides(prev => ({ ...prev, [dp]: e.target.value }))}
+                    placeholder={`e.g. ${getPMIRate((100 - dp), ficoScore, loanProgram).toFixed(2)}`}
+                    className="w-full bg-white border border-midnight/10 rounded-lg px-4 py-3 pr-8 text-sm text-midnight focus:outline-none focus:border-ocean focus:ring-1 focus:ring-ocean"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-midnight/40 text-xs">%</span>
+                </div>
+                <p className="text-[10px] text-midnight/40 mt-1">
+                  Auto: {getPMIRate((100 - dp), ficoScore, loanProgram).toFixed(2)}%
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {/* Save & Share Bar */}
+      <div className="bg-cream rounded-2xl border-2 border-midnight/5 p-5 mb-8 flex flex-wrap items-center gap-4">
+        <div className="flex-1 min-w-0">
+          {savedSlug ? (
+            <div>
+              <p className="text-sm font-semibold text-midnight mb-1">✓ Scenario saved — share with client:</p>
+              <p className="text-xs text-midnight/50 font-mono truncate">
+                kyle.palaniuk.net/clients/purchase/{savedSlug}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <p className="text-sm font-semibold text-midnight">Save &amp; Share Scenario</p>
+              <p className="text-xs text-midnight/50">Generates a clean read-only link for your client</p>
+            </div>
+          )}
+          {saveError && <p className="text-xs text-red-500 mt-1">{saveError}</p>}
+        </div>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {savedSlug ? (
+            <>
+              <button
+                onClick={copyLink}
+                className="flex items-center gap-2 px-4 py-2.5 bg-ocean text-cream rounded-xl text-sm font-medium hover:bg-midnight transition-colors"
+              >
+                {copied ? <><Check className="w-4 h-4" />Copied!</> : <><Copy className="w-4 h-4" />Copy Link</>}
+              </button>
+              <a
+                href={`/clients/purchase/${savedSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2.5 border border-midnight/15 text-midnight rounded-xl text-sm font-medium hover:border-ocean hover:text-ocean transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />Preview
+              </a>
+            </>
+          ) : (
+            <button
+              onClick={saveScenario}
+              disabled={saving}
+              className="flex items-center gap-2 px-5 py-2.5 bg-midnight text-cream rounded-xl text-sm font-medium hover:bg-ocean transition-colors disabled:opacity-50"
+            >
+              {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Saving...</> : <><Save className="w-4 h-4" />Save Scenario</>}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* View Toggle */}
