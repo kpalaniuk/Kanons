@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { ScenarioDescribeInput } from '../_components/ScenarioDescribeInput'
 
 export default function RefiScenarioBuilderPage() {
   // Client info (optional)
@@ -21,6 +22,18 @@ export default function RefiScenarioBuilderPage() {
   const [closingCosts, setClosingCosts] = useState(7000)
   const [rollInClosingCosts, setRollInClosingCosts] = useState(true)
   const [cashOut, setCashOut] = useState(0)
+
+  function handleParsed(data: Record<string, unknown>) {
+    if (data.clientName)           setClientName(String(data.clientName))
+    if (data.currentBalance)       setCurrentBalance(Number(data.currentBalance))
+    if (data.currentRate)          setCurrentRate(Number(data.currentRate))
+    if (data.currentPayment)       setCurrentPayment(Number(data.currentPayment))
+    if (data.currentTermRemaining) setCurrentTermRemaining(Number(data.currentTermRemaining))
+    if (data.propertyValue)        setPropertyValue(Number(data.propertyValue))
+    if (data.newRate)              setNewRate(Number(data.newRate))
+    if (data.cashOut)              setCashOut(Number(data.cashOut))
+    if (data.closingCosts)         setClosingCosts(Number(data.closingCosts))
+  }
 
   // Calculations
   const newLoanAmount = useMemo(() => {
@@ -179,6 +192,11 @@ export default function RefiScenarioBuilderPage() {
         <p className="text-midnight/60 text-lg">
           Compare your current loan to refinance options with break-even analysis
         </p>
+      </div>
+
+      {/* AI Describe */}
+      <div className="mb-8">
+        <ScenarioDescribeInput type="refi" onParsed={handleParsed} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

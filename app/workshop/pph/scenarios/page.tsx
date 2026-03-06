@@ -2,21 +2,21 @@ import Link from 'next/link'
 
 const scenarios = [
   {
-    href: '/workshop/work/refi-builder',
+    href: '/workshop/pph/refi-builder',
     title: 'Refinance Builder',
     description: 'Model refinancing scenarios with custom terms, cash-out options, and ROI projections',
     icon: '🏦',
     stats: ['Cash-out analysis', 'Rate comparison', 'Break-even calc']
   },
   {
-    href: '/workshop/work/purchase-builder',
+    href: '/workshop/pph/purchase-builder',
     title: 'Purchase Builder',
     description: 'Analyze potential property purchases with financing scenarios and return calculations',
     icon: '🏠',
     stats: ['Down payment options', 'Cash flow projection', 'ROI analysis']
   },
   {
-    href: '/workshop/work/dscr-calculator',
+    href: '/workshop/pph/dscr-calculator',
     title: 'DSCR Calculator',
     description: 'Calculate debt service coverage ratio for investment property qualification',
     icon: '🧮',

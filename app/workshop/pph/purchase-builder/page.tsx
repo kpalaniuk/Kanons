@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { ScenarioDescribeInput } from '../_components/ScenarioDescribeInput'
 
 type LoanProgram = 'Conventional' | 'FHA' | 'VA'
 type PropertyType = 'Single Family' | 'Condo' | '2-Unit' | '3-4 Unit'
@@ -63,6 +64,26 @@ export default function PurchaseScenarioBuilderPage() {
 
   // View toggle
   const [viewMode, setViewMode] = useState<'grid' | 'cards'>('grid')
+
+  function handleParsed(data: Record<string, unknown>) {
+    if (data.clientName)      setClientName(String(data.clientName))
+    if (data.ficoScore)       setFicoScore(Number(data.ficoScore))
+    if (data.monthlyIncome)   setMonthlyIncome(Number(data.monthlyIncome))
+    if (data.monthlyDebts)    setMonthlyDebts(Number(data.monthlyDebts))
+    if (data.availableAssets) setAvailableAssets(Number(data.availableAssets))
+    if (data.priceMin)        setPriceMin(Number(data.priceMin))
+    if (data.priceMax)        setPriceMax(Number(data.priceMax))
+    if (data.interestRate)    setInterestRate(Number(data.interestRate))
+    if (data.loanProgram && ['Conventional','FHA','VA'].includes(String(data.loanProgram))) {
+      setLoanProgram(data.loanProgram as 'Conventional' | 'FHA' | 'VA')
+    }
+    if (data.propertyType && ['Single Family','Condo','2-Unit','3-4 Unit'].includes(String(data.propertyType))) {
+      setPropertyType(data.propertyType as 'Single Family' | 'Condo' | '2-Unit' | '3-4 Unit')
+    }
+    if (data.highCostArea !== null && data.highCostArea !== undefined) {
+      setHighCostArea(Boolean(data.highCostArea))
+    }
+  }
 
   // Constants
   const conformingLimit = highCostArea ? 1149825 : 766550
@@ -288,6 +309,11 @@ export default function PurchaseScenarioBuilderPage() {
         <p className="text-midnight/60 text-lg">
           Compare purchase price scenarios across different down payment options — your killer feature for client consultations
         </p>
+      </div>
+
+      {/* AI Describe */}
+      <div className="mb-8">
+        <ScenarioDescribeInput type="purchase" onParsed={handleParsed} />
       </div>
 
       {/* Input Sections */}

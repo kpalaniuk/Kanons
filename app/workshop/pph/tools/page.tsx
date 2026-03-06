@@ -3,21 +3,21 @@ import { Building2, Home, Calculator, MessageSquare, Target } from 'lucide-react
 
 const tools = [
   {
-    href: '/workshop/work/refi-builder',
+    href: '/workshop/pph/refi-builder',
     title: 'Refi Builder',
     description: 'Refinance scenario modeling — rate comparison, cash-out analysis, break-even calc.',
     icon: Building2,
     color: 'ocean',
   },
   {
-    href: '/workshop/work/purchase-builder',
+    href: '/workshop/pph/purchase-builder',
     title: 'Purchase Builder',
     description: 'Purchase analysis — down payment options, cash flow projections, ROI analysis.',
     icon: Home,
     color: 'ocean',
   },
   {
-    href: '/workshop/work/dscr-calculator',
+    href: '/workshop/pph/dscr-calculator',
     title: 'DSCR Calculator',
     description: 'Debt service coverage ratio for investment property qualification.',
     icon: Calculator,
@@ -31,7 +31,7 @@ const tools = [
     color: 'ocean',
   },
   {
-    href: '/workshop/work/scenarios',
+    href: '/workshop/pph/scenarios',
     title: 'Scenarios Hub',
     description: 'Overview and comparison across all scenario types.',
     icon: Target,
