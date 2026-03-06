@@ -60,6 +60,23 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
   const animFrameRef = useRef<number | null>(null)
   const roomGroupRef = useRef<THREE.Group | null>(null)
 
+  // Touch state refs
+  const touchStateRef = useRef<{
+    lastX: number
+    lastY: number
+    lastDist: number
+    lastMidX: number
+    lastMidY: number
+    touches: number
+  }>({
+    lastX: 0,
+    lastY: 0,
+    lastDist: 0,
+    lastMidX: 0,
+    lastMidY: 0,
+    touches: 0,
+  })
+
   // Initialize scene once
   useEffect(() => {
     const mount = mountRef.current
@@ -67,7 +84,7 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
 
     // Scene
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x1a1a2e)
+    scene.background = new THREE.Color(0x0f0f0f)
     sceneRef.current = scene
 
     // Camera
@@ -84,25 +101,33 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setSize(mount.clientWidth, mount.clientHeight)
-    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.shadowMap.enabled = true
     mount.appendChild(renderer.domElement)
     rendererRef.current = renderer
 
-    // Orbit controls
+    // Orbit controls (for desktop mouse/trackpad)
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
     controls.dampingFactor = 0.05
     controls.target.set(0.8, 0.5, 0.8)
+    // Disable touch on OrbitControls — we handle it manually
+    controls.touches = {
+      ONE: THREE.TOUCH.ROTATE,
+      TWO: THREE.TOUCH.DOLLY_PAN,
+    }
     controlsRef.current = controls
 
     // Lighting
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6)
+    const ambient = new THREE.AmbientLight(0xffffff, 0.7)
     scene.add(ambient)
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.8)
     dirLight.position.set(3, 5, 3)
     dirLight.castShadow = true
     scene.add(dirLight)
+    const fillLight = new THREE.DirectionalLight(0x8899ff, 0.3)
+    fillLight.position.set(-3, 2, -3)
+    scene.add(fillLight)
 
     // Animate loop
     let running = true
@@ -124,12 +149,122 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
     const resizeObserver = new ResizeObserver(onResize)
     resizeObserver.observe(mount)
 
+    // ── Touch controls ────────────────────────────────────────────────────
+
+    const canvas = renderer.domElement
+    const ts = touchStateRef.current
+
+    function getTouchDist(t1: Touch, t2: Touch) {
+      const dx = t1.clientX - t2.clientX
+      const dy = t1.clientY - t2.clientY
+      return Math.sqrt(dx * dx + dy * dy)
+    }
+
+    function getTouchMid(t1: Touch, t2: Touch) {
+      return {
+        x: (t1.clientX + t2.clientX) / 2,
+        y: (t1.clientY + t2.clientY) / 2,
+      }
+    }
+
+    function onTouchStart(e: TouchEvent) {
+      e.preventDefault()
+      ts.touches = e.touches.length
+
+      if (e.touches.length === 1) {
+        ts.lastX = e.touches[0].clientX
+        ts.lastY = e.touches[0].clientY
+      } else if (e.touches.length === 2) {
+        ts.lastDist = getTouchDist(e.touches[0], e.touches[1])
+        const mid = getTouchMid(e.touches[0], e.touches[1])
+        ts.lastMidX = mid.x
+        ts.lastMidY = mid.y
+      }
+    }
+
+    function onTouchMove(e: TouchEvent) {
+      e.preventDefault()
+      const cam = cameraRef.current
+      const ctrl = controlsRef.current
+      if (!cam || !ctrl) return
+
+      if (e.touches.length === 1 && ts.touches === 1) {
+        // ── 1 finger: orbital rotate ───────────────────────────────────
+        const dx = e.touches[0].clientX - ts.lastX
+        const dy = e.touches[0].clientY - ts.lastY
+
+        // Rotate orbit around target
+        const spherical = new THREE.Spherical()
+        const offset = cam.position.clone().sub(ctrl.target)
+        spherical.setFromVector3(offset)
+        spherical.theta -= dx * 0.008
+        spherical.phi -= dy * 0.008
+        spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi))
+        offset.setFromSpherical(spherical)
+        cam.position.copy(ctrl.target).add(offset)
+        cam.lookAt(ctrl.target)
+
+        ts.lastX = e.touches[0].clientX
+        ts.lastY = e.touches[0].clientY
+      } else if (e.touches.length === 2 && ts.touches === 2) {
+        const newDist = getTouchDist(e.touches[0], e.touches[1])
+        const newMid = getTouchMid(e.touches[0], e.touches[1])
+
+        const distDelta = newDist - ts.lastDist
+        const midDX = newMid.x - ts.lastMidX
+        const midDY = newMid.y - ts.lastMidY
+
+        const offset = cam.position.clone().sub(ctrl.target)
+        const currentRadius = offset.length()
+
+        if (Math.abs(distDelta) > Math.abs(midDX) + Math.abs(midDY)) {
+          // ── 2 fingers pinch: zoom ──────────────────────────────────
+          const zoomFactor = 1 - distDelta * 0.004
+          const newRadius = Math.max(0.3, Math.min(15, currentRadius * zoomFactor))
+          offset.normalize().multiplyScalar(newRadius)
+          cam.position.copy(ctrl.target).add(offset)
+          cam.lookAt(ctrl.target)
+        } else {
+          // ── 2 fingers drag: pan ───────────────────────────────────
+          // Pan perpendicular to look direction
+          const right = new THREE.Vector3()
+          const up = new THREE.Vector3()
+          cam.getWorldDirection(new THREE.Vector3()) // forward
+          right.crossVectors(cam.getWorldDirection(new THREE.Vector3()), cam.up).normalize()
+          up.copy(cam.up)
+
+          const panSpeed = currentRadius * 0.003
+          const panX = right.multiplyScalar(-midDX * panSpeed)
+          const panY = up.multiplyScalar(midDY * panSpeed)
+
+          ctrl.target.add(panX).add(panY)
+          cam.position.add(panX).add(panY)
+          cam.lookAt(ctrl.target)
+        }
+
+        ts.lastDist = newDist
+        ts.lastMidX = newMid.x
+        ts.lastMidY = newMid.y
+      }
+    }
+
+    function onTouchEnd(e: TouchEvent) {
+      ts.touches = e.touches.length
+    }
+
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false })
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false })
+    canvas.addEventListener('touchend', onTouchEnd, { passive: false })
+
     return () => {
       running = false
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
       controls.dispose()
       renderer.dispose()
       resizeObserver.disconnect()
+      canvas.removeEventListener('touchstart', onTouchStart)
+      canvas.removeEventListener('touchmove', onTouchMove)
+      canvas.removeEventListener('touchend', onTouchEnd)
       if (mount.contains(renderer.domElement)) {
         mount.removeChild(renderer.domElement)
       }
@@ -157,7 +292,7 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
     const ceilMat = new THREE.MeshLambertMaterial({
       color: 0xf0ece0,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.3,
       side: THREE.DoubleSide,
     })
 
@@ -168,200 +303,98 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
     const rightLen = inToU(W.right.length)
 
     const hLeft = inToU(roomSpec.ceiling.height)
-    const hRight = roomSpec.ceiling.type === 'shed-vault' && roomSpec.ceiling.peakHeight
-      ? inToU(roomSpec.ceiling.peakHeight)
-      : hLeft
+    const hRight =
+      roomSpec.ceiling.type === 'shed-vault' && roomSpec.ceiling.peakHeight
+        ? inToU(roomSpec.ceiling.peakHeight)
+        : hLeft
 
-    // Build openings lookup by wall
     type Opening = RoomSpec['openings'][0]
     const openingsByWall: Record<string, Opening[]> = {
-      left: [], back: [], right: [], front: []
+      left: [],
+      back: [],
+      right: [],
+      front: [],
     }
     for (const op of roomSpec.openings) {
       openingsByWall[op.wall].push(op)
     }
 
-    // Helper to build a wall with gaps cut out
-    // wallDir: direction along wall, wallLen: length, wallH: function(t) -> height at position t
-    // Returns array of meshes
-    function buildWallWithOpenings(
+    function buildWallSegments(
       openings: Opening[],
-      wallLen: number,
-      wallH: (t: number) => number,
-      wallDepth: number,
-      transform: (geo: THREE.BufferGeometry) => THREE.BufferGeometry
-    ): THREE.Mesh[] {
-      const meshes: THREE.Mesh[] = []
-
-      // Sort openings by offset
+      wallLen: number
+    ): Array<{ start: number; end: number }> {
       const sorted = [...openings].sort((a, b) => a.offsetFromLeft - b.offsetFromLeft)
-
-      // Build segments
-      let cursor = 0
       const segments: Array<{ start: number; end: number }> = []
-
-      for (const op of sorted) {
-        const start = inToU(op.offsetFromLeft)
-        const end = start + inToU(op.width)
-        if (cursor < start) {
-          segments.push({ start: cursor, end: start })
-        }
-        cursor = end
-      }
-      if (cursor < wallLen) {
-        segments.push({ start: cursor, end: wallLen })
-      }
-
-      // If no openings, one full segment
-      if (sorted.length === 0) {
-        segments.push({ start: 0, end: wallLen })
-      }
-
-      for (const seg of segments) {
-        const segLen = seg.end - seg.start
-        if (segLen <= 0) continue
-        const midT = (seg.start + seg.end) / 2
-        const h = wallH(midT / wallLen)
-        const geo = new THREE.BoxGeometry(segLen, h, wallDepth)
-        const tGeo = transform(geo)
-        // Position: center of segment horizontally, half-height vertically
-        // transform handles rotation/positioning
-        const mesh = new THREE.Mesh(tGeo, wallMat)
-        meshes.push(mesh)
-      }
-
-      return meshes
-    }
-
-    // Average height helper for flat sections
-    function avgH(len: number, hL: number, hR: number) {
-      // For a segment, the interpolated height at center
-      return (hL + hR) / 2
-    }
-
-    // --- LEFT WALL (runs from front to back, along Z axis) ---
-    // Left wall x=0, z from 0 to leftLen
-    // Height varies: at z=0 (front) = hLeft if flat, shed-vault: hLeft throughout (it's the left side)
-    // Actually for shed vault: height at x position (left=hLeft, right=hRight)
-    // Left wall is at x=0, so all points are at x=0 -> height = hLeft
-    {
-      const open = openingsByWall['left']
-      const sorted = [...open].sort((a, b) => a.offsetFromLeft - b.offsetFromLeft)
       let cursor = 0
-      const segments: Array<{ start: number; end: number }> = []
+
       for (const op of sorted) {
         const s = inToU(op.offsetFromLeft)
         const e = s + inToU(op.width)
         if (cursor < s) segments.push({ start: cursor, end: s })
         cursor = e
       }
-      if (cursor < leftLen) segments.push({ start: cursor, end: leftLen })
-      if (sorted.length === 0) segments.push({ start: 0, end: leftLen })
+      if (cursor < wallLen) segments.push({ start: cursor, end: wallLen })
+      if (sorted.length === 0) segments.push({ start: 0, end: wallLen })
 
-      for (const seg of segments) {
-        const segLen = seg.end - seg.start
-        if (segLen <= 0) continue
-        const geo = new THREE.BoxGeometry(WALL_THICKNESS, hLeft, segLen)
-        const mesh = new THREE.Mesh(geo, wallMat)
-        mesh.position.set(0, hLeft / 2, seg.start + segLen / 2)
-        group.add(mesh)
-      }
+      return segments
     }
 
-    // --- RIGHT WALL (x=backLen, z from 0 to rightLen) ---
-    {
-      const open = openingsByWall['right']
-      const sorted = [...open].sort((a, b) => a.offsetFromLeft - b.offsetFromLeft)
-      let cursor = 0
-      const segments: Array<{ start: number; end: number }> = []
-      for (const op of sorted) {
-        const s = inToU(op.offsetFromLeft)
-        const e = s + inToU(op.width)
-        if (cursor < s) segments.push({ start: cursor, end: s })
-        cursor = e
-      }
-      if (cursor < rightLen) segments.push({ start: cursor, end: rightLen })
-      if (sorted.length === 0) segments.push({ start: 0, end: rightLen })
-
-      for (const seg of segments) {
-        const segLen = seg.end - seg.start
-        if (segLen <= 0) continue
-        const geo = new THREE.BoxGeometry(WALL_THICKNESS, hRight, segLen)
-        const mesh = new THREE.Mesh(geo, wallMat)
-        mesh.position.set(backLen, hRight / 2, seg.start + segLen / 2)
-        group.add(mesh)
-      }
+    // --- LEFT WALL ---
+    for (const seg of buildWallSegments(openingsByWall['left'], leftLen)) {
+      const segLen = seg.end - seg.start
+      if (segLen <= 0) continue
+      const geo = new THREE.BoxGeometry(WALL_THICKNESS, hLeft, segLen)
+      const mesh = new THREE.Mesh(geo, wallMat)
+      mesh.position.set(0, hLeft / 2, seg.start + segLen / 2)
+      group.add(mesh)
     }
 
-    // --- BACK WALL (z=0, x from 0 to backLen) ---
-    // Height varies with shed vault: left end (x=0) hLeft, right end (x=backLen) hRight
-    {
-      const open = openingsByWall['back']
-      const sorted = [...open].sort((a, b) => a.offsetFromLeft - b.offsetFromLeft)
-      let cursor = 0
-      const segments: Array<{ start: number; end: number }> = []
-      for (const op of sorted) {
-        const s = inToU(op.offsetFromLeft)
-        const e = s + inToU(op.width)
-        if (cursor < s) segments.push({ start: cursor, end: s })
-        cursor = e
-      }
-      if (cursor < backLen) segments.push({ start: cursor, end: backLen })
-      if (sorted.length === 0) segments.push({ start: 0, end: backLen })
-
-      for (const seg of segments) {
-        const segLen = seg.end - seg.start
-        if (segLen <= 0) continue
-        const t = (seg.start + seg.end) / 2 / backLen
-        const h = hLeft + (hRight - hLeft) * t
-        // For shed vault, wall height varies — use average for this segment
-        const geo = new THREE.BoxGeometry(segLen, h, WALL_THICKNESS)
-        const mesh = new THREE.Mesh(geo, wallMat)
-        mesh.position.set(seg.start + segLen / 2, h / 2, 0)
-        group.add(mesh)
-      }
+    // --- RIGHT WALL ---
+    for (const seg of buildWallSegments(openingsByWall['right'], rightLen)) {
+      const segLen = seg.end - seg.start
+      if (segLen <= 0) continue
+      const geo = new THREE.BoxGeometry(WALL_THICKNESS, hRight, segLen)
+      const mesh = new THREE.Mesh(geo, wallMat)
+      mesh.position.set(backLen, hRight / 2, seg.start + segLen / 2)
+      group.add(mesh)
     }
 
-    // --- FRONT WALL (z=frontLen side, actually z=leftLen, x from 0 to frontLen) ---
-    {
-      const open = openingsByWall['front']
-      const sorted = [...open].sort((a, b) => a.offsetFromLeft - b.offsetFromLeft)
-      let cursor = 0
-      const segments: Array<{ start: number; end: number }> = []
-      for (const op of sorted) {
-        const s = inToU(op.offsetFromLeft)
-        const e = s + inToU(op.width)
-        if (cursor < s) segments.push({ start: cursor, end: s })
-        cursor = e
-      }
-      if (cursor < frontLen) segments.push({ start: cursor, end: frontLen })
-      if (sorted.length === 0) segments.push({ start: 0, end: frontLen })
+    // --- BACK WALL ---
+    for (const seg of buildWallSegments(openingsByWall['back'], backLen)) {
+      const segLen = seg.end - seg.start
+      if (segLen <= 0) continue
+      const t = (seg.start + seg.end) / 2 / backLen
+      const h = hLeft + (hRight - hLeft) * t
+      const geo = new THREE.BoxGeometry(segLen, h, WALL_THICKNESS)
+      const mesh = new THREE.Mesh(geo, wallMat)
+      mesh.position.set(seg.start + segLen / 2, h / 2, 0)
+      group.add(mesh)
+    }
 
-      for (const seg of segments) {
-        const segLen = seg.end - seg.start
-        if (segLen <= 0) continue
-        const t = (seg.start + seg.end) / 2 / frontLen
-        const h = hLeft + (hRight - hLeft) * t
-        const geo = new THREE.BoxGeometry(segLen, h, WALL_THICKNESS)
-        const mesh = new THREE.Mesh(geo, wallMat)
-        mesh.position.set(seg.start + segLen / 2, h / 2, leftLen)
-        group.add(mesh)
-      }
+    // --- FRONT WALL ---
+    for (const seg of buildWallSegments(openingsByWall['front'], frontLen)) {
+      const segLen = seg.end - seg.start
+      if (segLen <= 0) continue
+      const t = (seg.start + seg.end) / 2 / frontLen
+      const h = hLeft + (hRight - hLeft) * t
+      const geo = new THREE.BoxGeometry(segLen, h, WALL_THICKNESS)
+      const mesh = new THREE.Mesh(geo, wallMat)
+      mesh.position.set(seg.start + segLen / 2, h / 2, leftLen)
+      group.add(mesh)
     }
 
     // --- FLOOR ---
     const gridHelper = new THREE.GridHelper(
       Math.max(backLen, leftLen) * 1.2,
       20,
-      0x444466,
-      0x333355
+      0x333333,
+      0x222222
     )
     gridHelper.position.set(backLen / 2, 0, leftLen / 2)
     group.add(gridHelper)
 
-    // Solid floor
     const floorGeo = new THREE.PlaneGeometry(backLen, leftLen)
-    const floorMat = new THREE.MeshLambertMaterial({ color: 0x2a2a3e })
+    const floorMat = new THREE.MeshLambertMaterial({ color: 0x1a1a1a })
     const floor = new THREE.Mesh(floorGeo, floorMat)
     floor.rotation.x = -Math.PI / 2
     floor.position.set(backLen / 2, 0, leftLen / 2)
@@ -375,13 +408,10 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
       ceil.position.set(backLen / 2, hLeft, leftLen / 2)
       group.add(ceil)
     } else if (roomSpec.ceiling.type === 'shed-vault') {
-      // Sloped ceiling plane — build as a sloped quad
-      // Four corners: (0,hLeft,0), (backLen,hRight,0), (backLen,hRight,leftLen), (0,hLeft,leftLen)
       const ceilVerts = new Float32Array([
         0, hLeft, 0,
         backLen, hRight, 0,
         backLen, hRight, leftLen,
-
         0, hLeft, 0,
         backLen, hRight, leftLen,
         0, hLeft, leftLen,
@@ -407,22 +437,14 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
 
       const geo = new THREE.BoxGeometry(w, h, d)
       const mesh = new THREE.Mesh(geo, cabMat)
-
-      // Edges
       const edges = new THREE.EdgesGeometry(geo)
       const edgeLines = new THREE.LineSegments(edges, edgeMat)
 
-      let cx = 0, cy = oF + h / 2, cz = 0
+      let cx = 0,
+        cy = oF + h / 2,
+        cz = 0
 
       if (cab.wall === 'left') {
-        cx = d / 2
-        cz = oL + w / 2
-        mesh.rotation.y = Math.PI / 2
-        edgeLines.rotation.y = Math.PI / 2
-        // Reposition after rotation
-        mesh.rotation.y = 0
-        edgeLines.rotation.y = 0
-        // For left wall (x=0), cabinet extends inward (+x), runs along z
         cx = d / 2
         cz = oL + w / 2
       } else if (cab.wall === 'right') {
@@ -451,7 +473,6 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
     const cz = leftLen / 2
     if (controlsRef.current) {
       controlsRef.current.target.set(cx, hLeft * 0.4, cz)
-      // Only set camera once (first load)
       if (cameraRef.current) {
         const dist = Math.max(backLen, leftLen) * 1.4
         cameraRef.current.position.set(cx + dist, hLeft * 1.2, cz + dist)
@@ -460,5 +481,5 @@ export default function RoomCanvas({ roomSpec, cabinets }: Props) {
     }
   }, [roomSpec, cabinets])
 
-  return <div ref={mountRef} className="w-full h-full" />
+  return <div ref={mountRef} className="w-full h-full bg-[#0f0f0f]" />
 }

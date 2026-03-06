@@ -44,6 +44,35 @@ interface FormData {
   countertopOverhang: string
   sinkCutoutNotes: string
 
+  // Countertop options
+  countertopMaterials: string
+  countertopEdgeProfiles: string
+  countertopPriceRange: string
+
+  // Cabinet finishes / styles available
+  cabinetStyles: string
+  cabinetFinishes: string
+  paintOrStainOptions: string
+  customColorProcess: string
+
+  // Hardware catalog
+  pullsAndKnobs: string
+  drawerOrganizers: string
+  specialtyHardware: string
+
+  // Special builds
+  murphyBedExperience: string
+  murphyBedSizes: string
+  openShelvingOptions: string
+  glassInsertOptions: string
+  lightingIntegration: string
+
+  // Pricing
+  laborRatePerHour: string
+  materialMarkup: string
+  leadTime: string
+  depositRequired: string
+
   // Communication preferences
   preferredContact: string
   notes: string
@@ -77,6 +106,25 @@ const INITIAL: FormData = {
   countertopThickness: '',
   countertopOverhang: '',
   sinkCutoutNotes: '',
+  countertopMaterials: '',
+  countertopEdgeProfiles: '',
+  countertopPriceRange: '',
+  cabinetStyles: '',
+  cabinetFinishes: '',
+  paintOrStainOptions: '',
+  customColorProcess: '',
+  pullsAndKnobs: '',
+  drawerOrganizers: '',
+  specialtyHardware: '',
+  murphyBedExperience: '',
+  murphyBedSizes: '',
+  openShelvingOptions: '',
+  glassInsertOptions: '',
+  lightingIntegration: '',
+  laborRatePerHour: '',
+  materialMarkup: '',
+  leadTime: '',
+  depositRequired: '',
   preferredContact: '',
   notes: '',
 }
@@ -305,6 +353,148 @@ export default function RoomforgeOnboard() {
             <textarea value={form.sinkCutoutNotes} onChange={set('sinkCutoutNotes')} rows={2}
               placeholder="e.g. I always do undermount, need 1.5in lip minimum from edge for granite"
               className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber resize-none" />
+          </div>
+        </section>
+
+        {/* Countertop options */}
+        <section>
+          <h2 className="font-display text-xl text-midnight mb-1">Countertop Options</h2>
+          <p className="text-midnight/50 text-sm mb-6">What materials and styles can you work with or source?</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Countertop materials you can source / install</label>
+              <textarea value={form.countertopMaterials} onChange={set('countertopMaterials')} rows={2}
+                placeholder="e.g. Butcher block, laminate, quartz (via sub), concrete, tile — list what you can do directly vs. what needs a sub-contractor"
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber resize-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Edge profiles available</label>
+              <input type="text" placeholder="e.g. Square, eased, bullnose, ogee, waterfall"
+                value={form.countertopEdgeProfiles} onChange={set('countertopEdgeProfiles')}
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Rough price range per linear foot (installed)</label>
+              <input type="text" placeholder="e.g. Butcher block $40-80/lft, laminate $20-40/lft"
+                value={form.countertopPriceRange} onChange={set('countertopPriceRange')}
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber" />
+            </div>
+          </div>
+        </section>
+
+        {/* Cabinet styles and finishes */}
+        <section>
+          <h2 className="font-display text-xl text-midnight mb-1">Cabinet Styles & Finishes</h2>
+          <p className="text-midnight/50 text-sm mb-6">What styles can you build and what finish options do you offer?</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Cabinet door styles you build</label>
+              <textarea value={form.cabinetStyles} onChange={set('cabinetStyles')} rows={2}
+                placeholder="e.g. Flat slab, shaker (5-piece), euro frameless, raised panel, beadboard inset, open (no doors)"
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber resize-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Finish options (what can clients choose from?)</label>
+              <textarea value={form.cabinetFinishes} onChange={set('cabinetFinishes')} rows={2}
+                placeholder="e.g. Natural birch (clear coat), white paint, navy paint, custom color, wood veneer, melamine"
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber resize-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Paint / stain process — do you spray, brush, or sub it out?</label>
+              <input type="text" placeholder="e.g. Spray in shop, 2-coat lacquer; stain + poly by hand"
+                value={form.paintOrStainOptions} onChange={set('paintOrStainOptions')}
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Custom colors — how does that work? (RAL, Sherwin-Williams match, etc.)</label>
+              <input type="text" placeholder="e.g. Client picks any SW color, we mix a tinted lacquer"
+                value={form.customColorProcess} onChange={set('customColorProcess')}
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber" />
+            </div>
+          </div>
+        </section>
+
+        {/* Hardware catalog */}
+        <section>
+          <h2 className="font-display text-xl text-midnight mb-1">Hardware & Accessories</h2>
+          <p className="text-midnight/50 text-sm mb-6">What options do clients have for the finishing touches?</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Pulls, knobs, and handles — brands or styles you stock/source</label>
+              <textarea value={form.pullsAndKnobs} onChange={set('pullsAndKnobs')} rows={2}
+                placeholder="e.g. Richelieu catalog, client supplies their own, simple bar pulls standard"
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber resize-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Drawer organizers / inserts you can build or source</label>
+              <input type="text" placeholder="e.g. Peg drawer inserts, knife blocks, pull-out trash, cutlery dividers"
+                value={form.drawerOrganizers} onChange={set('drawerOrganizers')}
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Specialty hardware (lazy susans, pull-out shelves, blind corner units, etc.)</label>
+              <textarea value={form.specialtyHardware} onChange={set('specialtyHardware')} rows={2}
+                placeholder="e.g. Rev-A-Shelf pull-outs, Blum Aventos lift systems, lazy susans, magic corners"
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber resize-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Glass inserts — can you do them? What types?</label>
+              <input type="text" placeholder="e.g. Clear glass, frosted, reed — I supply the frame, client sources glass OR I sub it"
+                value={form.glassInsertOptions} onChange={set('glassInsertOptions')}
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Under-cabinet or interior lighting — can you integrate it?</label>
+              <input type="text" placeholder="e.g. I rough in the channel, electrician finishes; or I do full LED strip integration"
+                value={form.lightingIntegration} onChange={set('lightingIntegration')}
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber" />
+            </div>
+          </div>
+        </section>
+
+        {/* Special builds */}
+        <section>
+          <h2 className="font-display text-xl text-midnight mb-1">Special Builds</h2>
+          <p className="text-midnight/50 text-sm mb-6">Murphy beds, open shelving, and anything beyond standard cabinets.</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Murphy bed experience — have you built them? What hardware do you use?</label>
+              <textarea value={form.murphyBedExperience} onChange={set('murphyBedExperience')} rows={2}
+                placeholder="e.g. Yes, use Wallbeds hardware kit, I build the surround cabinet — or No, haven't done these yet"
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber resize-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Murphy bed sizes you can do (twin/full/queen/king)</label>
+              <input type="text" placeholder="e.g. Twin, full, queen — king requires extra wall backing"
+                value={form.murphyBedSizes} onChange={set('murphyBedSizes')}
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">Open shelving — floating shelves, bracket types, max span</label>
+              <input type="text" placeholder="e.g. Up to 48in floating with proper wall anchors, live edge slabs available"
+                value={form.openShelvingOptions} onChange={set('openShelvingOptions')}
+                className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber" />
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing and process */}
+        <section>
+          <h2 className="font-display text-xl text-midnight mb-1">Pricing & Process</h2>
+          <p className="text-midnight/50 text-sm mb-6">Rough numbers help the AI generate realistic estimates for clients. These are internal only.</p>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { key: 'laborRatePerHour', label: 'Rough labor rate ($/hr)', placeholder: 'e.g. $75-95/hr' },
+              { key: 'materialMarkup', label: 'Material markup %', placeholder: 'e.g. 20%' },
+              { key: 'leadTime', label: 'Typical lead time from deposit', placeholder: 'e.g. 4-6 weeks' },
+              { key: 'depositRequired', label: 'Deposit required to start', placeholder: 'e.g. 50% upfront' },
+            ].map(({ key, label, placeholder }) => (
+              <div key={key}>
+                <label className="block text-xs font-semibold text-midnight/60 mb-1 uppercase tracking-wider">{label}</label>
+                <input type="text" placeholder={placeholder} value={form[key as keyof FormData]} onChange={set(key as keyof FormData)}
+                  className="w-full border border-midnight/20 rounded-lg px-3 py-2 text-sm text-midnight bg-white focus:outline-none focus:ring-2 focus:ring-amber" />
+              </div>
+            ))}
           </div>
         </section>
 
