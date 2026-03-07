@@ -480,9 +480,21 @@ export default function PipelinePage() {
       ? Math.floor((new Date().getTime() - new Date(client.lastTouched).getTime()) / (1000 * 60 * 60 * 24))
       : 999
     const isStale = daysSinceUpdate > 7
+    const [priorityOpen, setPriorityOpen] = useState(false)
 
     const isEditingNextAction = editingField?.clientId === client.id && editingField.field === 'nextAction'
     const isEditingNotes = editingField?.clientId === client.id && editingField.field === 'notes'
+
+    const PRIORITIES: Client['priority'][] = ['Hot', 'Active', 'Warm', 'Monitoring']
+
+    function handlePriorityChange(newPriority: Client['priority']) {
+      setPriorityOpen(false)
+      if (newPriority === client.priority) return
+      updateClient(client.id, {
+        priority: newPriority,
+        lastTouched: new Date().toISOString().split('T')[0],
+      })
+    }
 
     return (
       <div className={`bg-cream rounded-xl border-2 ${statusStyle.border} hover:shadow-md transition-all`}>
@@ -491,10 +503,54 @@ export default function PipelinePage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-display text-lg font-bold text-midnight truncate">{client.name}</h3>
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${priorityStyle.bg} ${priorityStyle.text} ring-1 ${priorityStyle.ring}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${priorityStyle.dot}`} />
-                  {client.priority}
-                </span>
+
+                {/* Priority badge — tap to change */}
+                <div className="relative">
+                  <button
+                    onClick={() => setPriorityOpen(o => !o)}
+                    title="Tap to change priority"
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${priorityStyle.bg} ${priorityStyle.text} ring-1 ${priorityStyle.ring} hover:opacity-80 transition-opacity`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${priorityStyle.dot}`} />
+                    {client.priority}
+                    <svg className={`w-2.5 h-2.5 ml-0.5 transition-transform ${priorityOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Dropdown picker */}
+                  {priorityOpen && (
+                    <>
+                      {/* Backdrop */}
+                      <div className="fixed inset-0 z-10" onClick={() => setPriorityOpen(false)} />
+                      <div className="absolute left-0 top-full mt-1 z-20 bg-white rounded-xl shadow-xl border border-midnight/10 p-1.5 flex flex-col gap-0.5 min-w-[130px]">
+                        {PRIORITIES.map(p => {
+                          const ps = PRIORITY_COLORS[p]
+                          const isActive = p === client.priority
+                          return (
+                            <button
+                              key={p}
+                              onClick={() => handlePriorityChange(p)}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors text-left ${
+                                isActive
+                                  ? `${ps.bg} ${ps.text}`
+                                  : 'text-midnight/70 hover:bg-midnight/5'
+                              }`}
+                            >
+                              <span className={`w-2 h-2 rounded-full shrink-0 ${ps.dot}`} />
+                              {p}
+                              {isActive && (
+                                <svg className="w-3 h-3 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <button
