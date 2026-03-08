@@ -23,7 +23,18 @@ import {
   Activity,
   ChevronRight,
   Box,
+  Calculator,
+  Briefcase,
 } from 'lucide-react'
+
+const workLinks = [
+  { href: '/workshop/work/pipeline',         label: 'Pipeline',       icon: ClipboardList },
+  { href: '/workshop/work/income-qualifier', label: 'Income Check',   icon: Calculator },
+  { href: '/workshop/work/dscr-calculator',  label: 'DSCR',           icon: Calculator },
+  { href: '/workshop/work/purchase-builder', label: 'Purchase',       icon: Briefcase },
+  { href: '/workshop/work/refi-builder',     label: 'Refi',           icon: Briefcase },
+  { href: '/workshop/work/scenarios',        label: 'Scenarios',      icon: Briefcase },
+]
 
 const pphLinks = [
   { href: '/workshop/pph/pipeline', label: 'Pipeline', icon: ClipboardList },
@@ -61,11 +72,12 @@ function useRoles(): string[] {
   return (meta?.roles as string[]) ?? []
 }
 
-function hasAccess(roles: string[], section: 'pph' | 'hotclaw' | 'personal' | 'lo-buddy') {
+function hasAccess(roles: string[], section: 'pph' | 'hotclaw' | 'personal' | 'lo-buddy' | 'work') {
   if (roles.length === 0) return true
   if (roles.includes('admin')) return true
   if (section === 'personal') return false
   if (section === 'lo-buddy') return roles.includes('hotclaw') || roles.includes('pph')
+  if (section === 'work') return roles.includes('pph') || roles.includes('hotclaw')
   return roles.includes(section)
 }
 
@@ -77,16 +89,19 @@ export default function WorkshopNav() {
   const canHotDog   = hasAccess(roles, 'hotclaw')
   const canLOBuddy  = hasAccess(roles, 'lo-buddy')
   const canPersonal = hasAccess(roles, 'personal')
+  const canWork     = hasAccess(roles, 'work')
 
   const inPPH      = pathname?.startsWith('/workshop/pph')
   const inHotDog   = pathname?.startsWith('/workshop/operation-hot-dog')
   const inLOBuddy  = pathname?.startsWith('/workshop/lo-buddy')
   const inPersonal = pathname?.startsWith('/workshop/personal')
   const inKB       = pathname?.startsWith('/workshop/kb')
+  const inWork     = pathname?.startsWith('/workshop/work')
 
   // Active sub-links
   let subLinks: { href: string; label: string; icon: React.ElementType }[] = []
-  if (inPPH && canPPH)           subLinks = pphLinks
+  if (inWork && canWork)          subLinks = workLinks
+  else if (inPPH && canPPH)      subLinks = pphLinks
   else if (inHotDog && canHotDog) subLinks = hotDogLinks
   else if (inLOBuddy && canLOBuddy) subLinks = loBuddyLinks
   else if (inPersonal && canPersonal) subLinks = personalLinks
@@ -167,6 +182,18 @@ export default function WorkshopNav() {
             </>
           )}
 
+          {/* Work Tools */}
+          {canWork && (
+            <>
+              <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
+              <Link href="/workshop/work/pipeline" className={sectionClass(!!inWork, 'bg-ocean')}>
+                <Briefcase size={14} />
+                Work
+                {inWork && <ChevronRight size={12} className="opacity-60" />}
+              </Link>
+            </>
+          )}
+
           {/* RoomForge */}
           <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
           <Link
@@ -201,7 +228,7 @@ export default function WorkshopNav() {
                   href={href}
                   className={subLinkClass(
                     href,
-                    inPPH ? 'bg-ocean' : inHotDog ? 'bg-amber-500' : inLOBuddy ? 'bg-cyan-600' : 'bg-terracotta'
+                    inWork ? 'bg-ocean' : inPPH ? 'bg-ocean' : inHotDog ? 'bg-amber-500' : inLOBuddy ? 'bg-cyan-600' : 'bg-terracotta'
                   )}
                 >
                   <Icon size={13} />

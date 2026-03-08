@@ -413,6 +413,22 @@ export default function PipelinePage() {
     }
   }
 
+  async function archiveClient(id: string) {
+    try {
+      const response = await fetch('/api/pipeline', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: id }),
+      })
+      if (!response.ok) throw new Error('Failed to archive client')
+      setClients(prev => prev.filter(c => c.id !== id))
+      setExpandedClient(null)
+    } catch (error) {
+      console.error('Error archiving client:', error)
+      alert('Failed to archive client. Please try again.')
+    }
+  }
+
   function handleStatusCycle(client: Client) {
     const currentIndex = STATUS_ORDER.indexOf(client.stage)
     const nextIndex = (currentIndex + 1) % STATUS_ORDER.length
@@ -471,6 +487,40 @@ export default function PipelinePage() {
     const waiting = clients.filter(c => c.stage === 'Waiting').length
     return { hot, active, waiting }
   }, [clients])
+
+  function ArchiveButton({ clientName, onConfirm }: { clientName: string; onConfirm: () => void }) {
+    const [confirming, setConfirming] = useState(false)
+    if (confirming) {
+      return (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-midnight/60">Archive {clientName}?</span>
+          <button
+            onClick={onConfirm}
+            className="px-3 py-1 bg-red-500 text-white rounded-lg text-xs font-medium hover:bg-red-600 transition-colors"
+          >
+            Yes, archive
+          </button>
+          <button
+            onClick={() => setConfirming(false)}
+            className="px-3 py-1 bg-midnight/10 text-midnight rounded-lg text-xs font-medium hover:bg-midnight/20 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      )
+    }
+    return (
+      <button
+        onClick={() => setConfirming(true)}
+        className="flex items-center gap-1.5 text-xs text-midnight/30 hover:text-red-500 transition-colors"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2L19 8m-9 4v6m4-6v6" />
+        </svg>
+        Archive client
+      </button>
+    )
+  }
 
   const ClientCard = ({ client }: { client: Client }) => {
     const isExpanded = expandedClient === client.id
@@ -702,6 +752,11 @@ export default function PipelinePage() {
                     </pre>
                   </div>
                 )}
+              </div>
+
+              {/* Archive / Remove */}
+              <div className="pt-2 border-t border-midnight/5">
+                <ArchiveButton clientName={client.name} onConfirm={() => archiveClient(client.id)} />
               </div>
             </div>
           </div>

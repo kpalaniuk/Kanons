@@ -339,3 +339,38 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+// DELETE /api/pipeline — archive a client in Notion (soft delete)
+export async function DELETE(request: NextRequest) {
+  try {
+    const { userId } = await auth()
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const allowed = await verifyAllowedUser(userId)
+    if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+    const { clientId } = await request.json()
+    if (!clientId) return NextResponse.json({ error: 'clientId required' }, { status: 400 })
+
+    // Notion archive = set archived: true on the page
+    const response = await fetch(`https://api.notion.com/v1/pages/${clientId}`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${NOTION_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Notion-Version': '2022-06-28',
+      },
+      body: JSON.stringify({ archived: true }),
+    })
+
+    if (!response.ok) {
+      const err = await response.json()
+      console.error('Notion archive error:', err)
+      return NextResponse.json({ error: 'Failed to archive client' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Pipeline DELETE error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
