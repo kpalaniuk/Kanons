@@ -366,7 +366,7 @@ export default function PipelinePage() {
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterPriority, setFilterPriority] = useState<string>('all')
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
-  const [editingField, setEditingField] = useState<{ clientId: string; field: 'nextAction' | 'notes'; value: string } | null>(null)
+  const [editingField, setEditingField] = useState<{ clientId: string; field: 'nextAction' | 'notes' | 'followUpDate'; value: string } | null>(null)
   const [cashNet, setCashNet] = useState<string>('')
   const [editingCashNet, setEditingCashNet] = useState(false)
   const [cashNetDraft, setCashNetDraft] = useState('')
@@ -423,7 +423,7 @@ export default function PipelinePage() {
     })
   }
 
-  function handleFieldEdit(clientId: string, field: 'nextAction' | 'notes', currentValue: string) {
+  function handleFieldEdit(clientId: string, field: 'nextAction' | 'notes' | 'followUpDate', currentValue: string) {
     setEditingField({ clientId, field, value: currentValue })
   }
 
@@ -431,7 +431,7 @@ export default function PipelinePage() {
     if (!editingField) return
     const { clientId, field, value } = editingField
     updateClient(clientId, {
-      [field]: value,
+      [field]: value || null,
       lastTouched: new Date().toISOString().split('T')[0]
     })
     setEditingField(null)
@@ -615,16 +615,42 @@ export default function PipelinePage() {
             )}
           </div>
 
-          {/* Follow Up Date */}
-          {client.followUpDate && (
-            <div className="mb-3">
-              <div className="text-[10px] uppercase tracking-wider text-midnight/40 mb-1">Follow Up</div>
-              <div className={`text-sm font-medium ${getFollowUpColor(client.followUpDate)}`}>
-                📅 {getRelativeTime(client.followUpDate)}
-                {new Date(client.followUpDate) < new Date() && ' (OVERDUE)'}
+          {/* Follow Up Date — Inline Editable */}
+          <div className="mb-3">
+            <div className="text-[10px] uppercase tracking-wider text-midnight/40 mb-1">Follow Up</div>
+            {editingField?.clientId === client.id && editingField.field === 'followUpDate' ? (
+              <div className="space-y-1">
+                <input
+                  type="date"
+                  value={editingField.value}
+                  onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
+                  onBlur={handleFieldSave}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleFieldSave()
+                    if (e.key === 'Escape') handleFieldCancel()
+                  }}
+                  className="bg-white border border-ocean rounded px-2 py-1 text-sm text-midnight focus:outline-none focus:ring-1 focus:ring-ocean"
+                  autoFocus
+                />
+                <div className="text-[10px] text-midnight/40">Press Enter to save, Esc to cancel</div>
               </div>
-            </div>
-          )}
+            ) : (
+              <button
+                onClick={() => handleFieldEdit(client.id, 'followUpDate', client.followUpDate ?? '')}
+                className="flex items-center gap-1.5 hover:bg-midnight/5 rounded p-1 -m-1 transition-colors text-left"
+                title="Click to change follow-up date"
+              >
+                {client.followUpDate ? (
+                  <span className={`text-sm font-medium ${getFollowUpColor(client.followUpDate)}`}>
+                    📅 {getRelativeTime(client.followUpDate)}
+                    {new Date(client.followUpDate) < new Date() && ' (OVERDUE)'}
+                  </span>
+                ) : (
+                  <span className="text-sm text-midnight/30 italic">📅 Set date…</span>
+                )}
+              </button>
+            )}
+          </div>
 
           {/* Referral Source */}
           {client.referralSource && (
