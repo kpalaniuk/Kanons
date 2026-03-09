@@ -69,6 +69,7 @@ const ideas = [
 ]
 
 const links = [
+  { label: 'Architecture Overhaul', href: '/workshop/lo-buddy/architecture', icon: Zap },
   { label: 'GitHub — LO Buddy', href: 'https://github.com/kpalaniuk/lo-buddy', icon: GitBranch },
   { label: 'Vercel Preview', href: sprint.preview, icon: ExternalLink },
   { label: 'Character Page', href: '/workshop/lo-buddy/character', icon: Sparkles },
