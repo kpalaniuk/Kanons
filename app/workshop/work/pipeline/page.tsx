@@ -86,6 +86,20 @@ function getFollowUpColor(dateStr: string | null): string {
   return 'text-emerald-600'
 }
 
+function getStageDays(lastTouched: string | null): { days: number; label: string; bgColor: string; textColor: string; title: string } {
+  if (!lastTouched) return { days: 0, label: '—', bgColor: 'bg-midnight/5', textColor: 'text-midnight/30', title: 'No activity recorded' }
+  const date = new Date(lastTouched)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  date.setHours(0, 0, 0, 0)
+  const days = Math.floor((today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+  const label = days === 0 ? 'Today' : `${days}d`
+  const bgColor = days <= 5 ? 'bg-emerald-50' : days <= 13 ? 'bg-amber-50' : 'bg-red-50'
+  const textColor = days <= 5 ? 'text-emerald-700' : days <= 13 ? 'text-amber-700' : 'text-red-700'
+  const title = `In this stage since ${lastTouched}${days > 13 ? ' — consider moving forward' : ''}`
+  return { days, label, bgColor, textColor, title }
+}
+
 // ── Add Client Modal ──────────────────────────────────────────────────────────
 
 function AddClientModal({
@@ -648,6 +662,21 @@ export default function PipelinePage() {
                 >
                   {client.stage}
                 </button>
+                {/* Stage timer badge */}
+                {(() => {
+                  const { label, bgColor, textColor, title } = getStageDays(client.lastTouched)
+                  return (
+                    <span
+                      className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold ${bgColor} ${textColor}`}
+                      title={title}
+                    >
+                      <svg className="w-2.5 h-2.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {label}
+                    </span>
+                  )
+                })()}
                 {client.loanType && (
                   <span className="inline-flex items-center gap-1 text-xs text-midnight/60">
                     {LOAN_TYPE_ICONS[client.loanType] || '📋'} {client.loanType}
