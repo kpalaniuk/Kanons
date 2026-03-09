@@ -36,8 +36,8 @@ export default clerkMiddleware((auth, req) => {
       return NextResponse.redirect(new URL('/workshop', req.url))
     }
 
-    // LO Buddy section: admin, hotclaw, or pph role required
-    if (isLOBuddyRoute(req) && !isAdmin && !roles.includes('hotclaw') && !roles.includes('pph')) {
+    // LO Buddy section: admin, hotclaw, pph, or lobuddy role required
+    if (isLOBuddyRoute(req) && !isAdmin && !roles.includes('hotclaw') && !roles.includes('pph') && !roles.includes('lobuddy')) {
       return NextResponse.redirect(new URL('/workshop', req.url))
     }
   }
