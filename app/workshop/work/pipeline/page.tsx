@@ -366,6 +366,7 @@ export default function PipelinePage() {
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterPriority, setFilterPriority] = useState<string>('all')
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
+  const [callSheetMode, setCallSheetMode] = useState(false)
   const [editingField, setEditingField] = useState<{ clientId: string; field: 'nextAction' | 'notes' | 'followUpDate'; value: string } | null>(null)
   const [cashNet, setCashNet] = useState<string>('')
   const [editingCashNet, setEditingCashNet] = useState(false)
@@ -463,13 +464,50 @@ export default function PipelinePage() {
     setTimeout(() => setAddSuccess(false), 3000)
   }
 
+  // CSV export
+  function exportCSV() {
+    const active = clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost')
+    const headers = ['Name', 'Stage', 'Priority', 'Loan Type', 'Loan Amount', 'Next Action', 'Follow Up Date', 'Last Touched', 'Referral Source', 'Notes']
+    const rows = active.map(c => [
+      c.name,
+      c.stage,
+      c.priority,
+      c.loanType ?? '',
+      c.loanAmount ? `$${c.loanAmount.toLocaleString()}` : '',
+      c.nextAction,
+      c.followUpDate ?? '',
+      c.lastTouched ?? '',
+      c.referralSource,
+      (c.notes ?? '').replace(/\n/g, ' | '),
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    const csv = [headers.join(','), ...rows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `pipeline-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   // Filter clients
   const filteredClients = useMemo(() => {
     let result = clients
+    if (callSheetMode) {
+      const todayStr = new Date().toISOString().split('T')[0]
+      result = result.filter(c =>
+        c.stage !== 'Closed' && c.stage !== 'Lost' &&
+        c.followUpDate != null && c.followUpDate <= todayStr
+      )
+      return result.sort((a, b) => {
+        const pOrder = { Hot: 0, Active: 1, Warm: 2, Monitoring: 3 }
+        return (pOrder[a.priority] ?? 9) - (pOrder[b.priority] ?? 9)
+      })
+    }
     if (filterStatus !== 'all') result = result.filter(c => c.stage === filterStatus)
     if (filterPriority !== 'all') result = result.filter(c => c.priority === filterPriority)
     return result
-  }, [clients, filterStatus, filterPriority])
+  }, [clients, filterStatus, filterPriority, callSheetMode])
 
   // Group by status
   const groupedClients = useMemo(() => {
@@ -926,12 +964,36 @@ export default function PipelinePage() {
               })}
             </div>
 
-            {/* View Mode Toggle */}
+            {/* View Mode Toggle + Actions */}
             <div className="ml-auto flex items-center gap-2">
+              {/* Today's Calls */}
               <button
-                onClick={() => setViewMode('list')}
+                onClick={() => setCallSheetMode(m => !m)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  callSheetMode
+                    ? 'bg-red-500 text-white shadow-sm'
+                    : 'bg-cream text-midnight/60 hover:bg-midnight/5 border border-midnight/10'
+                }`}
+                title="Show only clients with follow-up due today or overdue"
+              >
+                📞 {callSheetMode ? `Calls Due (${filteredClients.length})` : 'Calls Due'}
+              </button>
+
+              {/* CSV Export */}
+              <button
+                onClick={exportCSV}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-cream text-midnight/60 hover:bg-midnight/5 border border-midnight/10 transition-colors"
+                title="Export active pipeline to CSV"
+              >
+                ⬇️ Export
+              </button>
+
+              <div className="w-px h-5 bg-midnight/10" />
+
+              <button
+                onClick={() => { setViewMode('list'); setCallSheetMode(false) }}
                 className={`p-2 rounded-lg transition-colors ${
-                  viewMode === 'list' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight'
+                  viewMode === 'list' && !callSheetMode ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight'
                 }`}
                 title="List view"
               >
@@ -940,9 +1002,9 @@ export default function PipelinePage() {
                 </svg>
               </button>
               <button
-                onClick={() => setViewMode('kanban')}
+                onClick={() => { setViewMode('kanban'); setCallSheetMode(false) }}
                 className={`p-2 rounded-lg transition-colors ${
-                  viewMode === 'kanban' ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight'
+                  viewMode === 'kanban' && !callSheetMode ? 'bg-ocean text-white' : 'bg-cream text-midnight/40 hover:text-midnight'
                 }`}
                 title="Kanban view"
               >
@@ -955,8 +1017,32 @@ export default function PipelinePage() {
         </div>
 
         {/* Clients Display */}
-        {viewMode === 'list' ? (
+        {viewMode === 'list' || callSheetMode ? (
           <div className="space-y-6">
+            {/* Call Sheet Mode — flat list sorted by priority */}
+            {callSheetMode ? (
+              <>
+                <div className="flex items-center gap-3 pb-2 border-b-2 border-red-200">
+                  <span className="text-red-500 font-display font-bold text-lg">📞 Today&apos;s Calls</span>
+                  <span className="text-sm text-midnight/50">{filteredClients.length} client{filteredClients.length !== 1 ? 's' : ''} need contact</span>
+                </div>
+                {filteredClients.length === 0 ? (
+                  <div className="text-center py-12 text-midnight/40">
+                    <div className="text-4xl mb-3">✅</div>
+                    <div className="font-medium">No follow-ups due today</div>
+                    <div className="text-sm mt-1">You&apos;re all caught up!</div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredClients.map(client => (
+                      <ClientCard key={client.id} client={client} />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+            /* Normal grouped list */
+            <>
             {STATUS_ORDER.map(status => {
               const group = groupedClients[status]
               if (!group || group.length === 0) return null
@@ -977,6 +1063,8 @@ export default function PipelinePage() {
                 </div>
               )
             })}
+            </>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -1000,8 +1088,8 @@ export default function PipelinePage() {
           </div>
         )}
 
-        {/* Empty State */}
-        {filteredClients.length === 0 && !loading && (
+        {/* Empty State — only show in normal mode */}
+        {filteredClients.length === 0 && !loading && !callSheetMode && (
           <div className="bg-cream rounded-2xl p-12 text-center">
             <div className="w-20 h-20 bg-ocean/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-4xl">📋</span>
