@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { PPHNav } from '../_components/PPHNav'
 
 export default function DSCRCalculatorPage() {
   // Property inputs
@@ -185,6 +186,7 @@ export default function DSCRCalculatorPage() {
 
   return (
     <div className="max-w-6xl mx-auto pb-24">
+      <PPHNav />
       {/* Header */}
       <div
         className="mb-8"

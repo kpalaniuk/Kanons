@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { PPHNav } from '../../_components/PPHNav'
 import {
   ArrowLeft, Phone, MessageSquare, FileText, Save, Send,
   Plus, User, Calendar, Clock, Edit3, Check, X, RefreshCw
@@ -315,6 +316,7 @@ export default function ClientProfilePage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <PPHNav />
       {/* Back + Name */}
       <div className="flex items-center gap-3">
         <Link href="/workshop/pph/opportunities" className="p-2 rounded-lg hover:bg-midnight/5 transition-colors">
