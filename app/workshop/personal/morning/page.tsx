@@ -127,6 +127,8 @@ interface WeatherData {
   description: string
   humidity: number
   wind_kph: number
+  sunrise: string | null
+  sunset: string | null
 }
 
 interface PipelineClient {
@@ -304,12 +306,15 @@ export default function MorningBriefPage() {
         const data = await weatherRes.value.json()
         const current = data.current_condition?.[0]
         if (current) {
+          const todayWeather = data.weather?.[0]
           setWeather({
             temp_c: parseInt(current.temp_C),
             temp_f: parseInt(current.temp_F),
             description: current.weatherDesc?.[0]?.value || 'Clear',
             humidity: parseInt(current.humidity),
             wind_kph: parseInt(current.windspeedKmph),
+            sunrise: todayWeather?.astronomy?.[0]?.sunrise || null,
+            sunset: todayWeather?.astronomy?.[0]?.sunset || null,
           })
         }
       }
@@ -432,6 +437,12 @@ export default function MorningBriefPage() {
                     <span className="flex items-center gap-1"><Droplets className="w-3 h-3" />{weather.humidity}%</span>
                     <span className="flex items-center gap-1"><Wind className="w-3 h-3" />{weather.wind_kph} km/h</span>
                   </div>
+                  {(weather.sunrise || weather.sunset) && (
+                    <div className="flex items-center gap-3 mt-1 text-xs text-midnight/40">
+                      {weather.sunrise && <span>🌅 {weather.sunrise}</span>}
+                      {weather.sunset && <span>🌇 {weather.sunset}</span>}
+                    </div>
+                  )}
                 </div>
               </div>
               {/* Wardrobe suggestion */}
