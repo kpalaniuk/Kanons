@@ -40,6 +40,14 @@ interface ChatMessage {
   content: string
 }
 
+interface ClientScenario {
+  slug: string
+  clientName: string
+  type: string
+  createdAt: string
+  publicUrl: string
+}
+
 const STAGES = ['New Lead', 'Pre-Approved', 'In Process', 'Waiting', 'App Sent', 'Processing', 'Closing', 'Closed', 'Lost']
 const PRIORITIES = ['Hot', 'Active', 'Warm', 'Monitoring']
 const LO_OPTIONS = ['Kyle', 'Jim', 'Anthony']
@@ -58,6 +66,8 @@ export default function ClientProfilePage() {
   const [tab, setTab] = useState<Tab>(initialTab)
   const [callLogs, setCallLogs] = useState<CallLog[]>([])
   const [loadingCalls, setLoadingCalls] = useState(false)
+  const [scenarios, setScenarios] = useState<ClientScenario[]>([])
+  const [loadingScenarios, setLoadingScenarios] = useState(false)
 
   // Edit states
   const [editingField, setEditingField] = useState<string | null>(null)
@@ -77,6 +87,7 @@ export default function ClientProfilePage() {
 
   useEffect(() => { fetchClient() }, [id])
   useEffect(() => { if (tab === 'calls') fetchCalls() }, [tab, id])
+  useEffect(() => { if (tab === 'scenarios') fetchScenarios() }, [tab, id])
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatMessages])
 
   async function fetchClient() {
@@ -90,6 +101,18 @@ export default function ClientProfilePage() {
       console.error(err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function fetchScenarios() {
+    try {
+      setLoadingScenarios(true)
+      const res = await fetch(`/api/pph/scenarios?clientId=${id}`)
+      if (res.ok) setScenarios(await res.json())
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoadingScenarios(false)
     }
   }
 
@@ -423,13 +446,46 @@ export default function ClientProfilePage() {
               <Plus className="w-3.5 h-3.5" /> New Scenario
             </Link>
           </div>
-          <p className="text-center py-8 text-midnight/30 text-sm">
-            Scenarios created for this client will appear here.
-            <br />
-            <Link href={`/workshop/pph/purchase-builder?client=${client.id}&name=${encodeURIComponent(client.name)}`} className="text-ocean hover:underline">
-              Create one now →
-            </Link>
-          </p>
+          {loadingScenarios ? (
+            <div className="text-center py-8"><RefreshCw className="w-5 h-5 text-ocean animate-spin mx-auto" /></div>
+          ) : scenarios.length === 0 ? (
+            <div className="text-center py-8 text-midnight/30 text-sm">
+              No scenarios saved for {client.name} yet.
+              <br />
+              <Link href={`/workshop/pph/purchase-builder?client=${client.id}&name=${encodeURIComponent(client.name)}`} className="text-ocean hover:underline mt-1 block">
+                Build one now →
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {scenarios.map(s => (
+                <div key={s.slug} className="bg-cream rounded-lg p-4 border border-midnight/5 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-midnight">{s.type === 'purchase-grid' ? 'Purchase Scenario' : s.type}</p>
+                    <p className="text-xs text-midnight/40 mt-0.5">
+                      {new Date(s.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={s.publicUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 text-xs text-ocean border border-ocean/30 rounded-lg hover:bg-ocean/5 transition-colors"
+                    >
+                      View
+                    </a>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(`kyle.palaniuk.net${s.publicUrl}`) }}
+                      className="px-3 py-1.5 text-xs text-midnight/50 border border-midnight/10 rounded-lg hover:bg-midnight/5 transition-colors"
+                    >
+                      Copy Link
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

@@ -43,12 +43,17 @@ export async function createScenario(input: Scenario): Promise<Scenario> {
   const now = new Date().toISOString();
   const scenario: Scenario = { ...input, createdAt: now, updatedAt: now };
 
-  const { error } = await getSupabase().from(TABLE).insert({
+  const row: Record<string, unknown> = {
     slug: scenario.slug,
     data: scenario,
     created_at: now,
     updated_at: now,
-  });
+  }
+  if ((input as unknown as Record<string, unknown>).notionClientId) {
+    row.notion_client_id = (input as unknown as Record<string, unknown>).notionClientId
+  }
+
+  const { error } = await getSupabase().from(TABLE).insert(row);
 
   if (error) throw new Error(`createScenario: ${error.message}`);
   return scenario;

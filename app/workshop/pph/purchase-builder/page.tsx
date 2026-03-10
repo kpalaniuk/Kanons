@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ScenarioDescribeInput } from '../_components/ScenarioDescribeInput'
 import { Save, Copy, Check, ExternalLink, Loader2 } from 'lucide-react'
@@ -41,7 +42,11 @@ export default function PurchaseScenarioBuilderPage() {
   const lo = LOAN_OFFICERS[selectedLO]
 
   // Client Info
-  const [clientName, setClientName] = useState('')
+  const searchParams = useSearchParams()
+  const urlClientId = searchParams.get('client') || ''
+  const urlClientName = searchParams.get('name') || ''
+  const [clientName, setClientName] = useState(urlClientName)
+  const [notionClientId] = useState(urlClientId)
   const [clientPhone, setClientPhone] = useState('')
   const [ficoScore, setFicoScore] = useState(720)
   const [monthlyIncome, setMonthlyIncome] = useState(8000)
@@ -87,6 +92,7 @@ export default function PurchaseScenarioBuilderPage() {
       slug,
       type: 'purchase-grid',
       clientName: clientName || 'Client',
+      notionClientId: notionClientId || undefined,
       loanOfficer: lo.name,
       loanOfficerNMLS: lo.nmls,
       loanOfficerPhone: lo.phone,
