@@ -519,6 +519,41 @@ export default function PipelinePage() {
     setTimeout(() => setAddSuccess(false), 3000)
   }
 
+  // Activity log CSV export
+  function exportActivityLog() {
+    const saved = localStorage.getItem('pipeline-activity-logs')
+    const logs: Record<string, { ts: string; text: string }[]> = saved ? JSON.parse(saved) : {}
+    const clientMap = Object.fromEntries(clients.map(c => [c.id, c]))
+    const rows: string[] = []
+    const headers = ['Client Name', 'Stage', 'Date', 'Time', 'Entry']
+    rows.push(headers.join(','))
+    // Sort all entries by timestamp desc
+    const allEntries: { clientId: string; ts: string; text: string }[] = []
+    for (const [clientId, entries] of Object.entries(logs)) {
+      for (const e of entries) allEntries.push({ clientId, ...e })
+    }
+    allEntries.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+    for (const e of allEntries) {
+      const c = clientMap[e.clientId]
+      const d = new Date(e.ts)
+      rows.push([
+        c ? c.name : e.clientId,
+        c ? c.stage : '',
+        d.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+        d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        e.text,
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    }
+    if (allEntries.length === 0) { alert('No activity log entries to export.'); return }
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `pipeline-activity-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   // CSV export
   function exportCSV() {
     const active = clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost')
@@ -1095,7 +1130,14 @@ export default function PipelinePage() {
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-cream text-midnight/60 hover:bg-midnight/5 border border-midnight/10 transition-colors"
                 title="Export active pipeline to CSV"
               >
-                ⬇️ Export
+                ⬇️ Pipeline
+              </button>
+              <button
+                onClick={exportActivityLog}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-cream text-midnight/60 hover:bg-midnight/5 border border-midnight/10 transition-colors"
+                title="Export full activity log to CSV"
+              >
+                ⬇️ Activity
               </button>
 
               <div className="w-px h-5 bg-midnight/10" />
