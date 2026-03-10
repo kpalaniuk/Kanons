@@ -137,6 +137,15 @@ interface TideEntry {
   type: 'H' | 'L'
 }
 
+interface SurfData {
+  waveHeightFt: number
+  swellHeightFt: number
+  swellPeriod: number
+  directionLabel: string
+  rating: string
+  emoji: string
+}
+
 interface PipelineClient {
   id: string
   name: string
@@ -265,6 +274,7 @@ export default function MorningBriefPage() {
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
   const [tides, setTides] = useState<TideEntry[]>([])
+  const [surf, setSurf] = useState<SurfData | null>(null)
   const [musicStreak, setMusicStreak] = useState<number>(0)
   const [reviewOpen, setReviewOpen] = useState(false)
   const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({})
@@ -291,11 +301,12 @@ export default function MorningBriefPage() {
     setLoading(true)
     try {
       // Fetch tasks, weather, pipeline, and tides
-      const [tasksRes, weatherRes, pipelineRes, tidesRes] = await Promise.allSettled([
+      const [tasksRes, weatherRes, pipelineRes, tidesRes, surfRes] = await Promise.allSettled([
         fetch('/api/tasks?status=Not%20Started&status=In%20Progress&limit=20'),
         fetch('https://wttr.in/San+Diego?format=j1'),
         fetch('/api/pipeline'),
         fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&station=9410170&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&application=kanons_morning_brief&format=json&date=today'),
+        fetch('https://marine-api.open-meteo.com/v1/marine?latitude=32.72&longitude=-117.16&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction&timezone=America%2FLos_Angeles&forecast_days=1'),
       ])
 
       if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
@@ -350,6 +361,27 @@ export default function MorningBriefPage() {
             .slice(0, 3)
             .map(({ time, height, type }: TideEntry) => ({ time, height, type }))
           setTides(parsed)
+        }
+      }
+      if (surfRes.status === 'fulfilled' && surfRes.value.ok) {
+        const data = await surfRes.value.json()
+        if (data.hourly) {
+          const hourIdx = new Date().getHours()
+          const waveH = data.hourly.wave_height?.[hourIdx] ?? 0
+          const swellH = data.hourly.swell_wave_height?.[hourIdx] ?? waveH
+          const swellPeriod = data.hourly.swell_wave_period?.[hourIdx] ?? data.hourly.wave_period?.[hourIdx] ?? 0
+          const swellDir = data.hourly.swell_wave_direction?.[hourIdx] ?? data.hourly.wave_direction?.[hourIdx] ?? 0
+          const waveHFt = waveH * 3.28084
+          const swellHFt = swellH * 3.28084
+          const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW']
+          const dirLabel = dirs[Math.round(swellDir / 22.5) % 16]
+          let rating = 'Flat'; let emoji = '😴'
+          if (waveHFt >= 0.5) { rating = 'Ankle–knee'; emoji = '🏄' }
+          if (waveHFt >= 1.5) { rating = 'Knee–waist'; emoji = '🌊' }
+          if (waveHFt >= 3)   { rating = 'Waist–chest'; emoji = '🌊' }
+          if (waveHFt >= 5)   { rating = 'Head high'; emoji = '🔥' }
+          if (waveHFt >= 7)   { rating = 'Overhead+'; emoji = '🔥' }
+          setSurf({ waveHeightFt: waveHFt, swellHeightFt: swellHFt, swellPeriod, directionLabel: dirLabel, rating, emoji })
         }
       }
     } catch (err) {
@@ -479,6 +511,16 @@ export default function MorningBriefPage() {
                           {t.type === 'H' ? '🌊' : '↓'} {t.height} @ {t.time}
                         </span>
                       ))}
+                    </div>
+                  )}
+                  {surf && (
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <span className="text-xs font-semibold text-ocean">
+                        {surf.emoji} {surf.rating}
+                      </span>
+                      <span className="text-xs text-midnight/40">
+                        {surf.waveHeightFt.toFixed(1)}ft · {surf.swellPeriod.toFixed(0)}s · {surf.directionLabel}
+                      </span>
                     </div>
                   )}
                 </div>
