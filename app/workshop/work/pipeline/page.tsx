@@ -387,12 +387,53 @@ export default function PipelinePage() {
   const [cashNetDraft, setCashNetDraft] = useState('')
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [addSuccess, setAddSuccess] = useState(false)
+  const [activityLogs, setActivityLogs] = useState<Record<string, { ts: string; text: string }[]>>({})
+  const [activityDraft, setActivityDraft] = useState<Record<string, string>>({})
 
   // Load cash net from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('pipeline-cash-net')
     if (saved) setCashNet(saved)
   }, [])
+
+  // Load activity logs from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('pipeline-activity-logs')
+    if (saved) {
+      try { setActivityLogs(JSON.parse(saved)) } catch {}
+    }
+  }, [])
+
+  function addActivityEntry(clientId: string) {
+    const text = (activityDraft[clientId] ?? '').trim()
+    if (!text) return
+    const entry = { ts: new Date().toISOString(), text }
+    const updated = { ...activityLogs, [clientId]: [entry, ...(activityLogs[clientId] ?? [])] }
+    setActivityLogs(updated)
+    localStorage.setItem('pipeline-activity-logs', JSON.stringify(updated))
+    setActivityDraft(d => ({ ...d, [clientId]: '' }))
+    // Also update lastTouched
+    updateClient(clientId, { lastTouched: new Date().toISOString().split('T')[0] })
+  }
+
+  function deleteActivityEntry(clientId: string, idx: number) {
+    const updated = {
+      ...activityLogs,
+      [clientId]: (activityLogs[clientId] ?? []).filter((_, i) => i !== idx)
+    }
+    setActivityLogs(updated)
+    localStorage.setItem('pipeline-activity-logs', JSON.stringify(updated))
+  }
+
+  function formatActivityTs(ts: string): string {
+    const d = new Date(ts)
+    const now = new Date()
+    const diffMs = now.getTime() - d.getTime()
+    const diffH = diffMs / (1000 * 60 * 60)
+    if (diffH < 24) return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+    if (diffH < 168) return d.toLocaleDateString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: diffH > 8760 ? 'numeric' : undefined })
+  }
 
   // Fetch clients on mount
   useEffect(() => {
@@ -817,6 +858,46 @@ export default function PipelinePage() {
                     <pre className="text-sm text-midnight/80 whitespace-pre-wrap font-body leading-relaxed">
                       {client.notes || 'Click to add notes...'}
                     </pre>
+                  </div>
+                )}
+              </div>
+
+              {/* Activity Log */}
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-midnight/40 mb-2">Activity Log</div>
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={activityDraft[client.id] ?? ''}
+                    onChange={e => setActivityDraft(d => ({ ...d, [client.id]: e.target.value }))}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addActivityEntry(client.id) } }}
+                    placeholder="Log a touch, call, email… (Enter to save)"
+                    className="flex-1 bg-midnight/5 border border-midnight/10 rounded-lg px-3 py-1.5 text-sm text-midnight placeholder:text-midnight/30 focus:outline-none focus:ring-1 focus:ring-ocean focus:border-ocean"
+                  />
+                  <button
+                    onClick={() => addActivityEntry(client.id)}
+                    className="px-3 py-1.5 bg-midnight text-cream rounded-lg text-sm font-medium hover:bg-ocean transition-colors"
+                  >
+                    Log
+                  </button>
+                </div>
+                {(activityLogs[client.id] ?? []).length === 0 ? (
+                  <p className="text-xs text-midnight/25 italic">No activity logged yet.</p>
+                ) : (
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                    {(activityLogs[client.id] ?? []).map((entry, idx) => (
+                      <div key={idx} className="flex items-start gap-2 group">
+                        <span className="text-[10px] text-midnight/35 mt-0.5 whitespace-nowrap shrink-0 w-20 text-right">
+                          {formatActivityTs(entry.ts)}
+                        </span>
+                        <span className="text-sm text-midnight/80 leading-snug flex-1">{entry.text}</span>
+                        <button
+                          onClick={() => deleteActivityEntry(client.id, idx)}
+                          className="opacity-0 group-hover:opacity-100 text-midnight/25 hover:text-red-400 transition-all text-xs shrink-0 mt-0.5"
+                          title="Remove"
+                        >✕</button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
