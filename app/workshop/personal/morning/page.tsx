@@ -717,7 +717,13 @@ export default function MorningBriefPage() {
           const d = new Date(c.followUpDate); d.setHours(0,0,0,0)
           return d < today
         })
-        const hasAlerts = needsContact.length > 0 || overdueFollowUp.length > 0
+        const stuckDeals = active.filter(c => {
+          if (!c.lastTouched) return false
+          const last = new Date(c.lastTouched); last.setHours(0,0,0,0)
+          const days = Math.floor((today.getTime() - last.getTime()) / 86400000)
+          return days >= 14
+        })
+        const hasAlerts = needsContact.length > 0 || overdueFollowUp.length > 0 || stuckDeals.length > 0
         return (
           <div className={`rounded-2xl p-6 border ${hasAlerts ? 'bg-amber-50 border-amber-200' : 'bg-cream border-midnight/5'}`}>
             <div className="flex items-center justify-between mb-4">
@@ -767,6 +773,28 @@ export default function MorningBriefPage() {
                     </span>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Stuck deals — 14+ days in same stage */}
+            {stuckDeals.length > 0 && (
+              <div className="space-y-2 mt-3">
+                <p className="text-[10px] font-semibold text-red-500 uppercase tracking-wider flex items-center gap-1">
+                  ⚠️ Stuck Deals — 14+ days in stage
+                </p>
+                {stuckDeals.map(c => {
+                  const days = c.lastTouched ? Math.floor((today.getTime() - (() => { const d = new Date(c.lastTouched!); d.setHours(0,0,0,0); return d })().getTime()) / 86400000) : 0
+                  return (
+                    <div key={c.id} className="flex items-center gap-3 bg-red-50 rounded-xl px-3 py-2.5 border border-red-100">
+                      <span className="w-2 h-2 rounded-full shrink-0 bg-red-400" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-midnight truncate">{c.name}</p>
+                        <p className="text-xs text-midnight/40 truncate">{c.stage} · {c.nextAction || 'No next action set'}</p>
+                      </div>
+                      <span className="text-[10px] font-bold text-red-500 shrink-0">{days}d</span>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
