@@ -110,7 +110,8 @@ export default function PipelinePage() {
       if (!response.ok) throw new Error('Failed to fetch clients')
       
       const data = await response.json()
-      setClients(data.clients)
+      const list = Array.isArray(data) ? data : data.clients ?? data
+      setClients(list)
     } catch (error) {
       console.error('Error fetching clients:', error)
     } finally {

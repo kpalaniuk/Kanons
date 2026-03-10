@@ -70,6 +70,9 @@ export interface PipelineClient {
   lastTouched: string | null
   notes: string
   referralSource: string
+  primaryLo: string | null
+  primaryContact: string | null
+  phone: string | null
 }
 
 function extractClient(page: NotionPage): PipelineClient {
@@ -86,6 +89,9 @@ function extractClient(page: NotionPage): PipelineClient {
     lastTouched: p['Last Touched']?.date?.start || null,
     notes: p['Notes']?.rich_text?.[0]?.plain_text || '',
     referralSource: p['Referral Source']?.rich_text?.[0]?.plain_text || '',
+    primaryLo: (p as unknown as Record<string, NotionSelectProperty>)['Primary LO']?.select?.name || null,
+    primaryContact: (p as unknown as Record<string, NotionRichTextProperty>)['Primary Contact']?.rich_text?.[0]?.plain_text || null,
+    phone: (p as unknown as Record<string, NotionRichTextProperty>)['Phone']?.rich_text?.[0]?.plain_text || null,
   }
 }
 
@@ -132,7 +138,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     const clients = data.results.map((page: NotionPage) => extractClient(page))
 
-    return NextResponse.json({ clients, hasMore: data.has_more })
+    return NextResponse.json(clients)
   } catch (error) {
     console.error('Pipeline GET error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -156,7 +162,7 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { id, stage, priority, nextAction, notes, followUpDate, lastTouched } = body
+    const { id, stage, priority, nextAction, notes, followUpDate, lastTouched, primaryLo, primaryContact, phone } = body
 
     if (!id) {
       return NextResponse.json({ error: 'id is required' }, { status: 400 })
@@ -205,6 +211,26 @@ export async function PATCH(request: NextRequest) {
         properties['Last Touched'] = {
           date: { start: lastTouched },
         }
+      }
+    }
+
+    if (primaryLo !== undefined) {
+      if (primaryLo) {
+        properties['Primary LO'] = { select: { name: primaryLo } }
+      } else {
+        properties['Primary LO'] = { select: null }
+      }
+    }
+
+    if (primaryContact !== undefined) {
+      properties['Primary Contact'] = {
+        rich_text: [{ text: { content: primaryContact || '' } }],
+      }
+    }
+
+    if (phone !== undefined) {
+      properties['Phone'] = {
+        rich_text: [{ text: { content: phone || '' } }],
       }
     }
 
@@ -259,6 +285,9 @@ export async function POST(request: NextRequest) {
       lastTouched,
       notes = '',
       referralSource = '',
+      primaryLo,
+      primaryContact,
+      phone,
     } = body
 
     if (!name || !name.trim()) {
@@ -310,6 +339,22 @@ export async function POST(request: NextRequest) {
     if (referralSource.trim()) {
       properties['Referral Source'] = {
         rich_text: [{ text: { content: referralSource.trim() } }],
+      }
+    }
+
+    if (primaryLo) {
+      properties['Primary LO'] = { select: { name: primaryLo } }
+    }
+
+    if (primaryContact) {
+      properties['Primary Contact'] = {
+        rich_text: [{ text: { content: primaryContact } }],
+      }
+    }
+
+    if (phone) {
+      properties['Phone'] = {
+        rich_text: [{ text: { content: phone } }],
       }
     }
 

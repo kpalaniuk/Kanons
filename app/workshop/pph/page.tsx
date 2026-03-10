@@ -1,11 +1,17 @@
 import Link from 'next/link'
-import { ClipboardList, Wrench, Users, Palette, Calculator, BookOpen, ArrowRight } from 'lucide-react'
+import { ClipboardList, Wrench, Users, Palette, Calculator, BookOpen, ArrowRight, Target } from 'lucide-react'
 
 const pphTools = [
   {
+    href: '/workshop/pph/opportunities',
+    title: 'Opportunities',
+    description: 'LO Buddy–style deal tracker with follow-up alerts and quick actions',
+    icon: Target,
+  },
+  {
     href: '/workshop/pph/pipeline',
     title: 'Pipeline',
-    description: 'Track and manage client opportunities',
+    description: 'Classic kanban + list view of the pipeline',
     icon: ClipboardList,
   },
   {
