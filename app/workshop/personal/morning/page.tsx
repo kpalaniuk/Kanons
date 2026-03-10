@@ -131,6 +131,12 @@ interface WeatherData {
   sunset: string | null
 }
 
+interface TideEntry {
+  time: string   // e.g. "7:42 AM"
+  height: string // e.g. "5.2 ft"
+  type: 'H' | 'L'
+}
+
 interface PipelineClient {
   id: string
   name: string
@@ -258,6 +264,7 @@ export default function MorningBriefPage() {
   const [pipeline, setPipeline] = useState<PipelineClient[]>([])
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
+  const [tides, setTides] = useState<TideEntry[]>([])
   const [musicStreak, setMusicStreak] = useState<number>(0)
   const [reviewOpen, setReviewOpen] = useState(false)
   const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({})
@@ -283,11 +290,12 @@ export default function MorningBriefPage() {
   const fetchAll = async () => {
     setLoading(true)
     try {
-      // Fetch tasks, weather, and pipeline
-      const [tasksRes, weatherRes, pipelineRes] = await Promise.allSettled([
+      // Fetch tasks, weather, pipeline, and tides
+      const [tasksRes, weatherRes, pipelineRes, tidesRes] = await Promise.allSettled([
         fetch('/api/tasks?status=Not%20Started&status=In%20Progress&limit=20'),
         fetch('https://wttr.in/San+Diego?format=j1'),
         fetch('/api/pipeline'),
+        fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&station=9410170&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&application=kanons_morning_brief&format=json&date=today'),
       ])
 
       if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
@@ -322,6 +330,27 @@ export default function MorningBriefPage() {
       if (pipelineRes.status === 'fulfilled' && pipelineRes.value.ok) {
         const data = await pipelineRes.value.json()
         setPipeline(data.clients || [])
+      }
+
+      if (tidesRes.status === 'fulfilled' && tidesRes.value.ok) {
+        const data = await tidesRes.value.json()
+        if (data.predictions) {
+          const now = new Date()
+          const parsed: TideEntry[] = data.predictions
+            .map((p: { t: string; v: string; type: string }) => {
+              const dt = new Date(p.t.replace(' ', 'T'))
+              return {
+                time: dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+                height: `${parseFloat(p.v).toFixed(1)} ft`,
+                type: p.type as 'H' | 'L',
+                _dt: dt,
+              }
+            })
+            .filter((e: { _dt: Date }) => e._dt >= now)
+            .slice(0, 3)
+            .map(({ time, height, type }: TideEntry) => ({ time, height, type }))
+          setTides(parsed)
+        }
       }
     } catch (err) {
       console.error('Error fetching morning brief data:', err)
@@ -441,6 +470,15 @@ export default function MorningBriefPage() {
                     <div className="flex items-center gap-3 mt-1 text-xs text-midnight/40">
                       {weather.sunrise && <span>🌅 {weather.sunrise}</span>}
                       {weather.sunset && <span>🌇 {weather.sunset}</span>}
+                    </div>
+                  )}
+                  {tides.length > 0 && (
+                    <div className="flex items-center gap-3 mt-1 flex-wrap">
+                      {tides.map((t, i) => (
+                        <span key={i} className={`text-xs font-medium ${t.type === 'H' ? 'text-ocean' : 'text-midnight/40'}`}>
+                          {t.type === 'H' ? '🌊' : '↓'} {t.height} @ {t.time}
+                        </span>
+                      ))}
                     </div>
                   )}
                 </div>
