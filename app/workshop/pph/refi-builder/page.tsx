@@ -1,13 +1,26 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ScenarioDescribeInput } from '../_components/ScenarioDescribeInput'
+import { Save, Copy, Check } from 'lucide-react'
 
 export default function RefiScenarioBuilderPage() {
-  // Client info (optional)
-  const [clientName, setClientName] = useState('')
+  const searchParams = useSearchParams()
+  const urlClientId = searchParams.get('client') || ''
+  const urlClientName = searchParams.get('name') || ''
+
+  // Client info
+  const [clientName, setClientName] = useState(urlClientName)
   const [clientPhone, setClientPhone] = useState('')
+  const [notionClientId] = useState(urlClientId)
+
+  // Save/share state
+  const [savedSlug, setSavedSlug] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [copied, setCopied] = useState(false)
   
   // Current loan details
   const [currentBalance, setCurrentBalance] = useState(350000)
@@ -120,6 +133,45 @@ export default function RefiScenarioBuilderPage() {
       }
     }
   }, [breakEvenMonths])
+
+  async function saveScenario() {
+    setSaving(true)
+    setSaveError('')
+    const baseName = clientName.trim() || 'refi'
+    const slug = `${baseName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-refi-${Date.now()}`
+    const payload = {
+      slug,
+      type: 'refi',
+      clientName: clientName || 'Client',
+      notionClientId: notionClientId || undefined,
+      currentBalance, currentRate, currentPayment, currentTermRemaining,
+      propertyValue, newRate, newTerm, closingCosts, rollInClosingCosts, cashOut,
+      results: {
+        newLoanAmount, newMonthlyPayment, monthlySavings,
+        breakEvenMonths: isFinite(breakEvenMonths) ? breakEvenMonths : null,
+        interestSavings, currentLTV, newLTV,
+      },
+    }
+    const res = await fetch('/api/scenarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (res.ok) {
+      setSavedSlug(slug)
+    } else {
+      const d = await res.json()
+      setSaveError(d.error || 'Save failed')
+    }
+    setSaving(false)
+  }
+
+  async function copyLink() {
+    if (!savedSlug) return
+    await navigator.clipboard.writeText(`https://kyle.palaniuk.net/clients/purchase/${savedSlug}`)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   // Custom slider component
   const Slider = ({ 
@@ -596,6 +648,39 @@ export default function RefiScenarioBuilderPage() {
           <p className="text-xs text-midnight/50">
             ⚠️ This calculator provides estimates only. Actual rates, costs, and savings depend on credit profile, property details, and lender terms. Consult your loan officer for personalized guidance.
           </p>
+
+          {/* Save & Share */}
+          <div className="mt-6 pt-6 border-t border-midnight/10">
+            {savedSlug ? (
+              <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+                <p className="text-sm font-semibold text-emerald-700 mb-2">✓ Scenario saved</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    readOnly
+                    value={`https://kyle.palaniuk.net/clients/purchase/${savedSlug}`}
+                    className="flex-1 px-3 py-1.5 text-xs bg-white border border-emerald-200 rounded-lg text-midnight/70"
+                  />
+                  <button
+                    onClick={copyLink}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 transition-colors"
+                  >
+                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={saveScenario}
+                disabled={saving}
+                className="flex items-center gap-2 px-5 py-2.5 bg-midnight text-cream rounded-xl text-sm font-medium hover:bg-ocean transition-colors disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {saving ? 'Saving...' : 'Save & Share Scenario'}
+              </button>
+            )}
+            {saveError && <p className="text-xs text-red-500 mt-2">{saveError}</p>}
+          </div>
         </div>
       </div>
     </div>
