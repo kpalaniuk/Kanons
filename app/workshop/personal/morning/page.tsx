@@ -265,6 +265,18 @@ function getWardrobeSuggestion(weather: WeatherData): { outfit: string; note: st
   return { outfit, note }
 }
 
+function getSurfBadgeClass(rating: string): string {
+  switch (rating) {
+    case 'Flat':        return 'bg-midnight/10 text-midnight/40'
+    case 'Ankle–knee':  return 'bg-amber-100 text-amber-700'
+    case 'Knee–waist':  return 'bg-green-100 text-green-700'
+    case 'Waist–chest': return 'bg-green-200 text-green-800'
+    case 'Head high':   return 'bg-ocean/10 text-ocean'
+    case 'Overhead+':   return 'bg-purple-100 text-purple-700'
+    default:            return 'bg-midnight/10 text-midnight/40'
+  }
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function MorningBriefPage() {
@@ -515,7 +527,7 @@ export default function MorningBriefPage() {
                   )}
                   {surf && (
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className="text-xs font-semibold text-ocean">
+                      <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${getSurfBadgeClass(surf.rating)}`}>
                         {surf.emoji} {surf.rating}
                       </span>
                       <span className="text-xs text-midnight/40">
