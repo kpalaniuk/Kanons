@@ -15,6 +15,9 @@ import {
   Sword,
   Music,
   Home,
+  Target,
+  Calculator,
+  FileText,
 } from 'lucide-react'
 
 const workLinks = [
@@ -22,6 +25,13 @@ const workLinks = [
   { href: '/workshop/work/tools',          label: 'Tools',     icon: Wrench },
   { href: '/workshop/work/clients',        label: 'Clients',   icon: Users },
   { href: '/workshop/work/lo-buddy-landing', label: 'LO Buddy', icon: Sword },
+]
+
+const pphLinks = [
+  { href: '/workshop/pph/opportunities',    label: 'Opportunities', icon: Target },
+  { href: '/workshop/pph/purchase-builder', label: 'Purchase',      icon: FileText },
+  { href: '/workshop/pph/refi-builder',     label: 'Refi',          icon: FileText },
+  { href: '/workshop/pph/dscr-calculator',  label: 'DSCR',          icon: Calculator },
 ]
 
 const personalLinks = [
@@ -84,6 +94,24 @@ export default function WorkshopNav() {
               {label}
             </Link>
           ))}
+
+          <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
+
+          {/* PPH */}
+          <span className={`text-xs font-bold uppercase tracking-wider px-2 flex-shrink-0 ${pathname?.startsWith('/workshop/pph') ? 'text-emerald-600' : 'text-midnight/30'}`}>
+            PPH
+          </span>
+          {pphLinks.map(({ href, label, icon: Icon }) => {
+            const active = pathname === href || (href !== '/workshop/pph/opportunities' && pathname?.startsWith(href))
+            return (
+              <Link key={href} href={href} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                active ? 'bg-emerald-600 text-white' : 'text-midnight/50 hover:text-midnight hover:bg-sand'
+              }`}>
+                <Icon size={14} />
+                {label}
+              </Link>
+            )
+          })}
 
           <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
 
