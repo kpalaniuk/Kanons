@@ -90,13 +90,31 @@ export default function ClientProfilePage() {
   useEffect(() => { if (tab === 'scenarios') fetchScenarios() }, [tab, id])
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatMessages])
 
+  function mapRow(row: Record<string, unknown>): Client {
+    return {
+      id: row.id as string,
+      name: row.name as string,
+      stage: (row.stage as string) || 'New Lead',
+      priority: (row.priority as string) || 'Active',
+      loanType: (row.loan_type as string) || null,
+      loanAmount: (row.loan_amount as number) || null,
+      nextAction: (row.next_action as string) || '',
+      followUpDate: (row.follow_up_date as string) || null,
+      lastTouched: (row.last_touched as string) || null,
+      notes: (row.notes as string) || '',
+      referralSource: (row.referral_source as string) || '',
+      primaryLo: (row.primary_lo as string) || null,
+      primaryContact: (row.primary_contact as string) || null,
+      phone: (row.phone as string) || null,
+    }
+  }
+
   async function fetchClient() {
     try {
-      const res = await fetch('/api/pipeline')
+      const res = await fetch(`/api/pph/clients/${id}`)
       if (!res.ok) throw new Error('Failed')
-      const all: Client[] = await res.json()
-      const found = all.find(c => c.id === id)
-      setClient(found || null)
+      const row = await res.json()
+      setClient(mapRow(row))
     } catch (err) {
       console.error(err)
     } finally {
@@ -134,7 +152,7 @@ export default function ClientProfilePage() {
     try {
       const body: Record<string, string> = { id: client.id }
       body[field] = value
-      const res = await fetch('/api/pipeline', {
+      const res = await fetch('/api/pph/clients', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -158,13 +176,13 @@ export default function ClientProfilePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          notionClientId: client.id,
+          clientId: client.id,
           clientName: client.name,
           callType: logType,
           notes: logNotes,
         }),
       })
-      await fetch('/api/pipeline', {
+      await fetch('/api/pph/clients', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: client.id, lastTouched: new Date().toISOString().split('T')[0] }),

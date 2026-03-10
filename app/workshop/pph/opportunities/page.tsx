@@ -99,13 +99,32 @@ export default function OpportunitiesPage() {
 
   useEffect(() => { fetchClients() }, [])
 
+  function mapClient(row: Record<string, unknown>): Client {
+    return {
+      id: row.id as string,
+      name: row.name as string,
+      stage: (row.stage as string) || 'New Lead',
+      priority: (row.priority as string) || 'Active',
+      loanType: (row.loan_type as string) || null,
+      loanAmount: (row.loan_amount as number) || null,
+      nextAction: (row.next_action as string) || '',
+      followUpDate: (row.follow_up_date as string) || null,
+      lastTouched: (row.last_touched as string) || null,
+      notes: (row.notes as string) || '',
+      referralSource: (row.referral_source as string) || '',
+      primaryLo: (row.primary_lo as string) || null,
+      primaryContact: (row.primary_contact as string) || null,
+      phone: (row.phone as string) || null,
+    }
+  }
+
   async function fetchClients() {
     try {
       setLoading(true)
-      const res = await fetch('/api/pipeline')
+      const res = await fetch('/api/pph/clients')
       if (!res.ok) throw new Error('Failed to fetch')
       const data = await res.json()
-      setClients(data)
+      setClients((data as Record<string, unknown>[]).map(mapClient))
     } catch (err) {
       console.error(err)
     } finally {
@@ -117,7 +136,7 @@ export default function OpportunitiesPage() {
     if (!newName.trim()) return
     setSubmittingNew(true)
     try {
-      const res = await fetch('/api/pipeline', {
+      const res = await fetch('/api/pph/clients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -149,14 +168,14 @@ export default function OpportunitiesPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          notionClientId: logCallClient.id,
+          clientId: logCallClient.id,
           clientName: logCallClient.name,
           callType: logCallType,
           notes: logCallNotes,
         }),
       })
-      // Also update lastTouched in Notion
-      await fetch('/api/pipeline', {
+      // Update lastTouched in Supabase
+      await fetch('/api/pph/clients', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

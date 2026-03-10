@@ -18,7 +18,7 @@ async function getCallerEmail(userId: string): Promise<string | null> {
   } catch { return null }
 }
 
-// GET /api/pph/calls?clientId=<notionId>
+// GET /api/pph/calls?clientId=<supabase uuid>
 export async function GET(request: NextRequest) {
   const { userId } = auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabaseAdmin
     .from('pph_call_logs')
     .select('*')
-    .eq('notion_client_id', clientId)
+    .eq('client_id', clientId)
     .order('created_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -46,13 +46,13 @@ export async function POST(request: NextRequest) {
   if (!email || !ALLOWED_EMAILS.includes(email)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await request.json()
-  const { notionClientId, clientName, callType, notes } = body
-  if (!notionClientId || !clientName) return NextResponse.json({ error: 'notionClientId and clientName required' }, { status: 400 })
+  const { clientId, clientName, callType, notes } = body
+  if (!clientId || !clientName) return NextResponse.json({ error: 'clientId and clientName required' }, { status: 400 })
 
   const { data, error } = await supabaseAdmin
     .from('pph_call_logs')
     .insert({
-      notion_client_id: notionClientId,
+      client_id: clientId,
       client_name: clientName,
       logged_by_email: email,
       call_type: callType || 'Note',
@@ -62,5 +62,12 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Also update last_touched on the client
+  await supabaseAdmin
+    .from('pph_clients')
+    .update({ last_touched: new Date().toISOString().split('T')[0] })
+    .eq('id', clientId)
+
   return NextResponse.json(data)
 }
