@@ -54,6 +54,13 @@ interface Client {
   b2AssetsNotes: string | null
   // REO
   reo: ReoProperty[]
+  // Deal basics
+  targetPurchasePrice: number | null
+  ficoScore: number | null
+  targetArea: string | null
+  // AI summary
+  aiSummary: string | null
+  aiSummaryUpdatedAt: string | null
 }
 
 interface CallLog {
@@ -178,6 +185,27 @@ export default function ClientProfilePage() {
   const [logNotes, setLogNotes] = useState('')
   const [submittingLog, setSubmittingLog] = useState(false)
 
+  // AI summary
+  const [generatingSummary, setGeneratingSummary] = useState(false)
+
+  async function refreshSummary() {
+    if (!client) return
+    setGeneratingSummary(true)
+    try {
+      const res = await fetch('/api/pph/ai-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: client.id }),
+      })
+      if (res.ok) {
+        const { summary } = await res.json()
+        setClient(prev => prev ? { ...prev, aiSummary: summary, aiSummaryUpdatedAt: new Date().toISOString() } : prev)
+      }
+    } finally {
+      setGeneratingSummary(false)
+    }
+  }
+
   // REO
   const [showReoForm, setShowReoForm] = useState(false)
   const [reoForm, setReoForm] = useState<Partial<ReoProperty>>({
@@ -237,6 +265,11 @@ export default function ClientProfilePage() {
       b2Assets: (row.b2_assets as number) || null,
       b2AssetsNotes: (row.b2_assets_notes as string) || null,
       reo: (row.reo as ReoProperty[]) || [],
+      targetPurchasePrice: (row.target_purchase_price as number) || null,
+      ficoScore: (row.fico_score as number) || null,
+      targetArea: (row.target_area as string) || null,
+      aiSummary: (row.ai_summary as string) || null,
+      aiSummaryUpdatedAt: (row.ai_summary_updated_at as string) || null,
     }
   }
 
@@ -471,6 +504,9 @@ export default function ClientProfilePage() {
         combinedMonthlyIncome: (client.b1MonthlyIncome || 0) + (client.b2MonthlyIncome || 0),
         totalAssets: (client.b1Assets || 0) + (client.b2Assets || 0),
         reo: client.reo,
+        ficoScore: client.ficoScore,
+        targetPurchasePrice: client.targetPurchasePrice,
+        targetArea: client.targetArea,
         recentCalls: callLogs.slice(0, 10).map(c => ({ type: c.call_type, notes: c.notes, date: c.created_at, by: c.logged_by_email })),
       }
       const res = await fetch('/api/pph/chat', {
@@ -643,6 +679,63 @@ export default function ClientProfilePage() {
                 <MessageSquare className="w-4 h-4" /> Ask PPH-Claw
               </button>
             </div>
+          </div>
+
+          {/* Deal Basics */}
+          <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+            <h3 className="text-sm font-semibold text-midnight mb-4">Deal Basics</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <span className="text-xs text-midnight/40 block mb-1">Target Purchase Price</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-midnight/40">$</span>
+                  <input type="number" placeholder="e.g. 850000"
+                    value={client.targetPurchasePrice || ''}
+                    onChange={e => saveClientFields({ targetPurchasePrice: parseFloat(e.target.value) || null })}
+                    className="flex-1 px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50" />
+                </div>
+              </div>
+              <div>
+                <span className="text-xs text-midnight/40 block mb-1">FICO Score</span>
+                <input type="number" placeholder="e.g. 740" min={300} max={850}
+                  value={client.ficoScore || ''}
+                  onChange={e => saveClientFields({ ficoScore: parseInt(e.target.value) || null })}
+                  className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50" />
+              </div>
+              <div>
+                <span className="text-xs text-midnight/40 block mb-1">Target Area</span>
+                <input type="text" placeholder="e.g. North Park, San Diego CA"
+                  value={client.targetArea || ''}
+                  onChange={e => saveClientFields({ targetArea: e.target.value })}
+                  className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50" />
+              </div>
+            </div>
+          </div>
+
+          {/* AI Summary */}
+          <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-sm font-semibold text-midnight">AI Summary</h3>
+                {client.aiSummaryUpdatedAt && (
+                  <p className="text-[10px] text-midnight/30 mt-0.5">
+                    Updated {new Date(client.aiSummaryUpdatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={refreshSummary}
+                disabled={generatingSummary}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-midnight/5 text-midnight/50 rounded-lg text-xs hover:bg-midnight/10 transition-colors disabled:opacity-40"
+              >
+                <RefreshCw className={`w-3 h-3 ${generatingSummary ? 'animate-spin' : ''}`} />
+                {generatingSummary ? 'Generating…' : 'Refresh'}
+              </button>
+            </div>
+            {client.aiSummary
+              ? <p className="text-sm text-midnight/70 leading-relaxed whitespace-pre-wrap">{client.aiSummary}</p>
+              : <p className="text-sm text-midnight/30 italic">No summary yet. Hit Refresh to generate one from this client&apos;s data.</p>
+            }
           </div>
 
           {/* Borrowers + Income */}
