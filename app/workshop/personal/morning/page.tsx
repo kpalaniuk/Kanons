@@ -287,6 +287,7 @@ export default function MorningBriefPage() {
   const [lastRefresh, setLastRefresh] = useState(new Date())
   const [tides, setTides] = useState<TideEntry[]>([])
   const [surf, setSurf] = useState<SurfData | null>(null)
+  const [desertWeather, setDesertWeather] = useState<WeatherData | null>(null)
   const [musicStreak, setMusicStreak] = useState<number>(0)
   const [reviewOpen, setReviewOpen] = useState(false)
   const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({})
@@ -313,12 +314,13 @@ export default function MorningBriefPage() {
     setLoading(true)
     try {
       // Fetch tasks, weather, pipeline, and tides
-      const [tasksRes, weatherRes, pipelineRes, tidesRes, surfRes] = await Promise.allSettled([
+      const [tasksRes, weatherRes, pipelineRes, tidesRes, surfRes, desertRes] = await Promise.allSettled([
         fetch('/api/tasks?status=Not%20Started&status=In%20Progress&limit=20'),
         fetch('https://wttr.in/San+Diego?format=j1'),
         fetch('/api/pipeline'),
         fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&station=9410170&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&application=kanons_morning_brief&format=json&date=today'),
         fetch('https://marine-api.open-meteo.com/v1/marine?latitude=32.72&longitude=-117.16&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction&timezone=America%2FLos_Angeles&forecast_days=1'),
+        fetch('https://wttr.in/Joshua+Tree+California?format=j1'),
       ])
 
       if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
@@ -394,6 +396,21 @@ export default function MorningBriefPage() {
           if (waveHFt >= 5)   { rating = 'Head high'; emoji = '🔥' }
           if (waveHFt >= 7)   { rating = 'Overhead+'; emoji = '🔥' }
           setSurf({ waveHeightFt: waveHFt, swellHeightFt: swellHFt, swellPeriod, directionLabel: dirLabel, rating, emoji })
+        }
+      }
+      if (desertRes.status === 'fulfilled' && desertRes.value.ok) {
+        const data = await desertRes.value.json()
+        const current = data.current_condition?.[0]
+        if (current) {
+          setDesertWeather({
+            temp_c: parseInt(current.temp_C),
+            temp_f: parseInt(current.temp_F),
+            description: current.weatherDesc?.[0]?.value || 'Clear',
+            humidity: parseInt(current.humidity),
+            wind_kph: parseInt(current.windspeedKmph),
+            sunrise: null,
+            sunset: null,
+          })
         }
       }
     } catch (err) {
@@ -548,6 +565,21 @@ export default function MorningBriefPage() {
                   </div>
                 )
               })()}
+              {desertWeather && (
+                <div className="border-t border-midnight/5 pt-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🌵</span>
+                    <div>
+                      <p className="text-xs font-semibold text-midnight/40 uppercase tracking-wide">Joshua Tree</p>
+                      <p className="text-sm text-midnight/60">{desertWeather.description}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-display text-midnight">{desertWeather.temp_f}°F</p>
+                    <p className="text-xs text-midnight/40">{desertWeather.humidity}% humidity</p>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-midnight/30 text-sm">{loading ? 'Loading…' : 'Unavailable'}</div>
