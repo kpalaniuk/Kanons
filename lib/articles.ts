@@ -13,6 +13,19 @@ export interface Article {
 export const articles: Article[] = [
   // === NEWEST FIRST ===
 
+  // ── Technology ────────────────────────────────────────────────────────────
+  {
+    title: 'OpenClaw Messenger Comparison',
+    description: 'Scored pros/cons breakdown of Telegram, Discord, WhatsApp, Slack, and Signal as OpenClaw channels. Covers setup, security, robustness, speed, features, privacy, and cost. Includes a recommendation for Kyle\'s setup.',
+    href: '/artifacts/openclaw-messenger-comparison',
+    category: 'Technology',
+    tags: ['Technology'],
+    section: 'work',
+    date: 'Mar 10, 2026',
+    published: true,
+    type: 'guide',
+  },
+
   // ── Personal ──────────────────────────────────────────────────────────────
   {
     title: 'FC Balboa — Club Proposal 2026–27',
