@@ -1,51 +1,46 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
+
+const PAGE_KEY = 'jh-domenech'
 
 // ── Fixed assumptions ─────────────────────────────────────────────
-const JEFFREY_INCOME = 8254    // $/mo W2
-const MONTHLY_DEBTS  = 140     // $/mo liabilities
-const TAX_RATE       = 0.012   // 1.2% annually (SD County)
-const SD_CONFORMING  = 1006250 // 2026 SD County high-cost conforming limit
+const JEFFREY_INCOME  = 8254      // $/mo W2, fixed
+const MONTHLY_DEBTS   = 140       // $/mo liabilities
+const TAX_RATE        = 0.012     // 1.2% annually
+const SD_CONFORMING   = 1006250   // 2026 SD County high-cost limit
 const RATE_CONFORMING = 6.0
 const RATE_JUMBO      = 6.5
 
-function formatCurrency(n: number) {
-  return '$' + Math.round(n).toLocaleString()
-}
+function fmt(n: number) { return '$' + Math.round(n).toLocaleString() }
+function fmtPct(n: number) { return n.toFixed(1) + '%' }
 
-function calcPI(loan: number, annualRate: number, termYears: number) {
+function calcPI(loan: number, annualRate: number, termYears = 30) {
   const r = annualRate / 100 / 12
   const n = termYears * 12
   if (r === 0) return loan / n
   return loan * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
 }
 
-function Slider({ label, value, min, max, step, format, onChange, color = 'ocean' }: {
+function Slider({ label, value, min, max, step, format, onChange, color = 'blue' }: {
   label: string; value: number; min: number; max: number; step: number
   format: (v: number) => string; onChange: (v: number) => void; color?: string
 }) {
-  const pct = ((value - min) / (max - min)) * 100
+  const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100))
+  const accent = color === 'amber' ? '#FFBA00' : '#0066FF'
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
         <label className="text-xs font-medium text-[#0a0a0a]/60">{label}</label>
-        <span className={`text-sm font-bold ${color === 'amber' ? 'text-amber-600' : 'text-[#0066FF]'}`}>{format(value)}</span>
+        <span className="text-sm font-bold" style={{ color: accent }}>{format(value)}</span>
       </div>
       <div className="relative h-2 bg-[#0a0a0a]/10 rounded-full">
-        <div
-          className={`absolute left-0 top-0 h-2 rounded-full ${color === 'amber' ? 'bg-amber-400' : 'bg-[#0066FF]'}`}
-          style={{ width: `${pct}%` }}
-        />
-        <input
-          type="range" min={min} max={max} step={step} value={value}
+        <div className="absolute left-0 top-0 h-2 rounded-full" style={{ width: `${pct}%`, background: accent }} />
+        <input type="range" min={min} max={max} step={step} value={value}
           onChange={e => onChange(Number(e.target.value))}
-          className="absolute inset-0 w-full opacity-0 cursor-pointer h-2"
-        />
-        <div
-          className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white shadow-md ${color === 'amber' ? 'bg-amber-400' : 'bg-[#0066FF]'}`}
-          style={{ left: `calc(${pct}% - 8px)` }}
-        />
+          className="absolute inset-0 w-full opacity-0 cursor-pointer h-2" />
+        <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white shadow-md pointer-events-none"
+          style={{ left: `calc(${pct}% - 8px)`, background: accent }} />
       </div>
       <div className="flex justify-between text-[10px] text-[#0a0a0a]/30">
         <span>{format(min)}</span><span>{format(max)}</span>
@@ -54,105 +49,166 @@ function Slider({ label, value, min, max, step, format, onChange, color = 'ocean
   )
 }
 
+interface SnapshotEntry {
+  id: string
+  data: { hannahIncome: number; purchasePrice: number; downPct: number; insurance: number; total: number; backDTI: number }
+  note: string
+  at: string
+}
+
 export default function JHInteractiveScenario() {
-  const [hannahIncome, setHannahIncome] = useState(1871)
+  const [hannahIncome,  setHannahIncome]  = useState(1871)
   const [purchasePrice, setPurchasePrice] = useState(1350000)
-  const [downPct, setDownPct] = useState(60)
-  const [insurance, setInsurance] = useState(150)
+  const [downPct,       setDownPct]       = useState(60)
+  const [insurance,     setInsurance]     = useState(150)
+
+  // View / snapshot state
+  const [viewCount,   setViewCount]   = useState<number | null>(null)
+  const [lastViewed,  setLastViewed]  = useState<string | null>(null)
+  const [snapshots,   setSnapshots]   = useState<SnapshotEntry[]>([])
+  const [showSnap,    setShowSnap]    = useState(false)
+  const [snapNote,    setSnapNote]    = useState('')
+  const [snapSaving,  setSnapSaving]  = useState(false)
+  const [snapSaved,   setSnapSaved]   = useState(false)
+  const [copied,      setCopied]      = useState(false)
+  const viewFired = useRef(false)
+
+  const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://kyle.palaniuk.net/clients/interactive/jh-domenech'
+
+  // Fire view event once on load
+  useEffect(() => {
+    if (viewFired.current) return
+    viewFired.current = true
+    fetch('/api/scenario-events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pageKey: PAGE_KEY, type: 'view', data: {} }),
+    }).then(() => loadEvents())
+  }, [])
+
+  function loadEvents() {
+    fetch(`/api/scenario-events?pageKey=${PAGE_KEY}`)
+      .then(r => r.json())
+      .then(d => {
+        setViewCount(d.viewCount)
+        setLastViewed(d.lastViewed)
+        setSnapshots(d.snapshots || [])
+      })
+  }
 
   const calc = useMemo(() => {
-    const downAmt   = Math.round(purchasePrice * downPct / 100)
-    const loan      = purchasePrice - downAmt
-    const rate      = loan > SD_CONFORMING ? RATE_JUMBO : RATE_CONFORMING
-    const isJumbo   = loan > SD_CONFORMING
-    const pi        = calcPI(loan, rate, 30)
-    const taxMo     = (purchasePrice * TAX_RATE) / 12
-    const total     = pi + taxMo + insurance
-    const combined  = JEFFREY_INCOME + hannahIncome
-    const frontDTI  = (total / combined) * 100
-    const backDTI   = ((total + MONTHLY_DEBTS) / combined) * 100
-    const ltv       = (loan / purchasePrice) * 100
-
+    const downAmt  = Math.round(purchasePrice * downPct / 100)
+    const loan     = purchasePrice - downAmt
+    const rate     = loan > SD_CONFORMING ? RATE_JUMBO : RATE_CONFORMING
+    const isJumbo  = loan > SD_CONFORMING
+    const pi       = calcPI(loan, rate)
+    const taxMo    = (purchasePrice * TAX_RATE) / 12
+    const total    = pi + taxMo + insurance
+    const combined = JEFFREY_INCOME + hannahIncome
+    const frontDTI = (total / combined) * 100
+    const backDTI  = ((total + MONTHLY_DEBTS) / combined) * 100
+    const ltv      = (loan / purchasePrice) * 100
     let status: 'strong' | 'caution' | 'tight' | 'over'
-    if (backDTI <= 43)       status = 'strong'
-    else if (backDTI <= 45)  status = 'caution'
-    else if (backDTI <= 50)  status = 'tight'
-    else                     status = 'over'
-
+    if (backDTI <= 43)      status = 'strong'
+    else if (backDTI <= 45) status = 'caution'
+    else if (backDTI <= 50) status = 'tight'
+    else                    status = 'over'
     return { downAmt, loan, rate, isJumbo, pi, taxMo, total, combined, frontDTI, backDTI, ltv, status }
   }, [hannahIncome, purchasePrice, downPct, insurance])
 
+  async function saveSnapshot() {
+    setSnapSaving(true)
+    await fetch('/api/scenario-events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pageKey: PAGE_KEY, type: 'snapshot',
+        data: { hannahIncome, purchasePrice, downPct, insurance, total: calc.total, backDTI: calc.backDTI },
+        note: snapNote,
+      }),
+    })
+    setSnapSaving(false)
+    setSnapSaved(true)
+    setShowSnap(false)
+    setSnapNote('')
+    loadEvents()
+    setTimeout(() => setSnapSaved(false), 4000)
+  }
+
+  function copyLink() {
+    navigator.clipboard.writeText(pageUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   const statusConfig = {
-    strong:  { label: '✅ Strong qualifier',  color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
-    caution: { label: '⚠️ Borderline',        color: 'bg-amber-50 border-amber-200 text-amber-700' },
-    tight:   { label: '⚡ Tight — needs AUS', color: 'bg-orange-50 border-orange-200 text-orange-700' },
-    over:    { label: '❌ Over limit',         color: 'bg-red-50 border-red-200 text-red-700' },
+    strong:  { label: '✅ Strong qualifier',   bg: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
+    caution: { label: '⚠️ Borderline',          bg: 'bg-amber-50 border-amber-200 text-amber-700' },
+    tight:   { label: '⚡ Tight — needs AUS',   bg: 'bg-orange-50 border-orange-200 text-orange-700' },
+    over:    { label: '❌ Over DTI limit',       bg: 'bg-red-50 border-red-200 text-red-700' },
   }[calc.status]
 
   return (
     <div className="min-h-screen bg-[#f8f7f4] py-8 px-4">
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto space-y-5">
 
         {/* Header */}
-        <div>
-          <p className="text-xs font-medium text-[#0066FF] uppercase tracking-wider mb-1">Purchase Scenario</p>
-          <h1 className="text-2xl font-bold text-[#0a0a0a]">Jeffrey & Hannah Domenech</h1>
-          <p className="text-sm text-[#0a0a0a]/50 mt-0.5">Prepared by Kyle Palaniuk · NMLS 984138</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-xs font-medium text-[#0066FF] uppercase tracking-wider mb-1">Interactive Purchase Scenario</p>
+            <h1 className="text-2xl font-bold text-[#0a0a0a]">Jeffrey & Hannah Domenech</h1>
+            <p className="text-sm text-[#0a0a0a]/50 mt-0.5">Prepared by Kyle Palaniuk · NMLS 984138</p>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <button onClick={copyLink}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#0a0a0a]/10 rounded-lg text-xs font-medium text-[#0a0a0a]/60 hover:border-[#0066FF]/40 hover:text-[#0066FF] transition-all shadow-sm">
+              {copied ? '✓ Copied!' : '🔗 Copy Link'}
+            </button>
+            {viewCount !== null && (
+              <p className="text-[10px] text-[#0a0a0a]/30 text-right">
+                {viewCount} view{viewCount !== 1 ? 's' : ''}
+                {lastViewed && <span> · last {new Date(lastViewed).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* PITIA Result — top of fold */}
+        {/* PITIA Result */}
         <div className="bg-[#0a0a0a] text-[#f8f7f4] rounded-2xl p-6 shadow-lg">
-          <div className="flex items-end justify-between mb-6">
+          <div className="flex items-end justify-between mb-5">
             <div>
               <p className="text-xs text-white/40 uppercase tracking-wider mb-1">Monthly Payment (PITIA)</p>
-              <p className="text-4xl font-bold">{formatCurrency(calc.total)}<span className="text-lg text-white/40">/mo</span></p>
+              <p className="text-4xl font-bold">{fmt(calc.total)}<span className="text-lg text-white/40">/mo</span></p>
             </div>
-            <div className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${statusConfig.color}`}>
+            <div className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${statusConfig.bg}`}>
               {statusConfig.label}
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/10">
-            <div>
-              <p className="text-xs text-white/40 mb-0.5">Principal & Interest</p>
-              <p className="font-semibold">{formatCurrency(calc.pi)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-white/40 mb-0.5">Property Tax</p>
-              <p className="font-semibold">{formatCurrency(calc.taxMo)}/mo</p>
-            </div>
-            <div>
-              <p className="text-xs text-white/40 mb-0.5">Insurance</p>
-              <p className="font-semibold">{formatCurrency(insurance)}/mo</p>
-            </div>
-            <div>
-              <p className="text-xs text-white/40 mb-0.5">Loan Amount</p>
-              <p className="font-semibold">{formatCurrency(calc.loan)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-white/40 mb-0.5">Rate</p>
-              <p className="font-semibold">{calc.rate}% {calc.isJumbo ? <span className="text-[10px] text-amber-400">JUMBO</span> : <span className="text-[10px] text-emerald-400">CONF</span>}</p>
-            </div>
-            <div>
-              <p className="text-xs text-white/40 mb-0.5">LTV</p>
-              <p className="font-semibold">{calc.ltv.toFixed(1)}%</p>
-            </div>
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/10 text-sm">
+            <div><p className="text-xs text-white/40 mb-0.5">Principal & Interest</p><p className="font-semibold">{fmt(calc.pi)}</p></div>
+            <div><p className="text-xs text-white/40 mb-0.5">Property Tax</p><p className="font-semibold">{fmt(calc.taxMo)}/mo</p></div>
+            <div><p className="text-xs text-white/40 mb-0.5">Insurance</p><p className="font-semibold">{fmt(insurance)}/mo</p></div>
+            <div><p className="text-xs text-white/40 mb-0.5">Loan Amount</p><p className="font-semibold">{fmt(calc.loan)}</p></div>
+            <div><p className="text-xs text-white/40 mb-0.5">Rate</p><p className="font-semibold">{calc.rate}% {calc.isJumbo ? <span className="text-[10px] text-amber-400">JUMBO</span> : <span className="text-[10px] text-emerald-400">CONFORMING</span>}</p></div>
+            <div><p className="text-xs text-white/40 mb-0.5">LTV / Equity</p><p className="font-semibold">{fmtPct(calc.ltv)} / {fmt(calc.downAmt)}</p></div>
           </div>
         </div>
 
-        {/* DTI Summary */}
+        {/* DTI */}
         <div className="grid grid-cols-2 gap-4">
           {[
             { label: 'Front-End DTI', value: calc.frontDTI, note: 'PITIA ÷ income', limit: 45 },
-            { label: 'Back-End DTI', value: calc.backDTI, note: `+ $${MONTHLY_DEBTS}/mo debts`, limit: 50 },
+            { label: 'Back-End DTI',  value: calc.backDTI,  note: `+ ${fmt(MONTHLY_DEBTS)}/mo debts`, limit: 50 },
           ].map(({ label, value, note, limit }) => (
             <div key={label} className="bg-white rounded-2xl p-4 border border-[#0a0a0a]/5">
               <p className="text-xs text-[#0a0a0a]/40 mb-0.5">{label}</p>
               <p className={`text-2xl font-bold ${value > limit ? 'text-red-500' : value > limit * 0.9 ? 'text-amber-500' : 'text-emerald-600'}`}>
-                {value.toFixed(1)}%
+                {fmtPct(value)}
               </p>
               <p className="text-xs text-[#0a0a0a]/30 mt-0.5">{note} · limit {limit}%</p>
               <div className="mt-2 h-1.5 bg-[#0a0a0a]/8 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full ${value > limit ? 'bg-red-400' : value > limit * 0.9 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min(value / limit * 100, 100)}%` }} />
+                <div className={`h-full rounded-full transition-all ${value > limit ? 'bg-red-400' : value > limit * 0.9 ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                  style={{ width: `${Math.min(value / limit * 100, 100)}%` }} />
               </div>
             </div>
           ))}
@@ -160,70 +216,107 @@ export default function JHInteractiveScenario() {
 
         {/* Sliders */}
         <div className="bg-white rounded-2xl p-6 border border-[#0a0a0a]/5 space-y-6">
-          <h2 className="text-sm font-semibold text-[#0a0a0a]">Adjust Scenario</h2>
+          <h2 className="text-sm font-semibold text-[#0a0a0a]">Adjust the Scenario</h2>
+          <Slider label="Hannah's Monthly Income" value={hannahIncome} min={1250} max={6000} step={50}
+            format={v => `${fmt(v)}/mo`} onChange={setHannahIncome} color="amber" />
+          <Slider label="Purchase Price" value={purchasePrice} min={900000} max={1600000} step={10000}
+            format={v => fmt(v)} onChange={setPurchasePrice} />
+          <Slider label="Down Payment" value={downPct} min={20} max={65} step={1}
+            format={v => `${v}% (${fmt(purchasePrice * v / 100)})`} onChange={setDownPct} />
+          <Slider label="Monthly Insurance" value={insurance} min={100} max={500} step={10}
+            format={v => `${fmt(v)}/mo`} onChange={setInsurance} />
 
-          <Slider
-            label="Hannah's Monthly Income"
-            value={hannahIncome}
-            min={1250} max={6000} step={50}
-            format={v => `${formatCurrency(v)}/mo`}
-            onChange={setHannahIncome}
-            color="amber"
-          />
-          <Slider
-            label="Purchase Price"
-            value={purchasePrice}
-            min={900000} max={1600000} step={10000}
-            format={v => formatCurrency(v)}
-            onChange={setPurchasePrice}
-          />
-          <Slider
-            label="Down Payment"
-            value={downPct}
-            min={20} max={65} step={1}
-            format={v => `${v}% (${formatCurrency(purchasePrice * v / 100)})`}
-            onChange={setDownPct}
-          />
-          <Slider
-            label="Monthly Insurance"
-            value={insurance}
-            min={100} max={500} step={10}
-            format={v => `${formatCurrency(v)}/mo`}
-            onChange={setInsurance}
-          />
+          {/* Save Snapshot */}
+          <div className="pt-2 border-t border-[#0a0a0a]/8">
+            {!showSnap && !snapSaved && (
+              <button onClick={() => setShowSnap(true)}
+                className="w-full py-2.5 rounded-xl bg-[#0066FF] text-white text-sm font-semibold hover:bg-[#0066FF]/90 transition-colors">
+                📌 Save This Scenario
+              </button>
+            )}
+            {snapSaved && (
+              <div className="text-center py-2.5 text-emerald-600 text-sm font-semibold">
+                ✅ Saved! Kyle will see your snapshot.
+              </div>
+            )}
+            {showSnap && (
+              <div className="space-y-3">
+                <p className="text-xs font-medium text-[#0a0a0a]/60">Leave a note for Kyle <span className="text-[#0a0a0a]/30">(optional)</span></p>
+                <textarea
+                  value={snapNote}
+                  onChange={e => setSnapNote(e.target.value)}
+                  placeholder="e.g. We like this one — comfortable if Hannah qualifies at $2,500/mo. Want to know if we can lock this rate."
+                  rows={3}
+                  className="w-full px-3 py-2 border border-[#0a0a0a]/10 rounded-xl text-sm focus:outline-none focus:border-[#0066FF]/50 resize-none"
+                />
+                <div className="flex gap-2">
+                  <button onClick={saveSnapshot} disabled={snapSaving}
+                    className="flex-1 py-2 rounded-xl bg-[#0066FF] text-white text-sm font-semibold hover:bg-[#0066FF]/90 disabled:opacity-50 transition-colors">
+                    {snapSaving ? 'Saving…' : 'Send to Kyle'}
+                  </button>
+                  <button onClick={() => { setShowSnap(false); setSnapNote('') }}
+                    className="px-4 py-2 rounded-xl text-sm text-[#0a0a0a]/40 hover:text-[#0a0a0a] transition-colors">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Income summary */}
+        {/* Saved Snapshots (client-visible confirmation) */}
+        {snapshots.length > 0 && (
+          <div className="bg-white rounded-2xl p-5 border border-[#0a0a0a]/5">
+            <h2 className="text-sm font-semibold text-[#0a0a0a] mb-3">Your Saved Scenarios</h2>
+            <div className="space-y-3">
+              {snapshots.map((s, i) => (
+                <div key={s.id} className="bg-[#f8f7f4] rounded-xl p-3 text-xs">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-semibold text-[#0a0a0a]/60">Snapshot #{snapshots.length - i}</span>
+                    <span className="text-[#0a0a0a]/30">{new Date(s.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-[#0a0a0a]/60 mb-1.5">
+                    <span>Price: <strong>{fmt(s.data.purchasePrice)}</strong></span>
+                    <span>Down: <strong>{s.data.downPct}%</strong></span>
+                    <span>Hannah income: <strong>{fmt(s.data.hannahIncome)}/mo</strong></span>
+                    <span>PITIA: <strong>{fmt(s.data.total)}/mo</strong></span>
+                    <span>DTI: <strong>{s.data.backDTI.toFixed(1)}%</strong></span>
+                  </div>
+                  {s.note && <p className="text-[#0a0a0a]/70 italic">"{s.note}"</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Setup Details */}
         <div className="bg-white rounded-2xl p-5 border border-[#0a0a0a]/5">
-          <h2 className="text-sm font-semibold text-[#0a0a0a] mb-3">Combined Income</h2>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-[#0a0a0a]/50">Jeffrey (W2, fixed)</span>
-              <span className="font-medium">{formatCurrency(JEFFREY_INCOME)}/mo</span>
+          <h2 className="text-sm font-semibold text-[#0a0a0a] mb-3">How This Was Built</h2>
+          <div className="space-y-2 text-xs text-[#0a0a0a]/60">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+              <div><span className="text-[#0a0a0a]/40 block">Jeffrey's Income (W2, fixed)</span><span className="font-medium text-[#0a0a0a]">{fmt(JEFFREY_INCOME)}/mo</span></div>
+              <div><span className="text-[#0a0a0a]/40 block">Monthly Debts</span><span className="font-medium text-[#0a0a0a]">{fmt(MONTHLY_DEBTS)}/mo</span></div>
+              <div><span className="text-[#0a0a0a]/40 block">Property Tax Rate</span><span className="font-medium text-[#0a0a0a]">1.20% annually (SD County)</span></div>
+              <div><span className="text-[#0a0a0a]/40 block">Loan Term</span><span className="font-medium text-[#0a0a0a]">30-year fixed</span></div>
+              <div><span className="text-[#0a0a0a]/40 block">Conforming Rate</span><span className="font-medium text-[#0a0a0a]">{RATE_CONFORMING}% (loan ≤ $1,006,250)</span></div>
+              <div><span className="text-[#0a0a0a]/40 block">Jumbo Rate</span><span className="font-medium text-[#0a0a0a]">{RATE_JUMBO}% (loan &gt; $1,006,250)</span></div>
+              <div><span className="text-[#0a0a0a]/40 block">SD County Conforming Limit</span><span className="font-medium text-[#0a0a0a]">$1,006,250 (2026)</span></div>
+              <div><span className="text-[#0a0a0a]/40 block">Down Payment Minimum</span><span className="font-medium text-[#0a0a0a]">20% (no MI required)</span></div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-amber-600">Hannah (SE, variable)</span>
-              <span className="font-medium text-amber-600">{formatCurrency(hannahIncome)}/mo</span>
-            </div>
-            <div className="flex justify-between pt-2 border-t border-[#0a0a0a]/8">
-              <span className="font-semibold text-[#0a0a0a]">Combined qualifying</span>
-              <span className="font-bold text-[#0a0a0a]">{formatCurrency(calc.combined)}/mo</span>
-            </div>
+            <p className="pt-2 text-[#0a0a0a]/30">Hannah's income is shown as variable because her 2024 tax returns are in process. The actual qualifying amount depends on CPA review. All figures are estimates — final approval subject to underwriting.</p>
           </div>
         </div>
 
         {/* Rate note */}
         <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs text-blue-700">
-          <strong>Rate logic:</strong> {calc.isJumbo
-            ? `Loan ($${Math.round(calc.loan / 1000)}k) exceeds SD County conforming limit ($1,006,250) → Jumbo rate ${RATE_JUMBO}%`
-            : `Loan ($${Math.round(calc.loan / 1000)}k) is within SD County conforming limit ($1,006,250) → Conforming rate ${RATE_CONFORMING}%`
-          }
+          <strong>Current rate:</strong> {calc.rate}% — loan of {fmt(calc.loan)} is{' '}
+          {calc.isJumbo ? `above the conforming limit → Jumbo rate applies` : `within SD County conforming limit → best conventional rate`}
         </div>
 
         {/* Footer */}
-        <div className="text-center text-xs text-[#0a0a0a]/30 pb-4">
+        <div className="text-center text-xs text-[#0a0a0a]/30 pb-4 space-y-1">
           <p>Prepared by Kyle Palaniuk, NMLS 984138 · Plan Prepare Home</p>
-          <p className="mt-0.5">Estimates only. Actual rates and terms subject to underwriting approval.</p>
+          <p>Estimates only. Actual rates and terms subject to underwriting approval.</p>
         </div>
 
       </div>

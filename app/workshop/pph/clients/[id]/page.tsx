@@ -165,6 +165,8 @@ export default function ClientProfilePage() {
   const [loadingCalls, setLoadingCalls] = useState(false)
   const [scenarios, setScenarios] = useState<ClientScenario[]>([])
   const [loadingScenarios, setLoadingScenarios] = useState(false)
+  const [interactiveSnapshots, setInteractiveSnapshots] = useState<{ id: string; data: Record<string, number>; note: string; at: string }[]>([])
+  const [interactiveViewCount, setInteractiveViewCount] = useState<number | null>(null)
 
   // Edit states
   const [editingField, setEditingField] = useState<string | null>(null)
@@ -198,7 +200,12 @@ export default function ClientProfilePage() {
 
   useEffect(() => { fetchClient() }, [id])
   useEffect(() => { if (tab === 'calls') fetchCalls() }, [tab, id])
-  useEffect(() => { if (tab === 'scenarios') fetchScenarios() }, [tab, id])
+  useEffect(() => {
+    if (tab === 'scenarios') {
+      fetchScenarios()
+      fetchInteractiveEvents('jh-domenech') // TODO: generalize per client
+    }
+  }, [tab, id])
   useEffect(() => { if (tab === 'chat' && id) fetchChatHistory() }, [tab, id])
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatMessages])
 
@@ -243,6 +250,15 @@ export default function ClientProfilePage() {
       console.error(err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function fetchInteractiveEvents(pageKey: string) {
+    const res = await fetch(`/api/scenario-events?pageKey=${pageKey}`)
+    if (res.ok) {
+      const d = await res.json()
+      setInteractiveSnapshots(d.snapshots || [])
+      setInteractiveViewCount(d.viewCount ?? null)
     }
   }
 
@@ -840,14 +856,66 @@ export default function ClientProfilePage() {
               <Plus className="w-3.5 h-3.5" /> New Scenario
             </Link>
           </div>
+          {/* Interactive scenario card (jh-domenech hardcoded for now) */}
+          <div className="bg-cream rounded-lg p-4 border border-ocean/20">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-midnight">⚡ Interactive Scenario</p>
+                  {interactiveViewCount !== null && (
+                    <span className="px-2 py-0.5 rounded-full bg-midnight/5 text-xs text-midnight/50">
+                      {interactiveViewCount} view{interactiveViewCount !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-midnight/40 mt-0.5">Live sliders — price, down, Hannah&apos;s income, insurance</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <a href="/clients/interactive/jh-domenech" target="_blank" rel="noopener noreferrer"
+                  className="px-3 py-1.5 text-xs text-ocean border border-ocean/30 rounded-lg hover:bg-ocean/5 transition-colors">
+                  View
+                </a>
+                <button onClick={() => { navigator.clipboard.writeText('https://kyle.palaniuk.net/clients/interactive/jh-domenech') }}
+                  className="px-3 py-1.5 text-xs text-midnight/50 border border-midnight/10 rounded-lg hover:bg-midnight/5 transition-colors">
+                  Copy Link
+                </button>
+              </div>
+            </div>
+
+            {/* Client snapshots */}
+            {interactiveSnapshots.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-midnight/8 space-y-2">
+                <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">Client Snapshots</p>
+                {interactiveSnapshots.map((s, i) => (
+                  <div key={s.id} className="bg-white rounded-lg p-3 border border-midnight/5">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-midnight/60">Snapshot #{interactiveSnapshots.length - i}</span>
+                      <span className="text-[10px] text-midnight/30">
+                        {new Date(s.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-midnight/60">
+                      <span>Price: <strong>${Math.round(s.data.purchasePrice / 1000)}k</strong></span>
+                      <span>Down: <strong>{s.data.downPct}%</strong></span>
+                      <span>Hannah: <strong>${s.data.hannahIncome?.toLocaleString()}/mo</strong></span>
+                      <span>PITIA: <strong>${Math.round(s.data.total).toLocaleString()}/mo</strong></span>
+                      <span>DTI: <strong>{s.data.backDTI?.toFixed(1)}%</strong></span>
+                    </div>
+                    {s.note && <p className="text-xs text-midnight/70 mt-1.5 italic">&ldquo;{s.note}&rdquo;</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {loadingScenarios ? (
             <div className="text-center py-8"><RefreshCw className="w-5 h-5 text-ocean animate-spin mx-auto" /></div>
           ) : scenarios.length === 0 ? (
             <div className="text-center py-8 text-midnight/30 text-sm">
-              No scenarios saved for {client.name} yet.
+              No static scenarios saved yet.
               <br />
               <Link href={`/workshop/pph/purchase-builder?client=${client.id}&name=${encodeURIComponent(client.name)}`} className="text-ocean hover:underline mt-1 block">
-                Build one now →
+                Build one →
               </Link>
             </div>
           ) : (
@@ -861,18 +929,12 @@ export default function ClientProfilePage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <a
-                      href={s.publicUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 text-xs text-ocean border border-ocean/30 rounded-lg hover:bg-ocean/5 transition-colors"
-                    >
+                    <a href={s.publicUrl} target="_blank" rel="noopener noreferrer"
+                      className="px-3 py-1.5 text-xs text-ocean border border-ocean/30 rounded-lg hover:bg-ocean/5 transition-colors">
                       View
                     </a>
-                    <button
-                      onClick={() => { navigator.clipboard.writeText(`kyle.palaniuk.net${s.publicUrl}`) }}
-                      className="px-3 py-1.5 text-xs text-midnight/50 border border-midnight/10 rounded-lg hover:bg-midnight/5 transition-colors"
-                    >
+                    <button onClick={() => { navigator.clipboard.writeText(`kyle.palaniuk.net${s.publicUrl}`) }}
+                      className="px-3 py-1.5 text-xs text-midnight/50 border border-midnight/10 rounded-lg hover:bg-midnight/5 transition-colors">
                       Copy Link
                     </button>
                   </div>
