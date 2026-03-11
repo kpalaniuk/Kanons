@@ -875,70 +875,72 @@ export default function ClientProfilePage() {
               <Plus className="w-3.5 h-3.5" /> New Scenario
             </Link>
           </div>
-          {/* Interactive scenario card (jh-domenech hardcoded for now) */}
-          <div className="bg-cream rounded-lg p-4 border border-ocean/20">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-midnight">⚡ Interactive Scenario</p>
-                  {interactiveViewCount !== null && (
-                    <span className="px-2 py-0.5 rounded-full bg-midnight/5 text-xs text-midnight/50">
-                      {interactiveViewCount} view{interactiveViewCount !== 1 ? 's' : ''}
-                    </span>
-                  )}
+          {/* Interactive scenario — primary card */}
+          <div className="bg-white rounded-xl border border-ocean/20 overflow-hidden">
+            <div className="bg-ocean/5 px-5 py-4 border-b border-ocean/10">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-bold text-ocean uppercase tracking-wider">Interactive Scenario</span>
+                    {interactiveViewCount !== null && (
+                      <span className="px-2 py-0.5 rounded-full bg-ocean/10 text-xs text-ocean font-medium">
+                        {interactiveViewCount} view{interactiveViewCount !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-base font-semibold text-midnight">Jeffrey & Hannah Domenech — Purchase</p>
+                  <p className="text-xs text-midnight/50 mt-1">
+                    A live, shareable page where Jeffrey & Hannah can drag sliders to explore different purchase prices, down payments, and Hannah&apos;s income scenarios in real time. When they find a number they like, they hit <strong>Save This Scenario</strong> and it appears below — with their note to you.
+                  </p>
                 </div>
-                <p className="text-xs text-midnight/40 mt-0.5">Live sliders — price, down, Hannah&apos;s income, insurance</p>
               </div>
-              <div className="flex items-center gap-2">
-                <a href="/clients/interactive/jh-domenech" target="_blank" rel="noopener noreferrer"
-                  className="px-3 py-1.5 text-xs text-ocean border border-ocean/30 rounded-lg hover:bg-ocean/5 transition-colors">
-                  View
-                </a>
-                <button onClick={() => { navigator.clipboard.writeText('https://kyle.palaniuk.net/clients/interactive/jh-domenech') }}
-                  className="px-3 py-1.5 text-xs text-midnight/50 border border-midnight/10 rounded-lg hover:bg-midnight/5 transition-colors">
-                  Copy Link
-                </button>
-              </div>
+            </div>
+            <div className="px-5 py-3 flex items-center gap-2">
+              <a href="/clients/interactive/jh-domenech" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-4 py-2 bg-ocean text-white rounded-lg text-xs font-semibold hover:bg-ocean/90 transition-colors">
+                Open Page ↗
+              </a>
+              <button onClick={() => { navigator.clipboard.writeText('https://kyle.palaniuk.net/clients/interactive/jh-domenech') }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-midnight/5 text-midnight/60 rounded-lg text-xs font-medium hover:bg-midnight/10 transition-colors">
+                🔗 Copy Link
+              </button>
             </div>
 
             {/* Client snapshots */}
             {interactiveSnapshots.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-midnight/8 space-y-2">
-                <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">Client Snapshots</p>
+              <div className="px-5 pb-4 space-y-2 border-t border-midnight/8 pt-4">
+                <p className="text-xs font-semibold text-midnight/40 uppercase tracking-wider">Client Snapshots — what they saved</p>
                 {interactiveSnapshots.map((s, i) => (
-                  <div key={s.id} className="bg-white rounded-lg p-3 border border-midnight/5">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-midnight/60">Snapshot #{interactiveSnapshots.length - i}</span>
+                  <div key={s.id} className="bg-[#f8f7f4] rounded-xl p-3 border border-midnight/5">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-semibold text-midnight/60">Snapshot #{interactiveSnapshots.length - i}</span>
                       <span className="text-[10px] text-midnight/30">
                         {new Date(s.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                       </span>
                     </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-midnight/60">
-                      <span>Price: <strong>${Math.round(s.data.purchasePrice / 1000)}k</strong></span>
-                      <span>Down: <strong>{s.data.downPct}%</strong></span>
-                      <span>Hannah: <strong>${s.data.hannahIncome?.toLocaleString()}/mo</strong></span>
-                      <span>PITIA: <strong>${Math.round(s.data.total).toLocaleString()}/mo</strong></span>
-                      <span>DTI: <strong>{s.data.backDTI?.toFixed(1)}%</strong></span>
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-midnight/60 mb-1.5">
+                      <span>Price: <strong className="text-midnight">${Math.round(s.data.purchasePrice / 1000)}k</strong></span>
+                      <span>Down: <strong className="text-midnight">{s.data.downPct}%</strong></span>
+                      <span>Hannah income: <strong className="text-midnight">${s.data.hannahIncome?.toLocaleString()}/mo</strong></span>
+                      <span>PITIA: <strong className="text-midnight">${Math.round(s.data.total).toLocaleString()}/mo</strong></span>
+                      <span>Back DTI: <strong className="text-midnight">{s.data.backDTI?.toFixed(1)}%</strong></span>
                     </div>
-                    {s.note && <p className="text-xs text-midnight/70 mt-1.5 italic">&ldquo;{s.note}&rdquo;</p>}
+                    {s.note && <p className="text-xs text-midnight italic border-l-2 border-ocean/30 pl-2">&ldquo;{s.note}&rdquo;</p>}
                   </div>
                 ))}
               </div>
             )}
+            {interactiveSnapshots.length === 0 && (
+              <div className="px-5 pb-4 pt-3 border-t border-midnight/8">
+                <p className="text-xs text-midnight/30 italic">No snapshots yet — send them the link and ask them to save their favorite scenario.</p>
+              </div>
+            )}
           </div>
 
-          {loadingScenarios ? (
-            <div className="text-center py-8"><RefreshCw className="w-5 h-5 text-ocean animate-spin mx-auto" /></div>
-          ) : scenarios.length === 0 ? (
-            <div className="text-center py-8 text-midnight/30 text-sm">
-              No static scenarios saved yet.
-              <br />
-              <Link href={`/workshop/pph/purchase-builder?client=${client.id}&name=${encodeURIComponent(client.name)}`} className="text-ocean hover:underline mt-1 block">
-                Build one →
-              </Link>
-            </div>
-          ) : (
+          {/* Static scenarios (PPH-Claw generated) */}
+          {scenarios.length > 0 && (
             <div className="space-y-2">
+              <p className="text-xs font-semibold text-midnight/40 uppercase tracking-wider px-1">Saved Scenarios</p>
               {scenarios.map(s => (
                 <div key={s.slug} className="bg-cream rounded-lg p-4 border border-midnight/5 flex items-center justify-between gap-4">
                   <div>
