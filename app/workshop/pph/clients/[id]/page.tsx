@@ -148,6 +148,8 @@ export default function ClientProfilePage() {
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const [pastedImage, setPastedImage] = useState<string | null>(null) // base64 data URL
+  const [pendingScenario, setPendingScenario] = useState<Record<string, unknown> | null>(null)
+  const [savingScenario, setSavingScenario] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { fetchClient() }, [id])
@@ -316,7 +318,18 @@ export default function ClientProfilePage() {
       })
       if (res.ok) {
         const data = await res.json()
-        setChatMessages([...newMessages, { role: 'assistant', content: data.content }])
+        const assistantContent: string = data.content || 'No response'
+
+        // Detect scenario JSON block
+        const scenarioMatch = assistantContent.match(/```scenario\n([\s\S]*?)```/)
+        if (scenarioMatch) {
+          try {
+            const parsed = JSON.parse(scenarioMatch[1])
+            setPendingScenario({ ...parsed, notionClientId: client.id, clientName: client.name })
+          } catch { /* ignore parse error */ }
+        }
+
+        setChatMessages([...newMessages, { role: 'assistant', content: assistantContent }])
       }
     } catch (err) {
       console.error(err)
@@ -324,6 +337,29 @@ export default function ClientProfilePage() {
     } finally {
       setChatLoading(false)
     }
+  }
+
+  async function saveGeneratedScenario() {
+    if (!pendingScenario || !client) return
+    setSavingScenario(true)
+    const baseName = client.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    const type = (pendingScenario.type as string) || 'purchase'
+    const slug = `${baseName}-${type}-${Date.now()}`
+    const res = await fetch('/api/scenarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug, ...pendingScenario, notionClientId: client.id }),
+    })
+    if (res.ok) {
+      const url = `https://kyle.palaniuk.net/clients/purchase/${slug}`
+      setPendingScenario(null)
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `✅ Scenario saved! Share link: ${url}`,
+      }])
+      fetchScenarios()
+    }
+    setSavingScenario(false)
   }
 
   if (loading) {
@@ -436,22 +472,24 @@ export default function ClientProfilePage() {
                 </button>
               ))}
             </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Quick note..."
+            <div className="flex flex-col gap-2">
+              <textarea
+                placeholder="Notes... (paragraph formatting supported, Shift+Enter for new line)"
                 value={logNotes}
                 onChange={e => setLogNotes(e.target.value)}
-                className="flex-1 px-3 py-2 border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50"
-                onKeyDown={e => { if (e.key === 'Enter') logCall() }}
+                rows={4}
+                className="w-full px-3 py-2 border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50 resize-y whitespace-pre-wrap"
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && e.metaKey) logCall() }}
               />
-              <button
-                onClick={logCall}
-                disabled={submittingLog}
-                className="px-4 py-2 bg-ocean text-white rounded-lg text-sm font-medium hover:bg-ocean/90 transition-colors disabled:opacity-50"
-              >
-                {submittingLog ? '...' : 'Log'}
-              </button>
+              <div className="flex justify-end">
+                <button
+                  onClick={logCall}
+                  disabled={submittingLog || !logNotes.trim()}
+                  className="px-4 py-2 bg-ocean text-white rounded-lg text-sm font-medium hover:bg-ocean/90 transition-colors disabled:opacity-50"
+                >
+                  {submittingLog ? 'Logging...' : `Log ${logType}`}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -478,7 +516,7 @@ export default function ClientProfilePage() {
                       {new Date(log.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>
                   </div>
-                  {log.notes && <p className="text-sm text-midnight/70">{log.notes}</p>}
+                  {log.notes && <p className="text-sm text-midnight/70 whitespace-pre-wrap">{log.notes}</p>}
                 </div>
               ))}
             </div>
@@ -574,6 +612,22 @@ export default function ClientProfilePage() {
 
           {/* Input */}
           <div className="border-t border-midnight/10 p-3 space-y-2">
+            {pendingScenario && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-emerald-700">📊 Scenario ready to save</p>
+                  <p className="text-xs text-emerald-600 mt-0.5">
+                    {(pendingScenario.type as string)?.replace('-', ' ')} — {(pendingScenario.clientName as string) || client?.name}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setPendingScenario(null)} className="px-2 py-1 text-xs text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors">Dismiss</button>
+                  <button onClick={saveGeneratedScenario} disabled={savingScenario} className="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50">
+                    {savingScenario ? 'Saving...' : 'Save & Share'}
+                  </button>
+                </div>
+              </div>
+            )}
             {pastedImage && (
               <div className="relative w-fit">
                 <img src={pastedImage} alt="pasted" className="max-h-24 rounded-lg border border-midnight/10 object-contain" />

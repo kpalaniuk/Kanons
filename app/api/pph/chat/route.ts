@@ -29,6 +29,25 @@ Core UW knowledge:
 - Paystubs: YTD ÷ months worked = monthly gross. Compare to prior year W2.
 - Qualifying rate for ARMs: use note rate + 2% or fully indexed rate, whichever is higher
 
+When asked to CREATE or GENERATE a scenario, respond with a human-readable summary AND a JSON block in this exact format:
+
+\`\`\`scenario
+{
+  "type": "purchase",
+  "clientName": "Name",
+  "purchasePrice": 650000,
+  "downPaymentPct": 10,
+  "interestRate": 6.75,
+  "loanTerm": 30,
+  "propertyTax": 650,
+  "homeInsurance": 150,
+  "hoaDues": 0,
+  "miOverrides": {}
+}
+\`\`\`
+
+Supported types: "purchase", "refi". Include only fields you have data for. The system will detect this block and offer to save it.
+
 Be direct and precise. These are professionals. Give clear answers with assumptions noted. Short for quick questions, detailed for full analysis.`
 
 export async function POST(request: NextRequest) {
