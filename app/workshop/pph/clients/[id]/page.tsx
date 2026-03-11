@@ -204,18 +204,15 @@ export default function ClientProfilePage() {
   }
 
   async function fetchChatHistory() {
-    if (chatMessages.length > 0) return // already loaded
     try {
       setChatHistoryLoading(true)
       const res = await fetch(`/api/pph/chat-messages?clientId=${id}`)
       if (res.ok) {
         const rows = await res.json()
-        if (rows.length > 0) {
-          setChatMessages(rows.map((r: { role: string; content: string }) => ({
-            role: r.role as 'user' | 'assistant',
-            content: r.content,
-          })))
-        }
+        setChatMessages(rows.map((r: { role: string; content: string }) => ({
+          role: r.role as 'user' | 'assistant',
+          content: r.content,
+        })))
       }
     } catch (err) {
       console.error(err)
@@ -621,105 +618,131 @@ export default function ClientProfilePage() {
       )}
 
       {tab === 'chat' && (
-        <div className="bg-cream rounded-xl border border-midnight/5 flex flex-col" style={{ height: '560px' }}>
-          {/* Chat header */}
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-midnight/8">
-            <span className="text-xs font-medium text-midnight/50">PPH-Claw · {client.name}</span>
-            {chatMessages.length > 0 && (
-              <button onClick={clearChatHistory} className="text-xs text-midnight/30 hover:text-red-400 transition-colors">
-                Clear history
-              </button>
-            )}
-          </div>
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {chatHistoryLoading && (
-              <div className="text-center py-8">
-                <RefreshCw className="w-5 h-5 text-ocean animate-spin mx-auto" />
-              </div>
-            )}
-            {!chatHistoryLoading && chatMessages.length === 0 && (
-              <div className="text-center py-8 text-midnight/30 text-sm">
-                <MessageSquare className="w-8 h-8 mx-auto mb-2 text-midnight/15" />
-                <p>Ask PPH-Claw anything about {client.name}.</p>
-                <p className="text-xs mt-1">Income calc · UW questions · FHA/Conv/VA qualify · Scenario creation</p>
-              </div>
-            )}
-            {chatMessages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] rounded-xl px-4 py-2.5 text-sm ${
-                  msg.role === 'user'
-                    ? 'bg-ocean text-white'
-                    : 'bg-white border border-midnight/10 text-midnight/80'
-                }`}>
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                </div>
-              </div>
-            ))}
-            {chatLoading && (
-              <div className="flex justify-start">
-                <div className="bg-white border border-midnight/10 rounded-xl px-4 py-2.5 text-sm text-midnight/40">
-                  PPH-Claw is thinking...
-                </div>
-              </div>
-            )}
-            <div ref={chatEndRef} />
-          </div>
+        <div className="bg-cream rounded-xl border border-midnight/5 flex" style={{ height: '580px' }}>
 
-          {/* Input */}
-          <div className="border-t border-midnight/10 p-3 space-y-2">
-            {pendingScenario && (
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-emerald-700">📊 Scenario ready to save</p>
-                    <p className="text-xs text-emerald-600 mt-0.5 font-medium">
-                      {String(pendingScenario.type ?? 'purchase').replace('-', ' ')} · ${Number(pendingScenario.purchasePrice || 0).toLocaleString()} · {String(pendingScenario.downPaymentPct ?? '')}% down · {String(pendingScenario.interestRate ?? '')}%
-                    </p>
-                    {!!pendingScenario.notes && (
-                      <p className="text-xs text-emerald-600/80 mt-1 italic">{String(pendingScenario.notes)}</p>
-                    )}
+          {/* LEFT: History panel */}
+          <div className="w-48 flex-shrink-0 border-r border-midnight/8 flex flex-col">
+            <div className="px-3 py-2.5 border-b border-midnight/8">
+              <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">History</p>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+              {chatHistoryLoading && <RefreshCw className="w-4 h-4 text-ocean animate-spin mx-auto mt-4" />}
+              {!chatHistoryLoading && chatMessages.length === 0 && (
+                <p className="text-xs text-midnight/30 text-center mt-4 px-2">No history yet</p>
+              )}
+              {!chatHistoryLoading && chatMessages
+                .filter(m => m.role === 'user')
+                .map((m, i) => (
+                  <div
+                    key={i}
+                    className="px-2 py-1.5 rounded-lg text-xs text-midnight/60 hover:bg-midnight/5 cursor-default truncate"
+                    title={m.content}
+                  >
+                    {m.content.replace(/\[Image attached\]/, '📷').slice(0, 45)}
                   </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <button onClick={() => setPendingScenario(null)} className="px-2 py-1 text-xs text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors">Dismiss</button>
-                    <button onClick={saveGeneratedScenario} disabled={savingScenario} className="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50">
-                      {savingScenario ? 'Saving...' : 'Save & Share'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            {pastedImage && (
-              <div className="relative w-fit">
-                <img src={pastedImage} alt="pasted" className="max-h-24 rounded-lg border border-midnight/10 object-contain" />
-                <button
-                  onClick={() => setPastedImage(null)}
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-midnight text-cream rounded-full flex items-center justify-center hover:bg-midnight/70"
-                >
-                  <X className="w-3 h-3" />
+                ))}
+            </div>
+            {chatMessages.length > 0 && (
+              <div className="p-2 border-t border-midnight/8">
+                <button onClick={clearChatHistory} className="w-full text-xs text-midnight/30 hover:text-red-400 transition-colors py-1">
+                  Clear history
                 </button>
               </div>
             )}
-            <div className="flex gap-2 items-end">
-              <textarea
-                placeholder={`Ask about ${client.name}... (paste screenshots to analyze income docs)`}
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onPaste={handleChatPaste}
-                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat() } }}
-                rows={2}
-                className="flex-1 px-3 py-2 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50 resize-none"
-                disabled={chatLoading}
-              />
-              <button
-                onClick={sendChat}
-                disabled={chatLoading || (!chatInput.trim() && !pastedImage)}
-                className="px-3 py-2 bg-ocean text-white rounded-lg hover:bg-ocean/90 transition-colors disabled:opacity-50 flex-shrink-0"
-              >
-                <Send className="w-4 h-4" />
-              </button>
+          </div>
+
+          {/* RIGHT: Active conversation */}
+          <div className="flex-1 flex flex-col min-w-0">
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {chatHistoryLoading && (
+                <div className="text-center py-8">
+                  <RefreshCw className="w-5 h-5 text-ocean animate-spin mx-auto" />
+                </div>
+              )}
+              {!chatHistoryLoading && chatMessages.length === 0 && (
+                <div className="text-center py-8 text-midnight/30 text-sm">
+                  <MessageSquare className="w-8 h-8 mx-auto mb-2 text-midnight/15" />
+                  <p>Ask PPH-Claw anything about {client.name}.</p>
+                  <p className="text-xs mt-1">Income calc · UW questions · FHA/Conv/VA qualify · Scenario creation</p>
+                </div>
+              )}
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] rounded-xl px-4 py-2.5 text-sm ${
+                    msg.role === 'user'
+                      ? 'bg-ocean text-white'
+                      : 'bg-white border border-midnight/10 text-midnight/80'
+                  }`}>
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-white border border-midnight/10 rounded-xl px-4 py-2.5 text-sm text-midnight/40">
+                    PPH-Claw is thinking...
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
             </div>
-            <p className="text-xs text-midnight/30">Paste a screenshot to analyze income docs · Shift+Enter for new line</p>
+
+            {/* Input area */}
+            <div className="border-t border-midnight/10 p-3 space-y-2">
+              {pendingScenario && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-emerald-700">📊 Scenario ready to save</p>
+                      <p className="text-xs text-emerald-600 mt-0.5 font-medium">
+                        {String(pendingScenario.type ?? 'purchase').replace('-', ' ')} · ${Number(pendingScenario.purchasePrice || 0).toLocaleString()} · {String(pendingScenario.downPaymentPct ?? '')}% down · {String(pendingScenario.interestRate ?? '')}%
+                      </p>
+                      {!!pendingScenario.notes && (
+                        <p className="text-xs text-emerald-600/80 mt-1 italic">{String(pendingScenario.notes)}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button onClick={() => setPendingScenario(null)} className="px-2 py-1 text-xs text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors">Dismiss</button>
+                      <button onClick={saveGeneratedScenario} disabled={savingScenario} className="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50">
+                        {savingScenario ? 'Saving...' : 'Save & Share'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {pastedImage && (
+                <div className="relative w-fit">
+                  <img src={pastedImage} alt="pasted" className="max-h-24 rounded-lg border border-midnight/10 object-contain" />
+                  <button
+                    onClick={() => setPastedImage(null)}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-midnight text-cream rounded-full flex items-center justify-center hover:bg-midnight/70"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              <div className="flex gap-2 items-end">
+                <textarea
+                  placeholder={`Ask about ${client.name}... (paste screenshots to analyze income docs)`}
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onPaste={handleChatPaste}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat() } }}
+                  rows={2}
+                  className="flex-1 px-3 py-2 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50 resize-none"
+                  disabled={chatLoading}
+                />
+                <button
+                  onClick={sendChat}
+                  disabled={chatLoading || (!chatInput.trim() && !pastedImage)}
+                  className="px-3 py-2 bg-ocean text-white rounded-lg hover:bg-ocean/90 transition-colors disabled:opacity-50 flex-shrink-0"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-xs text-midnight/30">Paste a screenshot to analyze income docs · Enter to send · Shift+Enter for new line</p>
+            </div>
           </div>
         </div>
       )}
