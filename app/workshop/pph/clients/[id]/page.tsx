@@ -9,6 +9,21 @@ import {
   Plus, User, Calendar, Clock, Edit3, Check, X, RefreshCw, Paperclip, Zap, Settings2
 } from 'lucide-react'
 
+interface ReoProperty {
+  id: string
+  address: string
+  propertyType: string
+  status: string
+  marketValue: number | null
+  mortgageBalance: number | null
+  monthlyPayment: number | null
+  lender: string
+  estimatedRent: number | null
+  vacancyRate: number
+  taxesInsurance: number | null
+  hoaDues: number | null
+}
+
 interface Client {
   id: string
   name: string
@@ -24,6 +39,21 @@ interface Client {
   primaryLo: string | null
   primaryContact: string | null
   phone: string | null
+  // Borrowers
+  married: boolean
+  b1Name: string | null
+  b1IncomeType: string | null
+  b1MonthlyIncome: number | null
+  b2Name: string | null
+  b2IncomeType: string | null
+  b2MonthlyIncome: number | null
+  // Assets
+  b1Assets: number | null
+  b1AssetsNotes: string | null
+  b2Assets: number | null
+  b2AssetsNotes: string | null
+  // REO
+  reo: ReoProperty[]
 }
 
 interface CallLog {
@@ -49,6 +79,9 @@ interface ClientScenario {
   publicUrl: string
 }
 
+const INCOME_TYPES = ['W2', 'SE/Self-Employed', '1099', 'Rental', 'Retired/SSA', 'Pension', 'Other']
+const PROPERTY_TYPES = ['SFR', 'Condo', '2-Unit', '3-Unit', '4-Unit', 'Commercial', 'Land']
+const PROPERTY_STATUSES = ['Primary', 'Rental', 'Vacation/Second', 'Pending Sale', 'Vacant']
 const STAGES = ['New Lead', 'Pre-Approved', 'In Process', 'Waiting', 'App Sent', 'Processing', 'Closing', 'Closed', 'Lost']
 const PRIORITIES = ['Hot', 'Active', 'Warm', 'Monitoring']
 const LO_OPTIONS = ['Kyle', 'Jim', 'Anthony']
@@ -143,6 +176,14 @@ export default function ClientProfilePage() {
   const [logNotes, setLogNotes] = useState('')
   const [submittingLog, setSubmittingLog] = useState(false)
 
+  // REO
+  const [showReoForm, setShowReoForm] = useState(false)
+  const [reoForm, setReoForm] = useState<Partial<ReoProperty>>({
+    address: '', propertyType: 'SFR', status: 'rental',
+    marketValue: null, mortgageBalance: null, monthlyPayment: null, lender: '',
+    estimatedRent: null, vacancyRate: 5, taxesInsurance: null, hoaDues: null,
+  })
+
   // Chat
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState('')
@@ -177,6 +218,18 @@ export default function ClientProfilePage() {
       primaryLo: (row.primary_lo as string) || null,
       primaryContact: (row.primary_contact as string) || null,
       phone: (row.phone as string) || null,
+      married: !!(row.married),
+      b1Name: (row.b1_name as string) || null,
+      b1IncomeType: (row.b1_income_type as string) || null,
+      b1MonthlyIncome: (row.b1_monthly_income as number) || null,
+      b2Name: (row.b2_name as string) || null,
+      b2IncomeType: (row.b2_income_type as string) || null,
+      b2MonthlyIncome: (row.b2_monthly_income as number) || null,
+      b1Assets: (row.b1_assets as number) || null,
+      b1AssetsNotes: (row.b1_assets_notes as string) || null,
+      b2Assets: (row.b2_assets as number) || null,
+      b2AssetsNotes: (row.b2_assets_notes as string) || null,
+      reo: (row.reo as ReoProperty[]) || [],
     }
   }
 
@@ -260,6 +313,47 @@ export default function ClientProfilePage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  async function saveClientFields(fields: Record<string, unknown>) {
+    if (!client) return
+    const res = await fetch('/api/pph/clients', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: client.id, ...fields }),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      setClient(mapRow(updated))
+    }
+  }
+
+  async function addReo() {
+    if (!client || !reoForm.address?.trim()) return
+    const newReo: ReoProperty = {
+      id: `reo-${Date.now()}`,
+      address: reoForm.address || '',
+      propertyType: reoForm.propertyType || 'SFR',
+      status: reoForm.status || 'rental',
+      marketValue: reoForm.marketValue || null,
+      mortgageBalance: reoForm.mortgageBalance || null,
+      monthlyPayment: reoForm.monthlyPayment || null,
+      lender: reoForm.lender || '',
+      estimatedRent: reoForm.estimatedRent || null,
+      vacancyRate: reoForm.vacancyRate ?? 5,
+      taxesInsurance: reoForm.taxesInsurance || null,
+      hoaDues: reoForm.hoaDues || null,
+    }
+    const updatedReo = [...client.reo, newReo]
+    await saveClientFields({ reo: JSON.stringify(updatedReo) })
+    setShowReoForm(false)
+    setReoForm({ address: '', propertyType: 'SFR', status: 'rental', marketValue: null, mortgageBalance: null, monthlyPayment: null, lender: '', estimatedRent: null, vacancyRate: 5, taxesInsurance: null, hoaDues: null })
+  }
+
+  async function removeReo(reoId: string) {
+    if (!client) return
+    const updatedReo = client.reo.filter(r => r.id !== reoId)
+    await saveClientFields({ reo: JSON.stringify(updatedReo) })
   }
 
   async function logCall() {
@@ -355,6 +449,12 @@ export default function ClientProfilePage() {
         loanType: client.loanType, loanAmount: client.loanAmount, nextAction: client.nextAction,
         notes: client.notes, primaryLo: client.primaryLo, primaryContact: client.primaryContact,
         followUpDate: client.followUpDate, referralSource: client.referralSource,
+        married: client.married,
+        b1: { name: client.b1Name, incomeType: client.b1IncomeType, monthlyIncome: client.b1MonthlyIncome, assets: client.b1Assets, assetsNotes: client.b1AssetsNotes },
+        b2: { name: client.b2Name, incomeType: client.b2IncomeType, monthlyIncome: client.b2MonthlyIncome, assets: client.b2Assets, assetsNotes: client.b2AssetsNotes },
+        combinedMonthlyIncome: (client.b1MonthlyIncome || 0) + (client.b2MonthlyIncome || 0),
+        totalAssets: (client.b1Assets || 0) + (client.b2Assets || 0),
+        reo: client.reo,
         recentCalls: callLogs.slice(0, 10).map(c => ({ type: c.call_type, notes: c.notes, date: c.created_at, by: c.logged_by_email })),
       }
       const res = await fetch('/api/pph/chat', {
@@ -488,29 +588,174 @@ export default function ClientProfilePage() {
 
       {/* Tab Content */}
       {tab === 'overview' && (
-        <div className="bg-cream rounded-xl p-5 border border-midnight/5 space-y-4">
-          <div>
-            <h3 className="text-sm font-semibold text-midnight mb-1">Notes</h3>
-            <p className="text-sm text-midnight/70 whitespace-pre-wrap">{client.notes || 'No notes yet.'}</p>
+        <div className="space-y-4">
+
+          {/* Notes + Next Action */}
+          <div className="bg-cream rounded-xl p-5 border border-midnight/5 space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-midnight mb-1">Notes</h3>
+              <p className="text-sm text-midnight/70 whitespace-pre-wrap">{client.notes || 'No notes yet.'}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-midnight mb-1">Next Action</h3>
+              <p className="text-sm text-midnight/70">{client.nextAction || 'None set.'}</p>
+            </div>
+            <div className="flex gap-3 pt-1">
+              <Link href={`/workshop/pph/purchase-builder?client=${client.id}&name=${encodeURIComponent(client.name)}`} className="flex items-center gap-2 px-4 py-2 bg-ocean text-white rounded-lg text-sm font-medium hover:bg-ocean/90 transition-colors">
+                <FileText className="w-4 h-4" /> Run Scenario
+              </Link>
+              <button onClick={() => setTab('chat')} className="flex items-center gap-2 px-4 py-2 bg-midnight text-cream rounded-lg text-sm font-medium hover:bg-midnight/80 transition-colors">
+                <MessageSquare className="w-4 h-4" /> Ask PPH-Claw
+              </button>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-midnight mb-1">Next Action</h3>
-            <p className="text-sm text-midnight/70">{client.nextAction || 'None set.'}</p>
+
+          {/* Borrowers + Income */}
+          <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-midnight">Borrowers & Income</h3>
+              <label className="flex items-center gap-2 text-xs text-midnight/60 cursor-pointer">
+                <input type="checkbox" checked={client.married} onChange={e => saveClientFields({ married: e.target.checked })} className="rounded" />
+                Married
+              </label>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[{ label: 'Borrower 1', nameKey: 'b1Name', typeKey: 'b1IncomeType', incomeKey: 'b1MonthlyIncome' }, { label: 'Borrower 2', nameKey: 'b2Name', typeKey: 'b2IncomeType', incomeKey: 'b2MonthlyIncome' }].map(({ label, nameKey, typeKey, incomeKey }) => (
+                <div key={label} className="bg-white/60 rounded-xl p-4 border border-midnight/5 space-y-3">
+                  <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">{label}</p>
+                  <EditableText field={nameKey} value={client[nameKey as keyof Client] as string | null} label="Full Name" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+                  <div>
+                    <span className="text-xs text-midnight/40 block mb-0.5">Income Type</span>
+                    <select value={(client[typeKey as keyof Client] as string) || ''} onChange={e => saveClientFields({ [typeKey]: e.target.value })} className="w-full px-2 py-1 bg-cream border border-midnight/10 rounded text-sm focus:outline-none">
+                      <option value="">—</option>
+                      {INCOME_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <span className="text-xs text-midnight/40 block mb-0.5">Monthly Qualifying Income</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-midnight/40">$</span>
+                      <input type="number" placeholder="0" value={(client[incomeKey as keyof Client] as number) || ''} onChange={e => saveClientFields({ [incomeKey]: parseFloat(e.target.value) || null })} className="flex-1 px-2 py-1 bg-cream border border-midnight/10 rounded text-sm focus:outline-none" />
+                      <span className="text-xs text-midnight/40">/mo</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {(client.b1MonthlyIncome || client.b2MonthlyIncome) && (
+              <div className="mt-3 pt-3 border-t border-midnight/8 flex gap-4 text-sm">
+                <span className="text-midnight/50">Combined:</span>
+                <span className="font-semibold text-midnight">${((client.b1MonthlyIncome || 0) + (client.b2MonthlyIncome || 0)).toLocaleString()}/mo</span>
+                <span className="text-midnight/40">${(((client.b1MonthlyIncome || 0) + (client.b2MonthlyIncome || 0)) * 12).toLocaleString()}/yr</span>
+              </div>
+            )}
           </div>
-          <div className="flex gap-3 pt-2">
-            <Link
-              href={`/workshop/pph/purchase-builder?client=${client.id}&name=${encodeURIComponent(client.name)}`}
-              className="flex items-center gap-2 px-4 py-2 bg-ocean text-white rounded-lg text-sm font-medium hover:bg-ocean/90 transition-colors"
-            >
-              <FileText className="w-4 h-4" /> Run Scenario
-            </Link>
-            <button
-              onClick={() => setTab('chat')}
-              className="flex items-center gap-2 px-4 py-2 bg-midnight text-cream rounded-lg text-sm font-medium hover:bg-midnight/80 transition-colors"
-            >
-              <MessageSquare className="w-4 h-4" /> Ask PPH-Claw
-            </button>
+
+          {/* Assets */}
+          <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+            <h3 className="text-sm font-semibold text-midnight mb-4">Assets</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[{ label: 'B1 Liquid Assets', assetsKey: 'b1Assets', notesKey: 'b1AssetsNotes' }, { label: 'B2 Liquid Assets', assetsKey: 'b2Assets', notesKey: 'b2AssetsNotes' }].map(({ label, assetsKey, notesKey }) => (
+                <div key={label} className="bg-white/60 rounded-xl p-4 border border-midnight/5 space-y-2">
+                  <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">{label}</p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-midnight/40">$</span>
+                    <input type="number" placeholder="0" value={(client[assetsKey as keyof Client] as number) || ''} onChange={e => saveClientFields({ [assetsKey]: parseFloat(e.target.value) || null })} className="flex-1 px-2 py-1 bg-cream border border-midnight/10 rounded text-sm focus:outline-none" />
+                  </div>
+                  <input type="text" placeholder="Notes (checking, savings, 401k, stocks...)" value={(client[notesKey as keyof Client] as string) || ''} onChange={e => saveClientFields({ [notesKey]: e.target.value })} className="w-full px-2 py-1 bg-cream border border-midnight/10 rounded text-xs focus:outline-none text-midnight/60" />
+                </div>
+              ))}
+            </div>
+            {(client.b1Assets || client.b2Assets) && (
+              <div className="mt-3 pt-3 border-t border-midnight/8 flex gap-4 text-sm">
+                <span className="text-midnight/50">Total assets:</span>
+                <span className="font-semibold text-midnight">${((client.b1Assets || 0) + (client.b2Assets || 0)).toLocaleString()}</span>
+              </div>
+            )}
           </div>
+
+          {/* REO */}
+          <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-midnight">Real Estate Owned (REO)</h3>
+              <button onClick={() => setShowReoForm(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-midnight text-cream rounded-lg text-xs font-medium hover:bg-midnight/80 transition-colors">
+                <Plus className="w-3.5 h-3.5" /> Add Property
+              </button>
+            </div>
+
+            {client.reo.length === 0 && !showReoForm && <p className="text-sm text-midnight/30">No properties on file.</p>}
+
+            {client.reo.map(prop => {
+              const netRental = prop.estimatedRent ? prop.estimatedRent * (1 - (prop.vacancyRate / 100)) * 0.75 : null
+              return (
+                <div key={prop.id} className="bg-white/60 rounded-xl p-4 border border-midnight/5 mb-3 text-sm">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium text-midnight">{prop.address}</p>
+                      <p className="text-xs text-midnight/50 mt-0.5">{prop.propertyType} · {prop.status} · {prop.lender || 'no lender'}</p>
+                    </div>
+                    <button onClick={() => removeReo(prop.id)} className="text-midnight/20 hover:text-red-400 transition-colors"><X className="w-4 h-4" /></button>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 text-xs">
+                    <div><span className="text-midnight/40 block">Market Value</span><span className="font-medium">{prop.marketValue ? `$${prop.marketValue.toLocaleString()}` : '—'}</span></div>
+                    <div><span className="text-midnight/40 block">Mortgage Balance</span><span className="font-medium">{prop.mortgageBalance ? `$${prop.mortgageBalance.toLocaleString()}` : '—'}</span></div>
+                    <div><span className="text-midnight/40 block">Monthly PITIA</span><span className="font-medium">{prop.monthlyPayment ? `$${prop.monthlyPayment.toLocaleString()}` : '—'}</span></div>
+                    <div><span className="text-midnight/40 block">Est. Rent</span><span className="font-medium">{prop.estimatedRent ? `$${prop.estimatedRent.toLocaleString()}` : '—'}</span></div>
+                    <div><span className="text-midnight/40 block">Vacancy Rate</span><span className="font-medium">{prop.vacancyRate}%</span></div>
+                    <div><span className="text-midnight/40 block">Taxes + Ins</span><span className="font-medium">{prop.taxesInsurance ? `$${prop.taxesInsurance.toLocaleString()}/mo` : '—'}</span></div>
+                    <div><span className="text-midnight/40 block">HOA</span><span className="font-medium">{prop.hoaDues ? `$${prop.hoaDues.toLocaleString()}/mo` : '—'}</span></div>
+                    {netRental !== null && <div><span className="text-midnight/40 block">Net Rental Income</span><span className="font-semibold text-emerald-600">${Math.round(netRental).toLocaleString()}/mo</span></div>}
+                  </div>
+                </div>
+              )
+            })}
+
+            {showReoForm && (
+              <div className="bg-white/80 rounded-xl p-4 border border-ocean/20 mt-3 space-y-3">
+                <p className="text-xs font-semibold text-midnight/60 uppercase tracking-wider">New Property</p>
+                <input placeholder="Address" value={reoForm.address || ''} onChange={e => setReoForm(p => ({...p, address: e.target.value}))} className="w-full px-2 py-1.5 border border-midnight/10 rounded text-sm focus:outline-none focus:border-ocean/50" />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-midnight/40 block mb-0.5">Type</label>
+                    <select value={reoForm.propertyType || 'SFR'} onChange={e => setReoForm(p => ({...p, propertyType: e.target.value}))} className="w-full px-2 py-1 border border-midnight/10 rounded text-sm focus:outline-none">
+                      {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-midnight/40 block mb-0.5">Status</label>
+                    <select value={reoForm.status || 'rental'} onChange={e => setReoForm(p => ({...p, status: e.target.value}))} className="w-full px-2 py-1 border border-midnight/10 rounded text-sm focus:outline-none">
+                      {PROPERTY_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                  {[
+                    { key: 'marketValue', label: 'Market Value ($)' },
+                    { key: 'mortgageBalance', label: 'Mortgage Balance ($)' },
+                    { key: 'monthlyPayment', label: 'Monthly PITIA ($)' },
+                    { key: 'estimatedRent', label: 'Est. Monthly Rent ($)' },
+                    { key: 'vacancyRate', label: 'Vacancy Rate (%)' },
+                    { key: 'taxesInsurance', label: 'Tax + Ins/mo ($)' },
+                    { key: 'hoaDues', label: 'HOA/mo ($)' },
+                  ].map(({ key, label }) => (
+                    <div key={key}>
+                      <label className="text-midnight/40 block mb-0.5">{label}</label>
+                      <input type="number" placeholder="0" value={(reoForm[key as keyof typeof reoForm] as number) || ''} onChange={e => setReoForm(p => ({...p, [key]: parseFloat(e.target.value) || null}))} className="w-full px-2 py-1 border border-midnight/10 rounded text-sm focus:outline-none" />
+                    </div>
+                  ))}
+                  <div>
+                    <label className="text-midnight/40 block mb-0.5">Lender</label>
+                    <input type="text" placeholder="Chase, BofA..." value={reoForm.lender || ''} onChange={e => setReoForm(p => ({...p, lender: e.target.value}))} className="w-full px-2 py-1 border border-midnight/10 rounded text-sm focus:outline-none" />
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button onClick={addReo} className="px-4 py-1.5 bg-midnight text-cream rounded-lg text-xs font-medium hover:bg-midnight/80 transition-colors">Save Property</button>
+                  <button onClick={() => setShowReoForm(false)} className="px-3 py-1.5 text-midnight/40 hover:text-midnight text-xs transition-colors">Cancel</button>
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
       )}
 
