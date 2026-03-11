@@ -15,6 +15,80 @@ const RATE_JUMBO      = 6.5
 function fmt(n: number) { return '$' + Math.round(n).toLocaleString() }
 function fmtPct(n: number) { return n.toFixed(1) + '%' }
 
+// ── Closing costs calculator ──────────────────────────────────────
+function calcClosingCosts(purchasePrice: number, loan: number, insurance: number) {
+  // Lender fees
+  const originationFee   = 0            // broker, no lender origination
+  const appraisal        = 750
+  const creditReport     = 65
+  const floodCert        = 12
+  const taxService       = 75
+  const lenderFees       = originationFee + appraisal + creditReport + floodCert + taxService
+
+  // Title & escrow (SD County)
+  const titleLender      = Math.round(loan * 0.001 + 500)          // ~0.1% + base
+  const titleOwner       = Math.round(purchasePrice * 0.00225)     // ~0.225% of price
+  const escrowFee        = Math.round(purchasePrice * 0.001 + 500) // ~0.1% + $500
+  const notary           = 200
+  const recording        = 175
+  const titleEscrow      = titleLender + titleOwner + escrowFee + notary + recording
+
+  // Transfer tax — SD County $1.10/$1,000 (buyer pays in SD City)
+  const transferTax      = Math.round(purchasePrice / 1000 * 1.10)
+
+  // Prepaids
+  const hoiPrepaid       = insurance * 12   // 1 year upfront
+  const taxReserve       = Math.round((purchasePrice * 0.012 / 12) * 3)  // 3 months
+  const perDiemInterest  = 0 // variable, shown as TBD
+  const prepaids         = hoiPrepaid + taxReserve
+
+  const totalCC = lenderFees + titleEscrow + transferTax + prepaids
+
+  return {
+    sections: [
+      {
+        label: 'Lender Fees',
+        items: [
+          { label: 'Origination Fee', amount: originationFee, note: 'Broker — waived' },
+          { label: 'Appraisal', amount: appraisal },
+          { label: 'Credit Report', amount: creditReport },
+          { label: 'Flood Cert', amount: floodCert },
+          { label: 'Tax Service', amount: taxService },
+        ],
+        total: lenderFees,
+      },
+      {
+        label: 'Title & Escrow',
+        items: [
+          { label: "Lender's Title Insurance", amount: titleLender },
+          { label: "Owner's Title Insurance", amount: titleOwner },
+          { label: 'Escrow / Settlement Fee', amount: escrowFee },
+          { label: 'Notary', amount: notary },
+          { label: 'Recording Fees', amount: recording },
+        ],
+        total: titleEscrow,
+      },
+      {
+        label: 'Transfer Tax',
+        items: [
+          { label: 'SD County Transfer Tax ($1.10/$1k)', amount: transferTax },
+        ],
+        total: transferTax,
+      },
+      {
+        label: 'Prepaids & Reserves',
+        items: [
+          { label: 'Homeowner\'s Insurance (12 mo)', amount: hoiPrepaid },
+          { label: 'Property Tax Reserve (3 mo)', amount: taxReserve },
+          { label: 'Per Diem Interest (~15 days)', amount: perDiemInterest, note: 'Varies by close date' },
+        ],
+        total: prepaids,
+      },
+    ],
+    totalCC,
+  }
+}
+
 function calcPI(loan: number, annualRate: number, termYears = 30) {
   const r = annualRate / 100 / 12
   const n = termYears * 12
@@ -61,6 +135,8 @@ export default function JHInteractiveScenario() {
   const [purchasePrice, setPurchasePrice] = useState(1350000)
   const [downPct,       setDownPct]       = useState(60)
   const [insurance,     setInsurance]     = useState(150)
+  const [sellerCredit,  setSellerCredit]  = useState(0)
+  const [ccOpen,        setCcOpen]        = useState(false)
 
   // View / snapshot state
   const [viewCount,   setViewCount]   = useState<number | null>(null)
@@ -97,24 +173,27 @@ export default function JHInteractiveScenario() {
   }
 
   const calc = useMemo(() => {
-    const downAmt  = Math.round(purchasePrice * downPct / 100)
-    const loan     = purchasePrice - downAmt
-    const rate     = loan > SD_CONFORMING ? RATE_JUMBO : RATE_CONFORMING
-    const isJumbo  = loan > SD_CONFORMING
-    const pi       = calcPI(loan, rate)
-    const taxMo    = (purchasePrice * TAX_RATE) / 12
-    const total    = pi + taxMo + insurance
-    const combined = JEFFREY_INCOME + hannahIncome
-    const frontDTI = (total / combined) * 100
-    const backDTI  = ((total + MONTHLY_DEBTS) / combined) * 100
-    const ltv      = (loan / purchasePrice) * 100
+    const downAmt   = Math.round(purchasePrice * downPct / 100)
+    const loan      = purchasePrice - downAmt
+    const rate      = loan > SD_CONFORMING ? RATE_JUMBO : RATE_CONFORMING
+    const isJumbo   = loan > SD_CONFORMING
+    const pi        = calcPI(loan, rate)
+    const taxMo     = (purchasePrice * TAX_RATE) / 12
+    const total     = pi + taxMo + insurance
+    const combined  = JEFFREY_INCOME + hannahIncome
+    const frontDTI  = (total / combined) * 100
+    const backDTI   = ((total + MONTHLY_DEBTS) / combined) * 100
+    const ltv       = (loan / purchasePrice) * 100
+    const cc        = calcClosingCosts(purchasePrice, loan, insurance)
+    const netCC     = Math.max(0, cc.totalCC - sellerCredit)
+    const totalFunds = downAmt + netCC
     let status: 'strong' | 'caution' | 'tight' | 'over'
     if (backDTI <= 43)      status = 'strong'
     else if (backDTI <= 45) status = 'caution'
     else if (backDTI <= 50) status = 'tight'
     else                    status = 'over'
-    return { downAmt, loan, rate, isJumbo, pi, taxMo, total, combined, frontDTI, backDTI, ltv, status }
-  }, [hannahIncome, purchasePrice, downPct, insurance])
+    return { downAmt, loan, rate, isJumbo, pi, taxMo, total, combined, frontDTI, backDTI, ltv, status, cc, netCC, totalFunds }
+  }, [hannahIncome, purchasePrice, downPct, insurance, sellerCredit])
 
   async function saveSnapshot() {
     setSnapSaving(true)
@@ -123,7 +202,7 @@ export default function JHInteractiveScenario() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         pageKey: PAGE_KEY, type: 'snapshot',
-        data: { hannahIncome, purchasePrice, downPct, insurance, total: calc.total, backDTI: calc.backDTI },
+        data: { hannahIncome, purchasePrice, downPct, insurance, sellerCredit, total: calc.total, backDTI: calc.backDTI, totalFunds: calc.totalFunds },
         note: snapNote,
       }),
     })
@@ -288,6 +367,91 @@ export default function JHInteractiveScenario() {
             </div>
           </div>
         )}
+
+        {/* Closing Costs */}
+        <div className="bg-white rounded-2xl border border-[#0a0a0a]/5 overflow-hidden">
+          {/* Summary row — always visible */}
+          <button onClick={() => setCcOpen(o => !o)}
+            className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#0a0a0a]/2 transition-colors">
+            <div className="text-left">
+              <p className="text-sm font-semibold text-[#0a0a0a]">Closing Costs & Funds to Close</p>
+              <p className="text-xs text-[#0a0a0a]/40 mt-0.5">
+                Est. closing costs: <strong className="text-[#0a0a0a]">{fmt(calc.cc.totalCC)}</strong>
+                {sellerCredit > 0 && <span className="text-emerald-600"> − {fmt(sellerCredit)} seller credit = <strong>{fmt(calc.netCC)}</strong></span>}
+                &nbsp;·&nbsp;Total funds to close: <strong className="text-[#0a0a0a]">{fmt(calc.totalFunds)}</strong>
+              </p>
+            </div>
+            <span className="text-[#0a0a0a]/30 text-sm ml-4">{ccOpen ? '▲' : '▼'}</span>
+          </button>
+
+          {ccOpen && (
+            <div className="border-t border-[#0a0a0a]/8 px-5 pb-5 pt-4 space-y-5">
+
+              {/* Line-item table */}
+              {calc.cc.sections.map(section => (
+                <div key={section.label}>
+                  <p className="text-xs font-semibold text-[#0a0a0a]/40 uppercase tracking-wider mb-2">{section.label}</p>
+                  <div className="space-y-1">
+                    {section.items.map(item => (
+                      <div key={item.label} className="flex items-center justify-between text-sm">
+                        <span className="text-[#0a0a0a]/60">
+                          {item.label}
+                          {item.note && <span className="text-[10px] text-[#0a0a0a]/30 ml-1.5">({item.note})</span>}
+                        </span>
+                        <span className={`font-medium tabular-nums ${item.amount === 0 ? 'text-emerald-500' : 'text-[#0a0a0a]'}`}>
+                          {item.amount === 0 ? '—' : fmt(item.amount)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between mt-2 pt-2 border-t border-[#0a0a0a]/6 text-sm font-semibold">
+                    <span className="text-[#0a0a0a]/50">{section.label} subtotal</span>
+                    <span>{fmt(section.total)}</span>
+                  </div>
+                </div>
+              ))}
+
+              {/* Seller credit slider */}
+              <div className="pt-2 border-t border-[#0a0a0a]/8">
+                <Slider
+                  label="Seller Credit (offsets closing costs)"
+                  value={sellerCredit}
+                  min={0}
+                  max={Math.min(calc.cc.totalCC, purchasePrice * 0.03)}
+                  step={500}
+                  format={v => v === 0 ? 'None' : fmt(v)}
+                  onChange={setSellerCredit}
+                  color="amber"
+                />
+                <p className="text-[10px] text-[#0a0a0a]/30 mt-1">Conventional max seller concession: 3% of purchase price at &gt;10% down</p>
+              </div>
+
+              {/* Funds to close summary */}
+              <div className="bg-[#f8f7f4] rounded-xl p-4 space-y-2">
+                <p className="text-xs font-semibold text-[#0a0a0a]/50 uppercase tracking-wider mb-3">Total Funds to Close</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#0a0a0a]/60">Down Payment ({downPct}%)</span>
+                  <span className="font-medium">{fmt(calc.downAmt)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#0a0a0a]/60">Closing Costs (est.)</span>
+                  <span className="font-medium">{fmt(calc.cc.totalCC)}</span>
+                </div>
+                {sellerCredit > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-emerald-600">Seller Credit</span>
+                    <span className="font-medium text-emerald-600">− {fmt(sellerCredit)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-base font-bold pt-2 border-t border-[#0a0a0a]/10">
+                  <span className="text-[#0a0a0a]">Total Cash Needed</span>
+                  <span className="text-[#0066FF]">{fmt(calc.totalFunds)}</span>
+                </div>
+              </div>
+
+            </div>
+          )}
+        </div>
 
         {/* Setup Details */}
         <div className="bg-white rounded-2xl p-5 border border-[#0a0a0a]/5">
