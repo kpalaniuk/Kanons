@@ -493,6 +493,25 @@ export default function ClientProfilePage() {
             setPendingScenario({ ...parsed, notionClientId: client.id, clientName: client.name })
           } catch { /* ignore */ }
         }
+
+        // Auto-apply client-update blocks
+        const updateMatch = assistantContent.match(/```client-update\n([\s\S]*?)```/)
+        if (updateMatch) {
+          try {
+            const updates = JSON.parse(updateMatch[1])
+            await fetch('/api/pph/clients', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: client.id, ...updates }),
+            }).then(async r => {
+              if (r.ok) {
+                const updated = await r.json()
+                setClient(mapRow(updated))
+              }
+            })
+          } catch { /* ignore */ }
+        }
+
         const finalMessages = [...newMessages, { role: 'assistant' as const, content: assistantContent }]
         setChatMessages(finalMessages)
         fetch('/api/pph/chat-messages', {
