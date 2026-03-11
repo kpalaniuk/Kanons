@@ -9,6 +9,7 @@ import {
   Calendar, Zap, Heart, Plus, Check, ExternalLink, Plane,
   Calculator, Home, BookOpen, Briefcase,
 } from 'lucide-react'
+import { GH_COOP_TENANTS } from '@/lib/gh-coop-data'
 
 // ── Gratitude Prompts ─────────────────────────────────────────────────────────
 
@@ -699,6 +700,54 @@ export default function MorningBriefPage() {
               </div>
             </div>
           </div>
+        )
+      })()}
+
+      {/* ── GH Co-Op Lease Expiry Alert ── */}
+      {(() => {
+        const now = Date.now()
+        const expiring = GH_COOP_TENANTS.filter(t => {
+          if (!t.leaseEnd || t.currentStatus === 'vacant') return false
+          const daysLeft = Math.ceil((new Date(t.leaseEnd).getTime() - now) / (1000 * 60 * 60 * 24))
+          return daysLeft >= 0 && daysLeft <= 60
+        }).map(t => ({
+          ...t,
+          daysLeft: Math.ceil((new Date(t.leaseEnd!).getTime() - now) / (1000 * 60 * 60 * 24)),
+        }))
+        if (!expiring.length) return null
+        return (
+          <Link
+            href="/workshop/personal/gh-coop"
+            className="block bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 hover:border-amber-400 transition-colors group"
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-xl shrink-0">🏢</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm font-bold text-midnight">GH Co-Op — Lease expiring soon</p>
+                  <span className="text-xs font-bold bg-amber-500 text-white px-2 py-0.5 rounded-full">{expiring.length}</span>
+                </div>
+                <div className="space-y-1">
+                  {expiring.map(t => (
+                    <p key={t.id} className="text-xs text-midnight/70">
+                      <span className="font-semibold text-midnight">{t.name}</span>
+                      {' — '}{t.unit}
+                      {' · '}
+                      <span className={t.daysLeft <= 30 ? 'text-red-600 font-semibold' : 'text-amber-700'}>
+                        {t.daysLeft === 0 ? 'expires today' : `${t.daysLeft}d left`}
+                      </span>
+                      {' · lease ends '}
+                      {new Date(t.leaseEnd!).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
+                    </p>
+                  ))}
+                </div>
+                <p className="text-xs text-midnight/40 mt-2">Start renewal conversation now → GH Co-Op</p>
+              </div>
+              <div className="flex items-center gap-1 text-xs font-medium text-amber-700 group-hover:text-amber-900 transition-colors shrink-0 mt-0.5">
+                View <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+          </Link>
         )
       })()}
 

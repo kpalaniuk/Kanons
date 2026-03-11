@@ -1,61 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-
-interface CoOpTenant {
-  id: string;
-  name: string;
-  unit: string;       // Physical space/unit label
-  unitType: string;   // Studio, Gallery, Office, etc.
-  monthlyRent: number;
-  currentStatus: 'paid' | 'pending' | 'overdue' | 'vacant';
-  lastPaid?: string;  // YYYY-MM-DD
-  leaseEnd?: string;  // YYYY-MM-DD
-  notes?: string;
-}
-
-// TODO: Replace with real data (Notion API, Airtable, or Supabase)
-const MOCK_TENANTS: CoOpTenant[] = [
-  {
-    id: '1',
-    name: 'Matt Mangum',
-    unit: 'Studio A',
-    unitType: 'Studio',
-    monthlyRent: 800,
-    currentStatus: 'pending',
-    lastPaid: '2026-02-01',
-    leaseEnd: '2026-06-30',
-    notes: 'Check-in needed'
-  },
-  {
-    id: '2',
-    name: 'Artist Collective',
-    unit: 'Main Gallery',
-    unitType: 'Gallery',
-    monthlyRent: 1200,
-    currentStatus: 'paid',
-    lastPaid: '2026-03-01',
-    leaseEnd: '2026-12-31'
-  },
-  {
-    id: '3',
-    name: 'Yoga Studio',
-    unit: 'Room B',
-    unitType: 'Flex Space',
-    monthlyRent: 600,
-    currentStatus: 'paid',
-    lastPaid: '2026-03-01',
-    leaseEnd: '2026-09-30'
-  },
-  {
-    id: '4',
-    name: '',
-    unit: 'Room C',
-    unitType: 'Flex Space',
-    monthlyRent: 500,
-    currentStatus: 'vacant',
-  }
-];
+import { GH_COOP_TENANTS, type CoOpTenant } from '@/lib/gh-coop-data';
 
 const STATUS_STYLES: Record<string, string> = {
   paid:    'bg-green-100 text-green-800 border-green-200',
@@ -82,7 +28,7 @@ function daysUntil(dateStr?: string): number | null {
 }
 
 export default function GHCoOpPage() {
-  const [tenants] = useState<CoOpTenant[]>(MOCK_TENANTS);
+  const [tenants] = useState<CoOpTenant[]>(GH_COOP_TENANTS);
   const [filter, setFilter] = useState<'all' | 'paid' | 'pending' | 'overdue' | 'vacant'>('all');
   const [view, setView] = useState<'units' | 'tenants'>('units');
 
