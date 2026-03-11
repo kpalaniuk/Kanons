@@ -57,6 +57,69 @@ const CALL_TYPES = ['Call', 'Text', 'Email', 'In Person', 'Note']
 const TABS = ['overview', 'calls', 'scenarios', 'chat'] as const
 type Tab = typeof TABS[number]
 
+// ── Module-level components (NOT inside the page fn) to prevent remount on re-render ──
+
+function EditableSelect({ field, value, options, label, onChange }: {
+  field: string; value: string | null; options: string[]; label: string
+  onChange: (field: string, value: string) => void
+}) {
+  return (
+    <div>
+      <span className="text-xs text-midnight/40 block mb-0.5">{label}</span>
+      <select
+        value={value || ''}
+        onChange={e => onChange(field, e.target.value)}
+        className="px-2 py-1 bg-cream border border-midnight/10 rounded text-sm w-full focus:outline-none focus:border-ocean/50"
+      >
+        <option value="">—</option>
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </div>
+  )
+}
+
+function EditableText({ field, value, label, editingField, editValue, saving, onStartEdit, onSave, onCancel, onEditChange }: {
+  field: string; value: string | null; label: string
+  editingField: string | null; editValue: string; saving: boolean
+  onStartEdit: (field: string, value: string) => void
+  onSave: (field: string, value: string) => void
+  onCancel: () => void
+  onEditChange: (v: string) => void
+}) {
+  if (editingField === field) {
+    return (
+      <div>
+        <span className="text-xs text-midnight/40 block mb-0.5">{label}</span>
+        <div className="flex items-center gap-1">
+          <input
+            type={field === 'followUpDate' ? 'date' : 'text'}
+            value={editValue}
+            onChange={e => onEditChange(e.target.value)}
+            className="flex-1 px-2 py-1 bg-cream border border-ocean/50 rounded text-sm focus:outline-none"
+            autoFocus
+            onKeyDown={e => { if (e.key === 'Enter') onSave(field, editValue); if (e.key === 'Escape') onCancel() }}
+          />
+          <button onClick={() => onSave(field, editValue)} className="p-1 text-ocean hover:bg-ocean/10 rounded" disabled={saving}>
+            <Check className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={onCancel} className="p-1 text-midnight/30 hover:bg-midnight/5 rounded">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div className="cursor-pointer group" onClick={() => onStartEdit(field, value || '')}>
+      <span className="text-xs text-midnight/40 block mb-0.5">{label}</span>
+      <span className="text-sm text-midnight flex items-center gap-1">
+        {value || <span className="text-midnight/20">—</span>}
+        <Edit3 className="w-3 h-3 text-midnight/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+      </span>
+    </div>
+  )
+}
+
 export default function ClientProfilePage() {
   const { id } = useParams<{ id: string }>()
   const searchParams = useSearchParams()
@@ -84,6 +147,7 @@ export default function ClientProfilePage() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
+  const [pastedImage, setPastedImage] = useState<string | null>(null) // base64 data URL
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { fetchClient() }, [id])
@@ -199,12 +263,31 @@ export default function ClientProfilePage() {
     }
   }
 
+  function handleChatPaste(e: React.ClipboardEvent) {
+    const items = e.clipboardData?.items
+    if (!items) return
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault()
+        const file = item.getAsFile()
+        if (!file) continue
+        const reader = new FileReader()
+        reader.onload = () => setPastedImage(reader.result as string)
+        reader.readAsDataURL(file)
+        break
+      }
+    }
+  }
+
   async function sendChat() {
-    if (!chatInput.trim() || !client) return
-    const userMsg: ChatMessage = { role: 'user', content: chatInput }
+    if (!chatInput.trim() && !pastedImage) return
+    if (!client) return
+    const content = chatInput.trim() || '(see attached image)'
+    const userMsg: ChatMessage = { role: 'user', content: pastedImage ? `${content}\n[Image attached]` : content }
     const newMessages = [...chatMessages, userMsg]
     setChatMessages(newMessages)
     setChatInput('')
+    setPastedImage(null)
     setChatLoading(true)
     try {
       const clientContext = {
@@ -229,7 +312,7 @@ export default function ClientProfilePage() {
       const res = await fetch('/api/pph/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, clientContext }),
+        body: JSON.stringify({ messages: newMessages, clientContext, imageBase64: pastedImage || undefined }),
       })
       if (res.ok) {
         const data = await res.json()
@@ -260,59 +343,7 @@ export default function ClientProfilePage() {
     )
   }
 
-  function EditableSelect({ field, value, options, label }: { field: string; value: string | null; options: string[]; label: string }) {
-    return (
-      <div>
-        <span className="text-xs text-midnight/40 block mb-0.5">{label}</span>
-        <select
-          value={value || ''}
-          onChange={e => saveField(field, e.target.value)}
-          className="px-2 py-1 bg-cream border border-midnight/10 rounded text-sm w-full focus:outline-none focus:border-ocean/50"
-        >
-          <option value="">—</option>
-          {options.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
-      </div>
-    )
-  }
 
-  function EditableText({ field, value, label }: { field: string; value: string | null; label: string }) {
-    if (editingField === field) {
-      return (
-        <div>
-          <span className="text-xs text-midnight/40 block mb-0.5">{label}</span>
-          <div className="flex items-center gap-1">
-            <input
-              type={field === 'followUpDate' ? 'date' : 'text'}
-              value={editValue}
-              onChange={e => setEditValue(e.target.value)}
-              className="flex-1 px-2 py-1 bg-cream border border-ocean/50 rounded text-sm focus:outline-none"
-              autoFocus
-              onKeyDown={e => { if (e.key === 'Enter') saveField(field, editValue); if (e.key === 'Escape') setEditingField(null) }}
-            />
-            <button onClick={() => saveField(field, editValue)} className="p-1 text-ocean hover:bg-ocean/10 rounded" disabled={saving}>
-              <Check className="w-3.5 h-3.5" />
-            </button>
-            <button onClick={() => setEditingField(null)} className="p-1 text-midnight/30 hover:bg-midnight/5 rounded">
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )
-    }
-    return (
-      <div
-        className="cursor-pointer group"
-        onClick={() => { setEditingField(field); setEditValue(value || '') }}
-      >
-        <span className="text-xs text-midnight/40 block mb-0.5">{label}</span>
-        <span className="text-sm text-midnight flex items-center gap-1">
-          {value || <span className="text-midnight/20">—</span>}
-          <Edit3 className="w-3 h-3 text-midnight/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-        </span>
-      </div>
-    )
-  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -334,14 +365,14 @@ export default function ClientProfilePage() {
 
       {/* Header fields grid */}
       <div className="bg-cream rounded-xl p-4 border border-midnight/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <EditableSelect field="stage" value={client.stage} options={STAGES} label="Stage" />
-        <EditableSelect field="priority" value={client.priority} options={PRIORITIES} label="Priority" />
-        <EditableSelect field="primaryLo" value={client.primaryLo} options={LO_OPTIONS} label="Primary LO" />
-        <EditableText field="primaryContact" value={client.primaryContact} label="Primary Contact" />
-        <EditableText field="phone" value={client.phone} label="Phone" />
-        <EditableText field="followUpDate" value={client.followUpDate} label="Follow-up Date" />
-        <EditableText field="nextAction" value={client.nextAction} label="Next Action" />
-        <EditableText field="notes" value={client.notes} label="Notes" />
+        <EditableSelect field="stage" value={client.stage} options={STAGES} label="Stage" onChange={saveField} />
+        <EditableSelect field="priority" value={client.priority} options={PRIORITIES} label="Priority" onChange={saveField} />
+        <EditableSelect field="primaryLo" value={client.primaryLo} options={LO_OPTIONS} label="Primary LO" onChange={saveField} />
+        <EditableText field="primaryContact" value={client.primaryContact} label="Primary Contact" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+        <EditableText field="phone" value={client.phone} label="Phone" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+        <EditableText field="followUpDate" value={client.followUpDate} label="Follow-up Date" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+        <EditableText field="nextAction" value={client.nextAction} label="Next Action" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+        <EditableText field="notes" value={client.notes} label="Notes" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
       </div>
 
       {/* Tabs */}
@@ -542,25 +573,38 @@ export default function ClientProfilePage() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-midnight/10 p-3">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder={`Ask about ${client.name}...`}
+          <div className="border-t border-midnight/10 p-3 space-y-2">
+            {pastedImage && (
+              <div className="relative w-fit">
+                <img src={pastedImage} alt="pasted" className="max-h-24 rounded-lg border border-midnight/10 object-contain" />
+                <button
+                  onClick={() => setPastedImage(null)}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-midnight text-cream rounded-full flex items-center justify-center hover:bg-midnight/70"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+            <div className="flex gap-2 items-end">
+              <textarea
+                placeholder={`Ask about ${client.name}... (paste screenshots to analyze income docs)`}
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
+                onPaste={handleChatPaste}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat() } }}
-                className="flex-1 px-3 py-2 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50"
+                rows={2}
+                className="flex-1 px-3 py-2 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50 resize-none"
                 disabled={chatLoading}
               />
               <button
                 onClick={sendChat}
-                disabled={chatLoading || !chatInput.trim()}
-                className="px-3 py-2 bg-ocean text-white rounded-lg hover:bg-ocean/90 transition-colors disabled:opacity-50"
+                disabled={chatLoading || (!chatInput.trim() && !pastedImage)}
+                className="px-3 py-2 bg-ocean text-white rounded-lg hover:bg-ocean/90 transition-colors disabled:opacity-50 flex-shrink-0"
               >
                 <Send className="w-4 h-4" />
               </button>
             </div>
+            <p className="text-xs text-midnight/30">Paste a screenshot to analyze income docs · Shift+Enter for new line</p>
           </div>
         </div>
       )}
