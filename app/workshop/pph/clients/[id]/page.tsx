@@ -147,6 +147,7 @@ export default function ClientProfilePage() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
+  const [chatHistoryLoading, setChatHistoryLoading] = useState(false)
   const [pastedImage, setPastedImage] = useState<string | null>(null) // base64 data URL
   const [pendingScenario, setPendingScenario] = useState<Record<string, unknown> | null>(null)
   const [savingScenario, setSavingScenario] = useState(false)
@@ -155,6 +156,7 @@ export default function ClientProfilePage() {
   useEffect(() => { fetchClient() }, [id])
   useEffect(() => { if (tab === 'calls') fetchCalls() }, [tab, id])
   useEffect(() => { if (tab === 'scenarios') fetchScenarios() }, [tab, id])
+  useEffect(() => { if (tab === 'chat' && id) fetchChatHistory() }, [tab, id])
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatMessages])
 
   function mapRow(row: Record<string, unknown>): Client {
@@ -199,6 +201,32 @@ export default function ClientProfilePage() {
     } finally {
       setLoadingScenarios(false)
     }
+  }
+
+  async function fetchChatHistory() {
+    if (chatMessages.length > 0) return // already loaded
+    try {
+      setChatHistoryLoading(true)
+      const res = await fetch(`/api/pph/chat-messages?clientId=${id}`)
+      if (res.ok) {
+        const rows = await res.json()
+        if (rows.length > 0) {
+          setChatMessages(rows.map((r: { role: string; content: string }) => ({
+            role: r.role as 'user' | 'assistant',
+            content: r.content,
+          })))
+        }
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setChatHistoryLoading(false)
+    }
+  }
+
+  async function clearChatHistory() {
+    await fetch(`/api/pph/chat-messages?clientId=${id}`, { method: 'DELETE' })
+    setChatMessages([])
   }
 
   async function fetchCalls() {
@@ -329,7 +357,21 @@ export default function ClientProfilePage() {
           } catch { /* ignore parse error */ }
         }
 
-        setChatMessages([...newMessages, { role: 'assistant', content: assistantContent }])
+        const finalMessages = [...newMessages, { role: 'assistant' as const, content: assistantContent }]
+        setChatMessages(finalMessages)
+
+        // Persist both user + assistant messages
+        fetch('/api/pph/chat-messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clientId: id,
+            messages: [
+              { role: 'user', content: userMsg.content, hasImage: !!pastedImage },
+              { role: 'assistant', content: assistantContent },
+            ],
+          }),
+        }).catch(() => {}) // fire and forget — don't block UI
       }
     } catch (err) {
       console.error(err)
@@ -579,10 +621,24 @@ export default function ClientProfilePage() {
       )}
 
       {tab === 'chat' && (
-        <div className="bg-cream rounded-xl border border-midnight/5 flex flex-col" style={{ height: '500px' }}>
+        <div className="bg-cream rounded-xl border border-midnight/5 flex flex-col" style={{ height: '560px' }}>
+          {/* Chat header */}
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-midnight/8">
+            <span className="text-xs font-medium text-midnight/50">PPH-Claw · {client.name}</span>
+            {chatMessages.length > 0 && (
+              <button onClick={clearChatHistory} className="text-xs text-midnight/30 hover:text-red-400 transition-colors">
+                Clear history
+              </button>
+            )}
+          </div>
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {chatMessages.length === 0 && (
+            {chatHistoryLoading && (
+              <div className="text-center py-8">
+                <RefreshCw className="w-5 h-5 text-ocean animate-spin mx-auto" />
+              </div>
+            )}
+            {!chatHistoryLoading && chatMessages.length === 0 && (
               <div className="text-center py-8 text-midnight/30 text-sm">
                 <MessageSquare className="w-8 h-8 mx-auto mb-2 text-midnight/15" />
                 <p>Ask PPH-Claw anything about {client.name}.</p>
