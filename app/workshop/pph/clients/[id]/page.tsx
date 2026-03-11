@@ -613,18 +613,23 @@ export default function ClientProfilePage() {
           {/* Input */}
           <div className="border-t border-midnight/10 p-3 space-y-2">
             {pendingScenario && (
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-emerald-700">📊 Scenario ready to save</p>
-                  <p className="text-xs text-emerald-600 mt-0.5">
-                    {(pendingScenario.type as string)?.replace('-', ' ')} — {(pendingScenario.clientName as string) || client?.name}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => setPendingScenario(null)} className="px-2 py-1 text-xs text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors">Dismiss</button>
-                  <button onClick={saveGeneratedScenario} disabled={savingScenario} className="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50">
-                    {savingScenario ? 'Saving...' : 'Save & Share'}
-                  </button>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-700">📊 Scenario ready to save</p>
+                    <p className="text-xs text-emerald-600 mt-0.5 font-medium">
+                      {String(pendingScenario.type ?? 'purchase').replace('-', ' ')} · ${Number(pendingScenario.purchasePrice || 0).toLocaleString()} · {String(pendingScenario.downPaymentPct ?? '')}% down · {String(pendingScenario.interestRate ?? '')}%
+                    </p>
+                    {!!pendingScenario.notes && (
+                      <p className="text-xs text-emerald-600/80 mt-1 italic">{String(pendingScenario.notes)}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button onClick={() => setPendingScenario(null)} className="px-2 py-1 text-xs text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors">Dismiss</button>
+                    <button onClick={saveGeneratedScenario} disabled={savingScenario} className="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50">
+                      {savingScenario ? 'Saving...' : 'Save & Share'}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
