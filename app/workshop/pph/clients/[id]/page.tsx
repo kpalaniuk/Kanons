@@ -897,15 +897,20 @@ export default function ClientProfilePage() {
                 <p className="text-xs text-midnight/30 text-center mt-4 px-2">No history yet</p>
               )}
               {!chatHistoryLoading && chatMessages
-                .filter(m => m.role === 'user')
-                .map((m, i) => (
-                  <div
+                .map((m, i) => ({ m, i }))
+                .filter(({ m }) => m.role === 'user')
+                .map(({ m, i }) => (
+                  <button
                     key={i}
-                    className="px-2 py-1.5 rounded-lg text-xs text-midnight/60 hover:bg-midnight/5 cursor-default truncate"
+                    onClick={() => {
+                      const el = document.getElementById(`msg-${i}`)
+                      el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }}
+                    className="w-full text-left px-2 py-1.5 rounded-lg text-xs text-midnight/60 hover:bg-midnight/8 hover:text-midnight transition-colors truncate"
                     title={m.content}
                   >
-                    {m.content.replace(/\[Image attached\]/, '📷').slice(0, 45)}
-                  </div>
+                    {m.content.replace(/\[Image attached\]/, '📷').replace(/^\[(?:QUICK|CUSTOM) SCENARIO\] /, '').slice(0, 45)}
+                  </button>
                 ))}
             </div>
             {chatMessages.length > 0 && (
@@ -934,7 +939,7 @@ export default function ClientProfilePage() {
                 </div>
               )}
               {chatMessages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div key={i} id={`msg-${i}`} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[85%] rounded-xl px-4 py-2.5 text-sm ${
                     msg.role === 'user'
                       ? 'bg-ocean text-white'
