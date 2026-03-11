@@ -7,6 +7,7 @@ import {
   CheckSquare, AlertCircle, Clock, Trophy,
   Map, Music, Mic, ArrowRight, RefreshCw,
   Calendar, Zap, Heart, Plus, Check, ExternalLink, Plane,
+  Calculator, Home, BookOpen, Briefcase,
 } from 'lucide-react'
 
 // ── Gratitude Prompts ─────────────────────────────────────────────────────────
@@ -666,6 +667,41 @@ export default function MorningBriefPage() {
         </div>
       )}
 
+      {/* ── Joshua Tree Departure Banner ── */}
+      {(() => {
+        const now = new Date()
+        const month = now.getMonth() + 1
+        const day = now.getDate()
+        const hour = now.getHours()
+        const showBanner = (month === 3 && day === 11) || (month === 3 && day === 12 && hour < 10)
+        if (!showBanner) return null
+        const leavingToday = month === 3 && day === 12
+        return (
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl shrink-0">🏜️</span>
+              <div>
+                <p className="font-display text-lg text-midnight mb-1">
+                  {leavingToday ? 'Desert day — you\'re leaving this morning!' : 'Joshua Tree tomorrow — pack tonight'}
+                </p>
+                <p className="text-sm text-midnight/60">
+                  {leavingToday
+                    ? 'Load up the car. Pappy & Harriet\'s tonight. Drive safe.'
+                    : 'Leaving Thu morning. Pack tonight after band practice. Lidia has the kids Thursday.'}
+                </p>
+                {!leavingToday && (
+                  <div className="flex flex-wrap gap-2 mt-3 text-xs text-midnight/60">
+                    <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-lg">🎸 Well Well Well 3pm (leave 2:30)</span>
+                    <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-lg">🧳 Pack after practice</span>
+                    <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-lg">🔩 Super glue door lock cover</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
       {/* ── Sunday Weekly Review ── */}
       {sunday && (
         <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl border border-indigo-100 overflow-hidden">
@@ -1054,6 +1090,42 @@ export default function MorningBriefPage() {
             {musicStreak === 0 && (
               <span className="text-xs text-midnight/30">Start today</span>
             )}
+          </Link>
+
+          {/* Income Qualifier */}
+          <Link
+            href="/workshop/work/income-qualifier"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-cream border-midnight/5 hover:border-midnight/20 transition-all text-center"
+          >
+            <Calculator className="w-5 h-5 text-green-600" />
+            <span className="text-xs font-medium text-midnight/70">Income Qualifier</span>
+          </Link>
+
+          {/* GH Co-Op */}
+          <Link
+            href="/workshop/personal/gh-coop"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-cream border-midnight/5 hover:border-midnight/20 transition-all text-center"
+          >
+            <Home className="w-5 h-5 text-terracotta" />
+            <span className="text-xs font-medium text-midnight/70">GH Co-Op</span>
+          </Link>
+
+          {/* Trip Planner */}
+          <Link
+            href="/workshop/personal/trip-july-2026"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-cream border-midnight/5 hover:border-midnight/20 transition-all text-center"
+          >
+            <Plane className="w-5 h-5 text-sky-500" />
+            <span className="text-xs font-medium text-midnight/70">Trip Planner</span>
+          </Link>
+
+          {/* KB */}
+          <Link
+            href="/workshop/kb"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-cream border-midnight/5 hover:border-midnight/20 transition-all text-center"
+          >
+            <BookOpen className="w-5 h-5 text-midnight/40" />
+            <span className="text-xs font-medium text-midnight/70">Knowledge Base</span>
           </Link>
         </div>
       </div>
