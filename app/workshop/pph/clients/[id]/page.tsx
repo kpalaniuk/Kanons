@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { PPHNav } from '../../_components/PPHNav'
 import {
   ArrowLeft, Phone, MessageSquare, FileText, Save, Send,
-  Plus, User, Calendar, Clock, Edit3, Check, X, RefreshCw
+  Plus, User, Calendar, Clock, Edit3, Check, X, RefreshCw, Paperclip, Zap, Settings2
 } from 'lucide-react'
 
 interface Client {
@@ -148,10 +148,12 @@ export default function ClientProfilePage() {
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const [chatHistoryLoading, setChatHistoryLoading] = useState(false)
-  const [pastedImage, setPastedImage] = useState<string | null>(null) // base64 data URL
+  const [attachedFiles, setAttachedFiles] = useState<{ dataUrl: string; name: string; mimeType: string }[]>([])
+  const [scenarioMode, setScenarioMode] = useState<'none' | 'quick' | 'custom'>('none')
   const [pendingScenario, setPendingScenario] = useState<Record<string, unknown> | null>(null)
   const [savingScenario, setSavingScenario] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { fetchClient() }, [id])
   useEffect(() => { if (tab === 'calls') fetchCalls() }, [tab, id])
@@ -290,85 +292,104 @@ export default function ClientProfilePage() {
     }
   }
 
+  function readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
+
   function handleChatPaste(e: React.ClipboardEvent) {
     const items = e.clipboardData?.items
     if (!items) return
-    for (const item of Array.from(items)) {
-      if (item.type.startsWith('image/')) {
-        e.preventDefault()
+    const imageItems = Array.from(items).filter(i => i.type.startsWith('image/'))
+    if (!imageItems.length) return
+    e.preventDefault()
+    Promise.all(
+      imageItems.map(async item => {
         const file = item.getAsFile()
-        if (!file) continue
-        const reader = new FileReader()
-        reader.onload = () => setPastedImage(reader.result as string)
-        reader.readAsDataURL(file)
-        break
-      }
-    }
+        if (!file) return null
+        const dataUrl = await readFileAsDataUrl(file)
+        return { dataUrl, name: `paste-${Date.now()}.png`, mimeType: item.type }
+      })
+    ).then(results => {
+      const valid = results.filter(Boolean) as { dataUrl: string; name: string; mimeType: string }[]
+      setAttachedFiles(prev => [...prev, ...valid])
+    })
   }
 
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+    const results = await Promise.all(
+      files.map(async file => {
+        const dataUrl = await readFileAsDataUrl(file)
+        return { dataUrl, name: file.name, mimeType: file.type }
+      })
+    )
+    setAttachedFiles(prev => [...prev, ...results])
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }, [])
+
   async function sendChat() {
-    if (!chatInput.trim() && !pastedImage) return
+    if (!chatInput.trim() && attachedFiles.length === 0) return
     if (!client) return
-    const content = chatInput.trim() || '(see attached image)'
-    const userMsg: ChatMessage = { role: 'user', content: pastedImage ? `${content}\n[Image attached]` : content }
+
+    const fileNote = attachedFiles.length > 0 ? ` [${attachedFiles.length} file${attachedFiles.length > 1 ? 's' : ''} attached]` : ''
+    const modePrefix = scenarioMode === 'quick' ? '[QUICK SCENARIO] ' : scenarioMode === 'custom' ? '[CUSTOM SCENARIO] ' : ''
+    const content = modePrefix + (chatInput.trim() || '(see attached files)')
+    const userMsg: ChatMessage = { role: 'user', content: content + fileNote }
     const newMessages = [...chatMessages, userMsg]
     setChatMessages(newMessages)
     setChatInput('')
-    setPastedImage(null)
+    const filesForSend = [...attachedFiles]
+    setAttachedFiles([])
+    setScenarioMode('none')
     setChatLoading(true)
+
     try {
       const clientContext = {
-        name: client.name,
-        stage: client.stage,
-        priority: client.priority,
-        loanType: client.loanType,
-        loanAmount: client.loanAmount,
-        nextAction: client.nextAction,
-        notes: client.notes,
-        primaryLo: client.primaryLo,
-        primaryContact: client.primaryContact,
-        followUpDate: client.followUpDate,
-        referralSource: client.referralSource,
-        recentCalls: callLogs.slice(0, 10).map(c => ({
-          type: c.call_type,
-          notes: c.notes,
-          date: c.created_at,
-          by: c.logged_by_email,
-        })),
+        name: client.name, stage: client.stage, priority: client.priority,
+        loanType: client.loanType, loanAmount: client.loanAmount, nextAction: client.nextAction,
+        notes: client.notes, primaryLo: client.primaryLo, primaryContact: client.primaryContact,
+        followUpDate: client.followUpDate, referralSource: client.referralSource,
+        recentCalls: callLogs.slice(0, 10).map(c => ({ type: c.call_type, notes: c.notes, date: c.created_at, by: c.logged_by_email })),
       }
       const res = await fetch('/api/pph/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, clientContext, imageBase64: pastedImage || undefined }),
+        body: JSON.stringify({
+          messages: newMessages,
+          clientContext,
+          attachedFiles: filesForSend.length > 0 ? filesForSend : undefined,
+          scenarioMode,
+        }),
       })
       if (res.ok) {
         const data = await res.json()
         const assistantContent: string = data.content || 'No response'
-
-        // Detect scenario JSON block
         const scenarioMatch = assistantContent.match(/```scenario\n([\s\S]*?)```/)
         if (scenarioMatch) {
           try {
             const parsed = JSON.parse(scenarioMatch[1])
             setPendingScenario({ ...parsed, notionClientId: client.id, clientName: client.name })
-          } catch { /* ignore parse error */ }
+          } catch { /* ignore */ }
         }
-
         const finalMessages = [...newMessages, { role: 'assistant' as const, content: assistantContent }]
         setChatMessages(finalMessages)
-
-        // Persist both user + assistant messages
         fetch('/api/pph/chat-messages', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             clientId: id,
             messages: [
-              { role: 'user', content: userMsg.content, hasImage: !!pastedImage },
+              { role: 'user', content: userMsg.content, hasImage: filesForSend.length > 0 },
               { role: 'assistant', content: assistantContent },
             ],
           }),
-        }).catch(() => {}) // fire and forget — don't block UI
+        }).catch(() => {})
       }
     } catch (err) {
       console.error(err)
@@ -690,17 +711,42 @@ export default function ClientProfilePage() {
 
             {/* Input area */}
             <div className="border-t border-midnight/10 p-3 space-y-2">
+
+              {/* Scenario mode toggle */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-midnight/40 font-medium">Scenario:</span>
+                {(['none', 'quick', 'custom'] as const).map(mode => (
+                  <button
+                    key={mode}
+                    onClick={() => setScenarioMode(prev => prev === mode ? 'none' : mode)}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors border ${
+                      scenarioMode === mode
+                        ? mode === 'quick' ? 'bg-amber-500 text-white border-amber-500' : mode === 'custom' ? 'bg-ocean text-white border-ocean' : 'bg-midnight/10 text-midnight border-midnight/20'
+                        : 'bg-white text-midnight/50 border-midnight/10 hover:border-midnight/30'
+                    }`}
+                  >
+                    {mode === 'quick' && <Zap className="w-3 h-3" />}
+                    {mode === 'custom' && <Settings2 className="w-3 h-3" />}
+                    {mode === 'none' ? 'Off' : mode === 'quick' ? 'Quick' : 'Custom'}
+                  </button>
+                ))}
+                {scenarioMode !== 'none' && (
+                  <span className="text-xs text-midnight/30 italic">
+                    {scenarioMode === 'quick' ? 'Give price/down/rate → instant PITIA' : 'Guided conversation → tailored scenario'}
+                  </span>
+                )}
+              </div>
+
+              {/* Pending scenario banner */}
               {pendingScenario && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-emerald-700">📊 Scenario ready to save</p>
                       <p className="text-xs text-emerald-600 mt-0.5 font-medium">
                         {String(pendingScenario.type ?? 'purchase').replace('-', ' ')} · ${Number(pendingScenario.purchasePrice || 0).toLocaleString()} · {String(pendingScenario.downPaymentPct ?? '')}% down · {String(pendingScenario.interestRate ?? '')}%
                       </p>
-                      {!!pendingScenario.notes && (
-                        <p className="text-xs text-emerald-600/80 mt-1 italic">{String(pendingScenario.notes)}</p>
-                      )}
+                      {!!pendingScenario.notes && <p className="text-xs text-emerald-600/80 mt-1 italic">{String(pendingScenario.notes)}</p>}
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                       <button onClick={() => setPendingScenario(null)} className="px-2 py-1 text-xs text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors">Dismiss</button>
@@ -711,20 +757,52 @@ export default function ClientProfilePage() {
                   </div>
                 </div>
               )}
-              {pastedImage && (
-                <div className="relative w-fit">
-                  <img src={pastedImage} alt="pasted" className="max-h-24 rounded-lg border border-midnight/10 object-contain" />
-                  <button
-                    onClick={() => setPastedImage(null)}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-midnight text-cream rounded-full flex items-center justify-center hover:bg-midnight/70"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
+
+              {/* Attached files preview */}
+              {attachedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {attachedFiles.map((f, i) => (
+                    <div key={i} className="relative group">
+                      {f.mimeType.startsWith('image/') ? (
+                        <img src={f.dataUrl} alt={f.name} className="h-16 w-16 object-cover rounded-lg border border-midnight/10" />
+                      ) : (
+                        <div className="h-16 w-16 flex flex-col items-center justify-center bg-midnight/5 rounded-lg border border-midnight/10">
+                          <FileText className="w-6 h-6 text-midnight/40" />
+                          <span className="text-[9px] text-midnight/40 mt-1 truncate w-full text-center px-1">{f.name.slice(0,10)}</span>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setAttachedFiles(prev => prev.filter((_, j) => j !== i))}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-midnight text-cream rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,application/pdf"
+                multiple
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+
+              {/* Text input row */}
               <div className="flex gap-2 items-end">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-midnight/40 hover:text-midnight hover:bg-midnight/5 rounded-lg transition-colors flex-shrink-0"
+                  title="Attach images or PDFs"
+                >
+                  <Paperclip className="w-4 h-4" />
+                </button>
                 <textarea
-                  placeholder={`Ask about ${client.name}... (paste screenshots to analyze income docs)`}
+                  placeholder={`Ask about ${client.name}... (paste or attach screenshots, PDFs)`}
                   value={chatInput}
                   onChange={e => setChatInput(e.target.value)}
                   onPaste={handleChatPaste}
@@ -735,13 +813,13 @@ export default function ClientProfilePage() {
                 />
                 <button
                   onClick={sendChat}
-                  disabled={chatLoading || (!chatInput.trim() && !pastedImage)}
+                  disabled={chatLoading || (!chatInput.trim() && attachedFiles.length === 0)}
                   className="px-3 py-2 bg-ocean text-white rounded-lg hover:bg-ocean/90 transition-colors disabled:opacity-50 flex-shrink-0"
                 >
                   <Send className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-xs text-midnight/30">Paste a screenshot to analyze income docs · Enter to send · Shift+Enter for new line</p>
+              <p className="text-xs text-midnight/30">Paste or attach images/PDFs · Enter to send · Shift+Enter for new line</p>
             </div>
           </div>
         </div>

@@ -65,33 +65,45 @@ export async function POST(request: NextRequest) {
   const email = await getCallerEmail(userId)
   if (!email || !ALLOWED_EMAILS.includes(email)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { messages, clientContext, imageBase64 } = await request.json()
+  const { messages, clientContext, attachedFiles, scenarioMode } = await request.json()
   if (!messages || !Array.isArray(messages)) return NextResponse.json({ error: 'messages required' }, { status: 400 })
 
   const contextBlock = clientContext
     ? `\n\nCurrent client context:\n${JSON.stringify(clientContext, null, 2)}`
     : ''
 
-  // Build the last user message — if image attached, use vision format
+  // Inject scenario mode instruction if set
+  const modeInstruction = scenarioMode === 'quick'
+    ? '\n\n[MODE: QUICK SCENARIO] The user wants a quick scenario. Run the PITIA immediately from the numbers given. No clarifying questions unless a number is completely missing.'
+    : scenarioMode === 'custom'
+    ? '\n\n[MODE: CUSTOM SCENARIO] The user wants a custom scenario tailored to this client. Ask focused questions to gather income, down payment, rate, and any UW flags before generating.'
+    : ''
+
+  // Build the last user message — with files as vision content if present
   const historyMessages = messages.slice(0, -1).map((m: { role: string; content: string }) => ({
     role: m.role,
     content: m.content,
   }))
 
   const lastMsg = messages[messages.length - 1]
-  let lastContent: string | { type: string; text?: string; image_url?: { url: string } }[]
+  type ContentPart = { type: string; text?: string; image_url?: { url: string } }
+  let lastContent: string | ContentPart[]
 
-  if (imageBase64) {
-    lastContent = [
-      { type: 'text', text: lastMsg.content || '(analyze this image in the context of the client above)' },
-      { type: 'image_url', image_url: { url: imageBase64 } },
+  if (attachedFiles && attachedFiles.length > 0) {
+    const parts: ContentPart[] = [
+      { type: 'text', text: lastMsg.content || '(analyze the attached files in the context of this client)' },
     ]
+    for (const f of attachedFiles as { dataUrl: string; mimeType: string; name: string }[]) {
+      // Claude supports image/* and application/pdf via image_url with data URI
+      parts.push({ type: 'image_url', image_url: { url: f.dataUrl } })
+    }
+    lastContent = parts
   } else {
     lastContent = lastMsg.content
   }
 
   const apiMessages = [
-    { role: 'system', content: SYSTEM_PROMPT + contextBlock },
+    { role: 'system', content: SYSTEM_PROMPT + contextBlock + modeInstruction },
     ...historyMessages,
     { role: lastMsg.role, content: lastContent },
   ]
