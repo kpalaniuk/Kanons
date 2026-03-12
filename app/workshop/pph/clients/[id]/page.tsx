@@ -188,6 +188,9 @@ export default function ClientProfilePage() {
   // AI summary
   const [generatingSummary, setGeneratingSummary] = useState(false)
 
+  // Chat layout
+  const [showHistory, setShowHistory] = useState(false)
+
   async function refreshSummary() {
     if (!client) return
     setGeneratingSummary(true)
@@ -1060,12 +1063,13 @@ export default function ClientProfilePage() {
       )}
 
       {tab === 'chat' && (
-        <div className="bg-cream rounded-xl border border-midnight/5 flex" style={{ height: '580px' }}>
+        <div className="bg-cream rounded-xl border border-midnight/5 flex flex-col sm:flex-row" style={{ height: 'min(580px, 80dvh)' }}>
 
-          {/* LEFT: History panel */}
-          <div className="w-48 flex-shrink-0 border-r border-midnight/8 flex flex-col">
-            <div className="px-3 py-2.5 border-b border-midnight/8">
+          {/* LEFT: History panel — hidden on mobile unless toggled */}
+          <div className={`${showHistory ? 'flex' : 'hidden'} sm:flex flex-col w-full sm:w-48 sm:flex-shrink-0 border-b sm:border-b-0 sm:border-r border-midnight/8 sm:h-full h-48`}>
+            <div className="px-3 py-2.5 border-b border-midnight/8 flex items-center justify-between">
               <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">History</p>
+              <button onClick={() => setShowHistory(false)} className="sm:hidden text-midnight/30 hover:text-midnight">✕</button>
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
               {chatHistoryLoading && <RefreshCw className="w-4 h-4 text-ocean animate-spin mx-auto mt-4" />}
@@ -1081,6 +1085,7 @@ export default function ClientProfilePage() {
                     onClick={() => {
                       const el = document.getElementById(`msg-${i}`)
                       el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      setShowHistory(false) // auto-close on mobile after selecting
                     }}
                     className="w-full text-left px-2 py-1.5 rounded-lg text-xs text-midnight/60 hover:bg-midnight/8 hover:text-midnight transition-colors truncate"
                     title={m.content}
@@ -1099,7 +1104,17 @@ export default function ClientProfilePage() {
           </div>
 
           {/* RIGHT: Active conversation */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className={`${showHistory ? 'hidden sm:flex' : 'flex'} flex-1 flex-col min-w-0`}>
+            {/* Mobile header — History toggle + Clear */}
+            <div className="sm:hidden flex items-center justify-between px-3 py-2 border-b border-midnight/8">
+              <button onClick={() => setShowHistory(true)} className="flex items-center gap-1.5 text-xs text-midnight/50 hover:text-midnight transition-colors">
+                <MessageSquare className="w-3.5 h-3.5" /> History
+              </button>
+              <span className="text-xs font-medium text-midnight/60">PPH-Claw · {client.name}</span>
+              {chatMessages.length > 0 && (
+                <button onClick={clearChatHistory} className="text-xs text-midnight/30 hover:text-red-400 transition-colors">Clear</button>
+              )}
+            </div>
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {chatHistoryLoading && (
