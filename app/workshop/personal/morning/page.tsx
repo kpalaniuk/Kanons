@@ -103,6 +103,19 @@ function isSunday(): boolean {
   return new Date().getDay() === 0
 }
 
+function isWeekend(): boolean {
+  return [0, 6].includes(new Date().getDay())
+}
+
+const WEEKEND_IDEAS = [
+  { emoji: '⚽', label: 'Watch Bohdi play' },
+  { emoji: '🎺', label: '20 min of trumpet' },
+  { emoji: '☕', label: 'Slow morning coffee' },
+  { emoji: '🌊', label: 'Ocean or Balboa walk' },
+  { emoji: '🧩', label: 'Puzzle time with Meta' },
+  { emoji: '🍳', label: 'Cook something real' },
+]
+
 function getDailyGratitudePrompt(): string {
   const now = new Date()
   const start = new Date(now.getFullYear(), 0, 0)
@@ -295,6 +308,7 @@ export default function MorningBriefPage() {
   const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({})
   const [topThree, setTopThree] = useState('')
   const sunday = isSunday()
+  const weekend = isWeekend()
 
   // Quick Task Add
   const [quickTitle, setQuickTitle] = useState('')
@@ -328,12 +342,13 @@ export default function MorningBriefPage() {
       if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
         const data = await tasksRes.value.json()
         const allTasks: Task[] = data.tasks || []
-        // Sort by priority, take top 7
+        // Sort by priority, take top 7 (or 3 on weekends — lighter mode)
         const priorityOrder: Record<string, number> = { Urgent: 0, High: 1, Medium: 2, Low: 3 }
+        const isWknd = [0, 6].includes(new Date().getDay())
         const sorted = allTasks
           .filter((t) => t.status !== 'Done' && t.status !== 'Cancelled')
           .sort((a, b) => (priorityOrder[a.priority] ?? 9) - (priorityOrder[b.priority] ?? 9))
-          .slice(0, 7)
+          .slice(0, isWknd ? 3 : 7)
         setTasks(sorted)
       }
 
@@ -751,6 +766,26 @@ export default function MorningBriefPage() {
         )
       })()}
 
+      {/* ── Weekend Mode Card ── */}
+      {weekend && (
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xl">🌿</span>
+            <h2 className="font-display text-lg text-midnight">Weekend Mode</h2>
+            <span className="ml-auto text-xs bg-green-100 text-green-700 border border-green-200 px-2 py-0.5 rounded-full font-medium">Off duty</span>
+          </div>
+          <p className="text-sm text-midnight/50 mb-4 ml-8">No pipeline pressure. No urgency. Just good stuff.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {WEEKEND_IDEAS.map((idea, i) => (
+              <div key={i} className="flex items-center gap-2 bg-white/70 rounded-xl p-3 border border-green-100">
+                <span className="text-base">{idea.emoji}</span>
+                <span className="text-xs text-midnight/70 font-medium">{idea.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Sunday Weekly Review ── */}
       {sunday && (
         <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl border border-indigo-100 overflow-hidden">
@@ -922,7 +957,18 @@ export default function MorningBriefPage() {
       </div>
 
       {/* ── Pipeline Health ── */}
-      {pipeline.length > 0 && (() => {
+      {pipeline.length > 0 && weekend && (
+        <div className="bg-cream rounded-2xl p-4 border border-midnight/5 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-midnight/50">
+            <Briefcase className="w-4 h-4" />
+            <span>Pipeline — {pipeline.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost').length} active clients</span>
+          </div>
+          <Link href="/workshop/pph/pipeline" className="text-xs font-medium text-ocean hover:underline flex items-center gap-1">
+            View <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+      )}
+      {pipeline.length > 0 && !weekend && (() => {
         const today = new Date(); today.setHours(0,0,0,0)
         const active = pipeline.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost')
         const hot = active.filter(c => c.priority === 'Hot')
