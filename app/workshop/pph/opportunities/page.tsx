@@ -94,6 +94,8 @@ export default function OpportunitiesPage() {
   const [editingFollowUp, setEditingFollowUp] = useState<string | null>(null)
   const [followUpDraft, setFollowUpDraft] = useState('')
   const [savingFollowUp, setSavingFollowUp] = useState(false)
+  const [editingStage, setEditingStage] = useState<string | null>(null)
+  const [savingStage, setSavingStage] = useState(false)
 
   // New client form state
   const [newName, setNewName] = useState('')
@@ -225,6 +227,24 @@ export default function OpportunitiesPage() {
   function openFollowUpPicker(client: Client) {
     setFollowUpDraft(client.followUpDate || '')
     setEditingFollowUp(client.id)
+  }
+
+  async function saveStage(clientId: string, stage: string) {
+    if (savingStage) return
+    setSavingStage(true)
+    try {
+      await fetch('/api/pph/clients', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: clientId, stage }),
+      })
+      setClients(prev => prev.map(c => c.id === clientId ? { ...c, stage } : c))
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSavingStage(false)
+      setEditingStage(null)
+    }
   }
 
   // Alerts: overdue + due today
@@ -383,9 +403,27 @@ export default function OpportunitiesPage() {
                     >
                       {client.name}
                     </Link>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STAGE_COLORS[client.stage] || 'bg-gray-100 text-gray-600'}`}>
-                      {client.stage}
-                    </span>
+                    {editingStage === client.id ? (
+                      <select
+                        value={client.stage}
+                        onChange={e => saveStage(client.id, e.target.value)}
+                        onBlur={() => setEditingStage(null)}
+                        onKeyDown={e => { if (e.key === 'Escape') setEditingStage(null) }}
+                        autoFocus
+                        className="text-xs border border-ocean/40 rounded-full px-2 py-0.5 focus:outline-none focus:border-ocean bg-white"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    ) : (
+                      <button
+                        onClick={e => { e.preventDefault(); setEditingStage(client.id) }}
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium transition-opacity hover:opacity-70 ${STAGE_COLORS[client.stage] || 'bg-gray-100 text-gray-600'}`}
+                        title="Click to change stage"
+                      >
+                        {client.stage}
+                      </button>
+                    )}
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-midnight/50">
                     {client.loanType && <span>{client.loanType}</span>}
