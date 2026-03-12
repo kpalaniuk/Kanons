@@ -387,8 +387,9 @@ export default function PipelinePage() {
   const [cashNetDraft, setCashNetDraft] = useState('')
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [addSuccess, setAddSuccess] = useState(false)
-  const [activityLogs, setActivityLogs] = useState<Record<string, { ts: string; text: string }[]>>({})
+  const [activityLogs, setActivityLogs] = useState<Record<string, { id?: string; ts: string; text: string }[]>>({})
   const [activityDraft, setActivityDraft] = useState<Record<string, string>>({})
+  const [activitySynced, setActivitySynced] = useState(false)
 
   // Load cash net from localStorage
   useEffect(() => {
@@ -396,33 +397,86 @@ export default function PipelinePage() {
     if (saved) setCashNet(saved)
   }, [])
 
-  // Load activity logs from localStorage
+  // Load activity logs — Supabase first, localStorage fallback
   useEffect(() => {
-    const saved = localStorage.getItem('pipeline-activity-logs')
-    if (saved) {
-      try { setActivityLogs(JSON.parse(saved)) } catch {}
+    async function loadActivityLogs() {
+      try {
+        const res = await fetch('/api/pipeline/activity')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.logs && Object.keys(data.logs).length > 0) {
+            setActivityLogs(data.logs)
+            setActivitySynced(true)
+            // Persist to localStorage as offline cache
+            localStorage.setItem('pipeline-activity-logs', JSON.stringify(data.logs))
+            return
+          }
+        }
+      } catch { /* fall through to localStorage */ }
+      // Fallback: localStorage cache
+      const saved = localStorage.getItem('pipeline-activity-logs')
+      if (saved) {
+        try { setActivityLogs(JSON.parse(saved)) } catch {}
+      }
     }
+    loadActivityLogs()
   }, [])
 
-  function addActivityEntry(clientId: string) {
+  async function addActivityEntry(clientId: string, clientName?: string) {
     const text = (activityDraft[clientId] ?? '').trim()
     if (!text) return
-    const entry = { ts: new Date().toISOString(), text }
-    const updated = { ...activityLogs, [clientId]: [entry, ...(activityLogs[clientId] ?? [])] }
-    setActivityLogs(updated)
-    localStorage.setItem('pipeline-activity-logs', JSON.stringify(updated))
+    const entry: { id?: string; ts: string; text: string } = { ts: new Date().toISOString(), text }
+
+    // Optimistic update
+    const optimistic = { ...activityLogs, [clientId]: [entry, ...(activityLogs[clientId] ?? [])] }
+    setActivityLogs(optimistic)
+    localStorage.setItem('pipeline-activity-logs', JSON.stringify(optimistic))
     setActivityDraft(d => ({ ...d, [clientId]: '' }))
-    // Also update lastTouched
     updateClient(clientId, { lastTouched: new Date().toISOString().split('T')[0] })
+
+    // Persist to Supabase
+    try {
+      const res = await fetch('/api/pipeline/activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId, clientName: clientName || '', text }),
+      })
+      if (res.ok) {
+        const { id, ts } = await res.json()
+        // Update entry with real id + ts from DB
+        setActivityLogs(prev => {
+          const updated = {
+            ...prev,
+            [clientId]: prev[clientId]?.map(e =>
+              e.text === text && !e.id ? { ...e, id, ts } : e
+            ) ?? []
+          }
+          localStorage.setItem('pipeline-activity-logs', JSON.stringify(updated))
+          return updated
+        })
+      }
+    } catch { /* keep optimistic entry */ }
   }
 
-  function deleteActivityEntry(clientId: string, idx: number) {
+  async function deleteActivityEntry(clientId: string, idx: number) {
+    const entry = activityLogs[clientId]?.[idx]
     const updated = {
       ...activityLogs,
       [clientId]: (activityLogs[clientId] ?? []).filter((_, i) => i !== idx)
     }
     setActivityLogs(updated)
     localStorage.setItem('pipeline-activity-logs', JSON.stringify(updated))
+
+    // Delete from Supabase if we have a real id
+    if (entry?.id) {
+      try {
+        await fetch('/api/pipeline/activity', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: entry.id }),
+        })
+      } catch { /* best effort */ }
+    }
   }
 
   function formatActivityTs(ts: string): string {
@@ -899,18 +953,21 @@ export default function PipelinePage() {
 
               {/* Activity Log */}
               <div>
-                <div className="text-[10px] uppercase tracking-wider text-midnight/40 mb-2">Activity Log</div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="text-[10px] uppercase tracking-wider text-midnight/40">Activity Log</div>
+                  {activitySynced && <span className="text-[9px] text-green-500 font-medium">● synced</span>}
+                </div>
                 <div className="flex gap-2 mb-3">
                   <input
                     type="text"
                     value={activityDraft[client.id] ?? ''}
                     onChange={e => setActivityDraft(d => ({ ...d, [client.id]: e.target.value }))}
-                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addActivityEntry(client.id) } }}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addActivityEntry(client.id, client.name) } }}
                     placeholder="Log a touch, call, email… (Enter to save)"
                     className="flex-1 bg-midnight/5 border border-midnight/10 rounded-lg px-3 py-1.5 text-sm text-midnight placeholder:text-midnight/30 focus:outline-none focus:ring-1 focus:ring-ocean focus:border-ocean"
                   />
                   <button
-                    onClick={() => addActivityEntry(client.id)}
+                    onClick={() => addActivityEntry(client.id, client.name)}
                     className="px-3 py-1.5 bg-midnight text-cream rounded-lg text-sm font-medium hover:bg-ocean transition-colors"
                   >
                     Log
