@@ -88,6 +88,9 @@ export default function OpportunitiesPage() {
   const [logCallType, setLogCallType] = useState('Call')
   const [logCallNotes, setLogCallNotes] = useState('')
   const [submittingLog, setSubmittingLog] = useState(false)
+  const [editingFollowUp, setEditingFollowUp] = useState<string | null>(null)
+  const [followUpDraft, setFollowUpDraft] = useState('')
+  const [savingFollowUp, setSavingFollowUp] = useState(false)
 
   // New client form state
   const [newName, setNewName] = useState('')
@@ -193,6 +196,29 @@ export default function OpportunitiesPage() {
     } finally {
       setSubmittingLog(false)
     }
+  }
+
+  async function saveFollowUp(clientId: string, date: string) {
+    if (savingFollowUp) return
+    setSavingFollowUp(true)
+    try {
+      await fetch('/api/pph/clients', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: clientId, followUpDate: date || null }),
+      })
+      setClients(prev => prev.map(c => c.id === clientId ? { ...c, followUpDate: date || null } : c))
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSavingFollowUp(false)
+      setEditingFollowUp(null)
+    }
+  }
+
+  function openFollowUpPicker(client: Client) {
+    setFollowUpDraft(client.followUpDate || '')
+    setEditingFollowUp(client.id)
   }
 
   // Alerts: overdue + due today
@@ -363,14 +389,41 @@ export default function OpportunitiesPage() {
                         <User className="w-3 h-3" /> {client.primaryLo}
                       </span>
                     )}
-                    {client.followUpDate && (
-                      <span className={`flex items-center gap-1 ${
-                        followUp === 'overdue' ? 'text-red-600 font-semibold' :
-                        followUp === 'today' ? 'text-amber-600 font-semibold' :
-                        'text-emerald-600'
-                      }`}>
-                        <Calendar className="w-3 h-3" /> {relativeDate(client.followUpDate)}
+                    {editingFollowUp === client.id ? (
+                      <span className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                        <input
+                          type="date"
+                          value={followUpDraft}
+                          onChange={e => setFollowUpDraft(e.target.value)}
+                          onBlur={() => saveFollowUp(client.id, followUpDraft)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') saveFollowUp(client.id, followUpDraft)
+                            if (e.key === 'Escape') setEditingFollowUp(null)
+                          }}
+                          autoFocus
+                          className="text-xs border border-ocean/40 rounded px-1.5 py-0.5 focus:outline-none focus:border-ocean bg-white"
+                        />
+                        {followUpDraft && (
+                          <button
+                            onClick={() => saveFollowUp(client.id, '')}
+                            className="text-xs text-red-400 hover:text-red-600 px-1"
+                            title="Clear"
+                          >✕</button>
+                        )}
                       </span>
+                    ) : (
+                      <button
+                        onClick={e => { e.preventDefault(); openFollowUpPicker(client) }}
+                        className={`flex items-center gap-1 hover:opacity-70 transition-opacity ${
+                          followUp === 'overdue' ? 'text-red-600 font-semibold' :
+                          followUp === 'today' ? 'text-amber-600 font-semibold' :
+                          client.followUpDate ? 'text-emerald-600' : 'text-midnight/25 hover:text-midnight/50'
+                        }`}
+                        title="Set follow-up date"
+                      >
+                        <Calendar className="w-3 h-3" />
+                        {client.followUpDate ? relativeDate(client.followUpDate) : 'Set date'}
+                      </button>
                     )}
                     {client.lastTouched && <span>Touched {relativeDate(client.lastTouched)}</span>}
                   </div>
