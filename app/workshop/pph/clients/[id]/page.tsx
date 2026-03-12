@@ -89,13 +89,30 @@ interface ClientScenario {
 const INCOME_TYPES = ['W2', 'SE/Self-Employed', '1099', 'Rental', 'Retired/SSA', 'Pension', 'Other']
 const PROPERTY_TYPES = ['SFR', 'Condo', '2-Unit', '3-Unit', '4-Unit', 'Commercial', 'Land']
 const PROPERTY_STATUSES = ['Primary', 'Rental', 'Vacation/Second', 'Pending Sale', 'Vacant']
-const STAGES = ['New Lead', 'Pre-Approved', 'In Process', 'Waiting', 'App Sent', 'Processing', 'Closing', 'Closed', 'Lost']
+const STAGES = ['New Lead', 'Pre-Approved', 'In Process', 'Waiting', 'App Sent', 'Processing', 'Closing', 'Funded', 'Closed', 'Lost']
 const PRIORITIES = ['Hot', 'Active', 'Warm', 'Monitoring']
+const STAGE_COLORS: Record<string, string> = {
+  'New Lead': 'bg-slate-100 text-slate-700',
+  'Pre-Approved': 'bg-blue-100 text-blue-700',
+  'In Process': 'bg-purple-100 text-purple-700',
+  'Waiting': 'bg-amber-100 text-amber-700',
+  'App Sent': 'bg-cyan-100 text-cyan-700',
+  'Processing': 'bg-indigo-100 text-indigo-700',
+  'Closing': 'bg-emerald-100 text-emerald-700',
+  'Funded': 'bg-green-100 text-green-700',
+  'Closed': 'bg-green-100 text-green-700',
+  'Lost': 'bg-red-100 text-red-400',
+}
 const LO_OPTIONS = ['Kyle', 'Jim', 'Anthony']
 const CALL_TYPES = ['Call', 'Text', 'Email', 'In Person', 'Note']
 
-const TABS = ['overview', 'calls', 'scenarios', 'chat'] as const
-type Tab = typeof TABS[number]
+const TABS = [
+  { id: 'overview',  label: 'Overview',  icon: '🏠' },
+  { id: 'calls',     label: 'Activity',  icon: '📞' },
+  { id: 'scenarios', label: 'Scenarios', icon: '📊' },
+  { id: 'chat',      label: 'PPH-Claw',  icon: '🤖' },
+] as const
+type Tab = typeof TABS[number]['id']
 
 // ── Module-level components (NOT inside the page fn) to prevent remount on re-render ──
 
@@ -619,22 +636,42 @@ export default function ClientProfilePage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <PPHNav />
       {/* Back + Name */}
-      <div className="flex items-center gap-3">
-        <Link href="/workshop/pph/opportunities" className="p-2 rounded-lg hover:bg-midnight/5 transition-colors">
+      <div className="flex items-start gap-3">
+        <Link href="/workshop/pph/opportunities" className="p-2 rounded-lg hover:bg-midnight/5 transition-colors mt-0.5 flex-shrink-0" title="Back to Pipeline">
           <ArrowLeft className="w-5 h-5 text-midnight/40" />
         </Link>
-        <div className="flex-1">
-          <h1 className="font-display text-2xl text-midnight">{client.name}</h1>
-          <div className="flex items-center gap-3 text-xs text-midnight/50 mt-0.5">
-            {client.loanType && <span>{client.loanType}</span>}
-            {client.loanAmount && <span>${(client.loanAmount / 1000).toFixed(0)}k</span>}
-            {client.referralSource && <span>via {client.referralSource}</span>}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="font-display text-2xl text-midnight">{client.name}</h1>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STAGE_COLORS[client.stage] || 'bg-gray-100 text-gray-600'}`}>{client.stage}</span>
+            {client.ficoScore && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-midnight/5 text-midnight/60">FICO {client.ficoScore}</span>}
+            {client.targetPurchasePrice && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-midnight/5 text-midnight/60">${(client.targetPurchasePrice/1000).toFixed(0)}k target</span>}
           </div>
+          <div className="flex items-center gap-3 text-xs text-midnight/40 mt-1 flex-wrap">
+            {client.loanType && <span>{client.loanType}</span>}
+            {client.targetArea && <span>📍 {client.targetArea}</span>}
+            {client.primaryLo && <span>👤 {client.primaryLo}</span>}
+            {client.referralSource && <span>via {client.referralSource}</span>}
+            {client.phone && <a href={`tel:${client.phone}`} className="hover:text-ocean transition-colors">📞 {client.phone}</a>}
+          </div>
+        </div>
+        {/* Quick action buttons */}
+        <div className="flex gap-1 flex-shrink-0">
+          <button onClick={() => setTab('chat')} title="Ask PPH-Claw"
+            className={`p-2 rounded-lg transition-colors ${tab === 'chat' ? 'bg-ocean text-white' : 'hover:bg-ocean/10 text-midnight/40 hover:text-ocean'}`}>
+            <MessageSquare className="w-4 h-4" />
+          </button>
+          <button onClick={() => setTab('calls')} title="Log Activity"
+            className={`p-2 rounded-lg transition-colors ${tab === 'calls' ? 'bg-midnight text-white' : 'hover:bg-midnight/5 text-midnight/40 hover:text-midnight'}`}>
+            <Phone className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* Header fields grid */}
-      <div className="bg-cream rounded-xl p-4 border border-midnight/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {/* Header fields grid — tap any field to edit */}
+      <div className="bg-cream rounded-xl p-4 border border-midnight/5">
+        <p className="text-[10px] text-midnight/25 uppercase tracking-wider mb-3 font-medium">Tap any field to edit</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <EditableSelect field="stage" value={client.stage} options={STAGES} label="Stage" onChange={saveField} />
         <EditableSelect field="priority" value={client.priority} options={PRIORITIES} label="Priority" onChange={saveField} />
         <EditableSelect field="primaryLo" value={client.primaryLo} options={LO_OPTIONS} label="Primary LO" onChange={saveField} />
@@ -643,19 +680,23 @@ export default function ClientProfilePage() {
         <EditableText field="followUpDate" value={client.followUpDate} label="Follow-up Date" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
         <EditableText field="nextAction" value={client.nextAction} label="Next Action" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
         <EditableText field="notes" value={client.notes} label="Notes" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-midnight/10">
+      <div className="flex gap-0 border-b border-midnight/10 -mx-1">
         {TABS.map(t => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-[1px] ${
-              tab === t ? 'text-ocean border-ocean' : 'text-midnight/40 border-transparent hover:text-midnight/70'
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-[1px] whitespace-nowrap ${
+              tab === t.id
+                ? 'text-ocean border-ocean bg-ocean/3'
+                : 'text-midnight/40 border-transparent hover:text-midnight hover:bg-midnight/3'
             }`}
           >
-            {t}
+            <span className="text-base leading-none">{t.icon}</span>
+            <span className="hidden sm:inline">{t.label}</span>
           </button>
         ))}
       </div>
@@ -933,7 +974,11 @@ export default function ClientProfilePage() {
           {loadingCalls ? (
             <div className="text-center py-8"><RefreshCw className="w-5 h-5 text-ocean animate-spin mx-auto" /></div>
           ) : callLogs.length === 0 ? (
-            <p className="text-center py-8 text-midnight/30 text-sm">No contact history yet.</p>
+            <div className="text-center py-8 space-y-1">
+              <p className="text-2xl">📞</p>
+              <p className="text-midnight/40 text-sm font-medium">No contact logged yet</p>
+              <p className="text-midnight/25 text-xs">Use the form above to log a call, text, email, or note</p>
+            </div>
           ) : (
             <div className="space-y-2">
               {callLogs.map(log => (

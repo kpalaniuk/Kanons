@@ -24,6 +24,9 @@ interface Client {
   primaryLo: string | null
   primaryContact: string | null
   phone: string | null
+  ficoScore: number | null
+  targetPurchasePrice: number | null
+  targetArea: string | null
 }
 
 const STAGES = ['New Lead', 'Pre-Approved', 'In Process', 'Waiting', 'App Sent', 'Processing', 'Closing', 'Closed', 'Lost']
@@ -119,6 +122,9 @@ export default function OpportunitiesPage() {
       primaryLo: (row.primary_lo as string) || null,
       primaryContact: (row.primary_contact as string) || null,
       phone: (row.phone as string) || null,
+      ficoScore: (row.fico_score as number) || null,
+      targetPurchasePrice: (row.target_purchase_price as number) || null,
+      targetArea: (row.target_area as string) || null,
     }
   }
 
@@ -381,9 +387,12 @@ export default function OpportunitiesPage() {
                       {client.stage}
                     </span>
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-midnight/50">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-midnight/50">
                     {client.loanType && <span>{client.loanType}</span>}
-                    {client.loanAmount && <span>${(client.loanAmount / 1000).toFixed(0)}k</span>}
+                    {client.targetPurchasePrice && <span className="font-medium text-midnight/70">${(client.targetPurchasePrice/1000).toFixed(0)}k</span>}
+                    {client.loanAmount && !client.targetPurchasePrice && <span>${(client.loanAmount / 1000).toFixed(0)}k</span>}
+                    {client.ficoScore && <span className={`font-medium ${client.ficoScore >= 740 ? 'text-emerald-600' : client.ficoScore >= 680 ? 'text-amber-600' : 'text-red-500'}`}>FICO {client.ficoScore}</span>}
+                    {client.targetArea && <span>📍 {client.targetArea}</span>}
                     {client.primaryLo && (
                       <span className="flex items-center gap-1">
                         <User className="w-3 h-3" /> {client.primaryLo}
@@ -436,14 +445,30 @@ export default function OpportunitiesPage() {
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <button
                     onClick={() => setLogCallClient(client)}
-                    className="p-2 rounded-lg hover:bg-midnight/5 transition-colors"
+                    className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-midnight/8 transition-colors text-xs text-midnight/50 hover:text-midnight"
+                    title="Log Call/Note"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Log</span>
+                  </button>
+                  <button
+                    onClick={() => setLogCallClient(client)}
+                    className="sm:hidden p-2 rounded-lg hover:bg-midnight/5 transition-colors"
                     title="Log Call"
                   >
                     <Phone className="w-4 h-4 text-midnight/40" />
                   </button>
                   <Link
                     href={`/workshop/pph/clients/${client.id}?tab=chat`}
-                    className="p-2 rounded-lg hover:bg-midnight/5 transition-colors"
+                    className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-ocean/8 transition-colors text-xs text-midnight/50 hover:text-ocean"
+                    title="Ask PPH-Claw"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Ask AI</span>
+                  </Link>
+                  <Link
+                    href={`/workshop/pph/clients/${client.id}?tab=chat`}
+                    className="sm:hidden p-2 rounded-lg hover:bg-midnight/5 transition-colors"
                     title="Chat with PPH-Claw"
                   >
                     <MessageSquare className="w-4 h-4 text-midnight/40" />
@@ -462,9 +487,16 @@ export default function OpportunitiesPage() {
         })}
       </div>
 
-      {filtered.length === 0 && !loading && (
+      {filtered.length === 0 && !loading && clients.length === 0 && (
+        <div className="text-center py-16 space-y-3">
+          <p className="text-4xl">📋</p>
+          <p className="text-midnight/50 font-medium">No clients yet</p>
+          <p className="text-midnight/30 text-sm">Hit <strong>New Client</strong> to add your first deal</p>
+        </div>
+      )}
+      {filtered.length === 0 && !loading && clients.length > 0 && (
         <div className="text-center py-12 text-midnight/30 text-sm">
-          No matching opportunities found.
+          No results — try clearing your filters
         </div>
       )}
 
