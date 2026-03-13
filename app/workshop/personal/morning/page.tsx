@@ -1131,13 +1131,22 @@ export default function MorningBriefPage() {
           <h2 className="font-display text-2xl text-midnight">Quick Access</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {/* Pipeline */}
+          {/* Mortgage Pipeline (Notion) */}
           <Link
             href="/workshop/work/pipeline"
             className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-cream border-midnight/5 hover:border-midnight/20 transition-all text-center"
           >
             <CheckSquare className="w-5 h-5 text-ocean" />
             <span className="text-xs font-medium text-midnight/70">Pipeline</span>
+          </Link>
+
+          {/* PPH Kanban */}
+          <Link
+            href="/workshop/pph/pipeline"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-cream border-midnight/5 hover:border-midnight/20 transition-all text-center"
+          >
+            <Briefcase className="w-5 h-5 text-indigo-500" />
+            <span className="text-xs font-medium text-midnight/70">PPH Kanban</span>
           </Link>
 
           {/* FC Balboa */}
