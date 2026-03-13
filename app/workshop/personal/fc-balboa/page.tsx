@@ -189,7 +189,7 @@ export default function FCBalboaPage() {
           </div>
           <div>
             <div className="text-midnight/40 text-xs mb-1">Head Coach</div>
-            <div className="font-medium text-midnight">Kyle Palaniuk + Andy Laub</div>
+            <div className="font-medium text-midnight">Kyle Palaniuk + Dean Jones</div>
           </div>
           <div>
             <div className="text-midnight/40 text-xs mb-1">Birth Year Window</div>
@@ -204,11 +204,43 @@ export default function FCBalboaPage() {
 
       {/* Roster */}
       <section className="bg-cream rounded-xl p-6 border border-midnight/5">
-        <div className="flex items-center gap-3 mb-4">
-          <Users className="w-5 h-5 text-green-600" />
-          <h2 className="font-display text-xl text-midnight">Roster</h2>
+        <div className="flex items-center justify-between gap-3 mb-1">
+          <div className="flex items-center gap-3">
+            <Users className="w-5 h-5 text-green-600" />
+            <h2 className="font-display text-xl text-midnight">Roster</h2>
+          </div>
+          <span className="text-xs text-midnight/30">Spring 2026 · 16 players</span>
         </div>
-        <p className="text-sm text-midnight/40 italic">Add players here as the season progresses.</p>
+        <p className="text-xs text-midnight/40 mb-4">U10B Blue + White combined · Co-coach: Dean Jones</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {[
+            { num: 2,  name: 'Bohdan Palaniuk', note: '⭐' },
+            { num: 3,  name: 'Danilo Borunda' },
+            { num: 4,  name: 'Oliver Neison' },
+            { num: 5,  name: 'Noah Bendinelli' },
+            { num: 6,  name: 'Keaton Rempel' },
+            { num: 7,  name: 'Maddox Short' },
+            { num: 8,  name: 'Clayton Coder' },
+            { num: 9,  name: 'Walker Laub' },
+            { num: 10, name: 'Benjamin Vela' },
+            { num: 11, name: 'Declan Cameron' },
+            { num: 12, name: 'Landon West' },
+            { num: 13, name: 'Jackson Holleran' },
+            { num: 14, name: 'Asher Siewert' },
+            { num: 15, name: 'Oliver Nascimento' },
+            { num: 16, name: 'Isaac Perez-Kimes' },
+            { num: 17, name: 'Dylan Jones' },
+          ].map(p => (
+            <div key={p.num} className="flex items-center gap-3 bg-white/60 rounded-lg px-3 py-2 border border-midnight/5">
+              <span className="text-xs font-bold text-midnight/30 w-5 text-right shrink-0">#{p.num}</span>
+              <span className="text-sm font-medium text-midnight truncate">{p.name}</span>
+              {p.note && <span className="text-xs shrink-0">{p.note}</span>}
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 pt-3 border-t border-midnight/5 flex flex-wrap gap-3 text-xs text-midnight/40">
+          <span>⚠️ Bohdi + Walker Laub still need to register at fcbalboa.byga.net</span>
+        </div>
       </section>
 
       {/* Practice Plans */}
