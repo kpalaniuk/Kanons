@@ -1,15 +1,15 @@
 {
-  "lastUpdated": "2026-03-13T04:03:42.197Z",
+  "lastUpdated": "2026-03-13T10:03:41.822Z",
   "period": "2026-02-21 to 2026-03-13",
   "providers": [
     {
       "name": "anthropic",
       "model": "claude-sonnet-4-6",
       "status": "active",
-      "calls": 5641,
-      "tokensIn": 34438,
-      "tokensOut": 3019393,
-      "estimatedCost": 578.2053084999993,
+      "calls": 5550,
+      "tokensIn": 34295,
+      "tokensOut": 2995598,
+      "estimatedCost": 571.3943625999996,
       "notes": "Primary reasoning model. Claude Sonnet 4.5 for most tasks, Opus 4 for complex thinking."
     },
     {
@@ -26,7 +26,7 @@
       "name": "openclaw",
       "model": "delivery-mirror",
       "status": "active",
-      "calls": 187,
+      "calls": 185,
       "tokensIn": 0,
       "tokensOut": 0,
       "estimatedCost": 0,
@@ -44,6 +44,14 @@
     }
   ],
   "daily": [
+    {
+      "date": "2026-02-27",
+      "provider": "anthropic",
+      "calls": 328,
+      "tokensIn": 2730,
+      "tokensOut": 193981,
+      "cost": 26.1916803
+    },
     {
       "date": "2026-02-28",
       "provider": "openclaw",
@@ -262,35 +270,27 @@
     },
     {
       "date": "2026-03-12",
-      "provider": "openclaw",
-      "calls": 2,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-03-12",
       "provider": "anthropic",
-      "calls": 181,
-      "tokensIn": 259,
-      "tokensOut": 52766,
-      "cost": 11.378532449999998
+      "calls": 76,
+      "tokensIn": 96,
+      "tokensOut": 18711,
+      "cost": 4.64566395
     },
     {
       "date": "2026-03-13",
       "provider": "anthropic",
-      "calls": 16,
-      "tokensIn": 22,
-      "tokensOut": 8134,
-      "cost": 1.2274504499999999
+      "calls": 30,
+      "tokensIn": 42,
+      "tokensOut": 18394,
+      "cost": 1.1493730500000003
     }
   ],
   "totals": {
-    "totalCalls": 6009,
-    "totalTokensIn": 20893912,
-    "totalTokensOut": 3081964,
-    "totalCost": 582.5828490999993,
-    "avgCallsPerDay": 286,
-    "avgTokensPerCall": 3990
+    "totalCalls": 5916,
+    "totalTokensIn": 20893769,
+    "totalTokensOut": 3058169,
+    "totalCost": 575.7719031999995,
+    "avgCallsPerDay": 282,
+    "avgTokensPerCall": 4049
   }
 }
