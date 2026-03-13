@@ -250,11 +250,20 @@ export default function FCBalboaPage() {
 
       {/* Practice Plans */}
       <section className="bg-cream rounded-xl p-6 border border-midnight/5">
-        <div className="flex items-center gap-3 mb-4">
-          <ClipboardList className="w-5 h-5 text-green-600" />
-          <h2 className="font-display text-xl text-midnight">Practice Plans</h2>
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <ClipboardList className="w-5 h-5 text-green-600" />
+            <h2 className="font-display text-xl text-midnight">Practice Plans</h2>
+          </div>
+          <Link href="/workshop/personal/fc-balboa/practice-plans" className="text-xs font-medium text-ocean hover:underline">
+            Open builder →
+          </Link>
         </div>
-        <p className="text-sm text-midnight/40 italic">Session plans, drills, and focus areas go here.</p>
+        <p className="text-sm text-midnight/60">Build session plans with drills, timing, and coaching notes. Copy to clipboard to share with Dean.</p>
+        <Link href="/workshop/personal/fc-balboa/practice-plans"
+          className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700 transition-colors">
+          <ClipboardList className="w-4 h-4" /> Plan a Session
+        </Link>
       </section>
 
       {/* Game Log */}
