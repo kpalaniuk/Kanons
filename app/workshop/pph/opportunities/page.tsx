@@ -96,6 +96,7 @@ export default function OpportunitiesPage() {
   const [savingFollowUp, setSavingFollowUp] = useState(false)
   const [editingStage, setEditingStage] = useState<string | null>(null)
   const [savingStage, setSavingStage] = useState(false)
+  const [savingPriority, setSavingPriority] = useState<string | null>(null)
 
   // New client form state
   const [newName, setNewName] = useState('')
@@ -244,6 +245,26 @@ export default function OpportunitiesPage() {
     } finally {
       setSavingStage(false)
       setEditingStage(null)
+    }
+  }
+
+  async function cyclePriority(clientId: string, currentPriority: string) {
+    if (savingPriority === clientId) return
+    const idx = PRIORITIES.indexOf(currentPriority)
+    const next = PRIORITIES[(idx + 1) % PRIORITIES.length]
+    setSavingPriority(clientId)
+    setClients(prev => prev.map(c => c.id === clientId ? { ...c, priority: next } : c))
+    try {
+      await fetch('/api/pph/clients', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: clientId, priority: next }),
+      })
+    } catch (err) {
+      console.error(err)
+      setClients(prev => prev.map(c => c.id === clientId ? { ...c, priority: currentPriority } : c))
+    } finally {
+      setSavingPriority(null)
     }
   }
 
@@ -396,7 +417,11 @@ export default function OpportunitiesPage() {
                 {/* Left: Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${PRIORITY_DOT[client.priority] || 'bg-gray-400'}`} />
+                    <button
+                      onClick={e => { e.preventDefault(); e.stopPropagation(); cyclePriority(client.id, client.priority) }}
+                      className={`w-3 h-3 rounded-full flex-shrink-0 transition-transform hover:scale-125 ${savingPriority === client.id ? 'opacity-50' : 'cursor-pointer'} ${PRIORITY_DOT[client.priority] || 'bg-gray-400'}`}
+                      title={`${client.priority} — click to cycle`}
+                    />
                     <Link
                       href={`/workshop/pph/clients/${client.id}`}
                       className="font-display text-lg text-midnight hover:text-ocean transition-colors truncate"
