@@ -268,11 +268,20 @@ export default function FCBalboaPage() {
 
       {/* Game Log */}
       <section className="bg-cream rounded-xl p-6 border border-midnight/5">
-        <div className="flex items-center gap-3 mb-4">
-          <Calendar className="w-5 h-5 text-green-600" />
-          <h2 className="font-display text-xl text-midnight">Game Log</h2>
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <Calendar className="w-5 h-5 text-green-600" />
+            <h2 className="font-display text-xl text-midnight">Game Log</h2>
+          </div>
+          <Link href="/workshop/personal/fc-balboa/game-log" className="text-xs font-medium text-ocean hover:underline">
+            Open log →
+          </Link>
         </div>
-        <p className="text-sm text-midnight/40 italic">Results and notes by game date.</p>
+        <p className="text-sm text-midnight/60">Track results, scorers, assists, and coach notes for every match.</p>
+        <Link href="/workshop/personal/fc-balboa/game-log"
+          className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-midnight text-cream rounded-xl text-sm font-medium hover:bg-midnight/80 transition-colors">
+          <Calendar className="w-4 h-4" /> View Game Log
+        </Link>
       </section>
 
     </div>
