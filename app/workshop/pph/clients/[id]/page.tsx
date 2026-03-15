@@ -47,6 +47,9 @@ interface Client {
   b2Name: string | null
   b2IncomeType: string | null
   b2MonthlyIncome: number | null
+  // Income details (structured sub-fields)
+  b1IncomeDetails: Record<string, number | string | null>
+  b2IncomeDetails: Record<string, number | string | null>
   // Assets
   b1Assets: number | null
   b1AssetsNotes: string | null
@@ -280,6 +283,8 @@ export default function ClientProfilePage() {
       b2Name: (row.b2_name as string) || null,
       b2IncomeType: (row.b2_income_type as string) || null,
       b2MonthlyIncome: (row.b2_monthly_income as number) || null,
+      b1IncomeDetails: (row.b1_income_details as Record<string, number | string | null>) || {},
+      b2IncomeDetails: (row.b2_income_details as Record<string, number | string | null>) || {},
       b1Assets: (row.b1_assets as number) || null,
       b1AssetsNotes: (row.b1_assets_notes as string) || null,
       b2Assets: (row.b2_assets as number) || null,
@@ -792,27 +797,138 @@ export default function ClientProfilePage() {
               </label>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[{ label: 'Borrower 1', nameKey: 'b1Name', typeKey: 'b1IncomeType', incomeKey: 'b1MonthlyIncome' }, { label: 'Borrower 2', nameKey: 'b2Name', typeKey: 'b2IncomeType', incomeKey: 'b2MonthlyIncome' }].map(({ label, nameKey, typeKey, incomeKey }) => (
-                <div key={label} className="bg-white/60 rounded-xl p-4 border border-midnight/5 space-y-3">
-                  <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">{label}</p>
-                  <EditableText field={nameKey} value={client[nameKey as keyof Client] as string | null} label="Full Name" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
-                  <div>
-                    <span className="text-xs text-midnight/40 block mb-0.5">Income Type</span>
-                    <select value={(client[typeKey as keyof Client] as string) || ''} onChange={e => saveClientFields({ [typeKey]: e.target.value })} className="w-full px-2 py-1 bg-cream border border-midnight/10 rounded text-sm focus:outline-none">
-                      <option value="">—</option>
-                      {INCOME_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <span className="text-xs text-midnight/40 block mb-0.5">Monthly Qualifying Income</span>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-midnight/40">$</span>
-                      <input type="number" placeholder="0" value={(client[incomeKey as keyof Client] as number) || ''} onChange={e => saveClientFields({ [incomeKey]: parseFloat(e.target.value) || null })} className="flex-1 px-2 py-1 bg-cream border border-midnight/10 rounded text-sm focus:outline-none" />
-                      <span className="text-xs text-midnight/40">/mo</span>
+              {([
+                { label: 'Borrower 1', nameKey: 'b1Name', typeKey: 'b1IncomeType', incomeKey: 'b1MonthlyIncome', detailsKey: 'b1IncomeDetails' },
+                { label: 'Borrower 2', nameKey: 'b2Name', typeKey: 'b2IncomeType', incomeKey: 'b2MonthlyIncome', detailsKey: 'b2IncomeDetails' },
+              ] as const).map(({ label, nameKey, typeKey, incomeKey, detailsKey }) => {
+                const incomeType = client[typeKey] as string | null
+                const details = (client[detailsKey] || {}) as Record<string, number | string | null>
+
+                function calcSuggestedIncome(): number | null {
+                  if (incomeType === 'W2') {
+                    const base = Number(details.base || 0)
+                    const bonus = Number(details.bonus || 0)
+                    const overtime = Number(details.overtime || 0)
+                    const commission = Number(details.commission || 0)
+                    // Base is monthly; bonus/OT/commission are annual, averaged over 24 months per guideline
+                    return base + (bonus + overtime + commission) / 24
+                  }
+                  if (incomeType === 'SE/Self-Employed' || incomeType === '1099') {
+                    const y1 = Number(details.year1Net || 0)
+                    const y2 = Number(details.year2Net || 0)
+                    if (!y1 && !y2) return null
+                    // Declining income: use lower year; otherwise 2yr avg
+                    const avg = (y1 + y2) / 2
+                    const qualifying = y2 < y1 ? y2 : avg
+                    return qualifying / 12
+                  }
+                  return null
+                }
+
+                const suggested = calcSuggestedIncome()
+
+                function saveDetails(updates: Record<string, number | string | null>) {
+                  const merged = { ...details, ...updates }
+                  saveClientFields({ [detailsKey]: merged })
+                }
+
+                return (
+                  <div key={label} className="bg-white/60 rounded-xl p-4 border border-midnight/5 space-y-3">
+                    <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">{label}</p>
+                    <EditableText field={nameKey} value={client[nameKey] as string | null} label="Full Name" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+
+                    {/* Income Type */}
+                    <div>
+                      <span className="text-xs text-midnight/40 block mb-0.5">Income Type</span>
+                      <select value={incomeType || ''} onChange={e => saveClientFields({ [typeKey]: e.target.value })} className="w-full px-2 py-1 bg-cream border border-midnight/10 rounded text-sm focus:outline-none">
+                        <option value="">—</option>
+                        {INCOME_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+
+                    {/* W2 sub-fields */}
+                    {incomeType === 'W2' && (
+                      <div className="space-y-2 pt-1 border-t border-midnight/8">
+                        <p className="text-[10px] text-midnight/30 uppercase tracking-wider font-medium">W2 Breakdown</p>
+                        {[
+                          { key: 'base', label: 'Base Salary', unit: '/mo' },
+                          { key: 'bonus', label: 'Annual Bonus', unit: '/yr' },
+                          { key: 'overtime', label: 'Overtime', unit: '/yr' },
+                          { key: 'commission', label: 'Commission', unit: '/yr' },
+                        ].map(({ key, label: fLabel, unit }) => (
+                          <div key={key}>
+                            <span className="text-xs text-midnight/40 block mb-0.5">{fLabel}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-midnight/40">$</span>
+                              <input type="number" placeholder="0" value={Number(details[key] || '') || ''} onChange={e => saveDetails({ [key]: parseFloat(e.target.value) || null })} className="flex-1 px-2 py-1 bg-cream border border-midnight/10 rounded text-xs focus:outline-none" />
+                              <span className="text-[10px] text-midnight/30">{unit}</span>
+                            </div>
+                          </div>
+                        ))}
+                        {suggested !== null && (
+                          <div className="mt-2 p-2 bg-ocean/5 rounded-lg border border-ocean/15 flex items-center justify-between gap-2">
+                            <div>
+                              <p className="text-[10px] text-ocean/70 font-medium">Suggested qualifying</p>
+                              <p className="text-sm font-bold text-ocean">${Math.round(suggested).toLocaleString()}/mo</p>
+                              <p className="text-[10px] text-midnight/30">base + (bonus+OT+commission) ÷ 24</p>
+                            </div>
+                            <button onClick={() => saveClientFields({ [incomeKey]: Math.round(suggested) })} className="px-2.5 py-1 text-xs bg-ocean text-white rounded-lg font-medium hover:bg-ocean/90 transition-colors whitespace-nowrap">Apply</button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* SE / 1099 sub-fields */}
+                    {(incomeType === 'SE/Self-Employed' || incomeType === '1099') && (
+                      <div className="space-y-2 pt-1 border-t border-midnight/8">
+                        <p className="text-[10px] text-midnight/30 uppercase tracking-wider font-medium">{incomeType} — Net Income (Schedule C/K-1)</p>
+                        {[
+                          { key: 'year2Net', label: 'Year 2 (Most Recent) Net' },
+                          { key: 'year1Net', label: 'Year 1 Net' },
+                        ].map(({ key, label: fLabel }) => (
+                          <div key={key}>
+                            <span className="text-xs text-midnight/40 block mb-0.5">{fLabel}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-midnight/40">$</span>
+                              <input type="number" placeholder="0" value={Number(details[key] || '') || ''} onChange={e => saveDetails({ [key]: parseFloat(e.target.value) || null })} className="flex-1 px-2 py-1 bg-cream border border-midnight/10 rounded text-xs focus:outline-none" />
+                              <span className="text-[10px] text-midnight/30">/yr</span>
+                            </div>
+                          </div>
+                        ))}
+                        {(details.year1Net || details.year2Net) && (
+                          <div className="text-xs text-midnight/50 space-y-0.5 pt-1">
+                            {details.year1Net && details.year2Net && (
+                              <p className={Number(details.year2Net) < Number(details.year1Net) ? 'text-amber-600' : 'text-emerald-600'}>
+                                {Number(details.year2Net) < Number(details.year1Net) ? '📉 Declining' : '📈 Trending up'} — {Number(details.year2Net) < Number(details.year1Net) ? 'using lower year' : '2yr avg'}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {suggested !== null && (
+                          <div className="mt-2 p-2 bg-ocean/5 rounded-lg border border-ocean/15 flex items-center justify-between gap-2">
+                            <div>
+                              <p className="text-[10px] text-ocean/70 font-medium">Suggested qualifying</p>
+                              <p className="text-sm font-bold text-ocean">${Math.round(suggested).toLocaleString()}/mo</p>
+                              <p className="text-[10px] text-midnight/30">{Number(details.year2Net) < Number(details.year1Net) ? 'lower year ÷ 12' : '2yr avg ÷ 12'}</p>
+                            </div>
+                            <button onClick={() => saveClientFields({ [incomeKey]: Math.round(suggested) })} className="px-2.5 py-1 text-xs bg-ocean text-white rounded-lg font-medium hover:bg-ocean/90 transition-colors whitespace-nowrap">Apply</button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Monthly qualifying income (always shown) */}
+                    <div className={incomeType && incomeType !== 'Rental' && incomeType !== 'Other' ? 'pt-2 border-t border-midnight/8' : ''}>
+                      <span className="text-xs text-midnight/40 block mb-0.5">Monthly Qualifying Income</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-midnight/40">$</span>
+                        <input type="number" placeholder="0" value={(client[incomeKey] as number) || ''} onChange={e => saveClientFields({ [incomeKey]: parseFloat(e.target.value) || null })} className="flex-1 px-2 py-1 bg-cream border border-midnight/10 rounded text-sm focus:outline-none" />
+                        <span className="text-xs text-midnight/40">/mo</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
             {(client.b1MonthlyIncome || client.b2MonthlyIncome) && (
               <div className="mt-3 pt-3 border-t border-midnight/8 flex gap-4 text-sm">
