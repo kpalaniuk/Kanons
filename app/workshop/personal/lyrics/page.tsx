@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   Music, Search, ChevronDown, ChevronRight, Loader2,
-  FileText, Edit3, Check, X
+  FileText, Edit3, Check, X, SortAsc, SortDesc, AlignLeft
 } from 'lucide-react'
 import { BANDS, type Band } from '@/app/lib/lyrics-config'
 
@@ -40,15 +40,11 @@ function isChordLine(line: string) {
   return tokens.length >= 1 && tokens.length <= 8 && tokens.every(isChordToken)
 }
 
-// Section header detection — only lines starting with # OR lines like "CHORUS", "VERSE 1", "BRIDGE"
-// NOT every all-caps line (lyric lines in all-caps should NOT be treated as headers)
 const SECTION_LABELS = /^(verse|chorus|bridge|pre-chorus|hook|intro|outro|interlude|breakdown|solo|refrain|tag|coda|turn|vamp|groove|feel|section)\b/i
 function isSectionHeader(line: string): boolean {
   const t = line.trim()
   if (t.startsWith('#')) return true
-  // Explicit section label patterns only — must be short and match known section words
   if (t.length < 40 && SECTION_LABELS.test(t)) return true
-  // Bracketed labels [VERSE], [CHORUS] etc.
   if (/^\[.{1,30}\]$/.test(t)) return true
   return false
 }
@@ -70,16 +66,28 @@ function parseInlineChords(line: string): Segment[] {
 function hasInlineChords(line: string) { return /\[[A-G]/.test(line) }
 
 // ── Render a single lyrics block ──────────────────────────────────────────────
-function LyricsBlock({ text }: { text: string }) {
+function LyricsBlock({ text, highlight }: { text: string; highlight?: string }) {
   const lines = text.split('\n')
   let i = 0
   const rendered: React.ReactNode[] = []
+
+  const highlightText = (str: string, q: string) => {
+    if (!q) return str
+    const idx = str.toLowerCase().indexOf(q.toLowerCase())
+    if (idx === -1) return str
+    return (
+      <>
+        {str.slice(0, idx)}
+        <mark className="bg-amber-200 text-midnight rounded px-0.5">{str.slice(idx, idx + q.length)}</mark>
+        {str.slice(idx + q.length)}
+      </>
+    )
+  }
 
   while (i < lines.length) {
     const line = lines[i]
     const trimmed = line.trim()
 
-    // Inline chord format [G]word [Em]here
     if (hasInlineChords(trimmed)) {
       const segs = parseInlineChords(trimmed)
       rendered.push(
@@ -89,7 +97,9 @@ function LyricsBlock({ text }: { text: string }) {
               {seg.chord && (
                 <span className="text-ocean font-bold text-xs font-mono leading-tight">{seg.chord}</span>
               )}
-              <span className="text-sm text-midnight/80 whitespace-pre">{seg.lyric || (seg.chord ? '\u00a0\u00a0' : '')}</span>
+              <span className="text-sm text-midnight/80 whitespace-pre">
+                {highlight ? highlightText(seg.lyric || (seg.chord ? '\u00a0\u00a0' : ''), highlight) : (seg.lyric || (seg.chord ? '\u00a0\u00a0' : ''))}
+              </span>
             </span>
           ))}
         </div>
@@ -98,20 +108,20 @@ function LyricsBlock({ text }: { text: string }) {
       continue
     }
 
-    // Chord-only line followed by lyric line
     if (isChordLine(trimmed) && i + 1 < lines.length && !isChordLine(lines[i + 1].trim()) && lines[i + 1].trim() && !isSectionHeader(lines[i + 1])) {
       const lyricLine = lines[i + 1]
       rendered.push(
         <div key={i} className="mb-4">
           <div className="font-mono text-xs text-ocean font-bold tracking-wider whitespace-pre">{trimmed}</div>
-          <div className="text-sm text-midnight/80 whitespace-pre-wrap">{lyricLine}</div>
+          <div className="text-sm text-midnight/80 whitespace-pre-wrap">
+            {highlight ? highlightText(lyricLine, highlight) : lyricLine}
+          </div>
         </div>
       )
       i += 2
       continue
     }
 
-    // Chord-only line (no lyric pair)
     if (isChordLine(trimmed) && trimmed) {
       rendered.push(
         <div key={i} className="font-mono text-xs text-ocean font-bold tracking-wider whitespace-pre mb-1">{trimmed}</div>
@@ -120,7 +130,6 @@ function LyricsBlock({ text }: { text: string }) {
       continue
     }
 
-    // Section header (explicit only — not every all-caps line)
     if (isSectionHeader(trimmed)) {
       const label = trimmed.replace(/^#+\s*/, '').replace(/^\[|\]$/g, '')
       rendered.push(
@@ -132,16 +141,16 @@ function LyricsBlock({ text }: { text: string }) {
       continue
     }
 
-    // Empty line → stanza break
     if (!trimmed) {
       rendered.push(<div key={i} className="mb-3" />)
       i++
       continue
     }
 
-    // Normal lyric line (including all-caps lines — they're just lyrics)
     rendered.push(
-      <div key={i} className="text-sm text-midnight/80 whitespace-pre-wrap leading-relaxed mb-1">{trimmed}</div>
+      <div key={i} className="text-sm text-midnight/80 whitespace-pre-wrap leading-relaxed mb-1">
+        {highlight ? highlightText(trimmed, highlight) : trimmed}
+      </div>
     )
     i++
   }
@@ -172,6 +181,19 @@ function extractMeta(content: string): { meta: SongMeta; body: string } {
     }
   }
   return { meta, body: bodyLines.join('\n').trim() }
+}
+
+// ── Extract a lyric match snippet ─────────────────────────────────────────────
+function extractMatchSnippet(content: string, query: string): string {
+  const lower = content.toLowerCase()
+  const idx = lower.indexOf(query.toLowerCase())
+  if (idx === -1) return ''
+  const start = Math.max(0, idx - 40)
+  const end = Math.min(content.length, idx + query.length + 60)
+  let snippet = content.slice(start, end).replace(/\n/g, ' ').trim()
+  if (start > 0) snippet = '…' + snippet
+  if (end < content.length) snippet = snippet + '…'
+  return snippet
 }
 
 // ── Status badge ──────────────────────────────────────────────────────────────
@@ -252,6 +274,8 @@ function TuLenguaNotice({ title }: { title: string }) {
   )
 }
 
+type SortMode = 'band' | 'az' | 'za'
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function LyricsPage() {
   const [songs, setSongs] = useState<Song[]>([])
@@ -262,6 +286,11 @@ export default function LyricsPage() {
   const [songContent, setSongContent] = useState<Record<string, string>>({})
   const [loadingContent, setLoadingContent] = useState<string | null>(null)
   const [bandFilter, setBandFilter] = useState<string | null>(null)
+  const [sortMode, setSortMode] = useState<SortMode>('band')
+  // Lyric search mode
+  const [lyricSearchActive, setLyricSearchActive] = useState(false)
+  const [lyricsFetching, setLyricsFetching] = useState(false)
+  const [lyricsFetchDone, setLyricsFetchDone] = useState(false)
 
   useEffect(() => {
     fetch('/api/lyrics')
@@ -271,10 +300,31 @@ export default function LyricsPage() {
       .finally(() => setLoading(false))
   }, [])
 
+  // ── Fetch all lyrics content for full-text search ──────────────────────────
+  const fetchAllLyrics = useCallback(async (songList: Song[]) => {
+    if (lyricsFetching || lyricsFetchDone) return
+    setLyricsFetching(true)
+    const toFetch = songList.filter(s => !s.id.startsWith('tu-lengua-') && !songContent[s.id])
+    const chunks = []
+    for (let i = 0; i < toFetch.length; i += 5) chunks.push(toFetch.slice(i, i + 5))
+
+    for (const chunk of chunks) {
+      await Promise.all(chunk.map(async (song) => {
+        try {
+          const res = await fetch(`/api/lyrics?id=${song.id}`)
+          if (!res.ok) return
+          const data = await res.json()
+          setSongContent(prev => ({ ...prev, [song.id]: data.content || '' }))
+        } catch { /* ignore */ }
+      }))
+    }
+    setLyricsFetching(false)
+    setLyricsFetchDone(true)
+  }, [lyricsFetching, lyricsFetchDone, songContent])
+
   const toggleSong = async (songId: string) => {
     if (expandedSong === songId) { setExpandedSong(null); return }
     setExpandedSong(songId)
-    // Tu Lengua songs have synthetic IDs — no Notion page to fetch
     if (songId.startsWith('tu-lengua-')) return
     if (!songContent[songId]) {
       setLoadingContent(songId)
@@ -289,25 +339,69 @@ export default function LyricsPage() {
     }
   }
 
+  const handleLyricSearchToggle = () => {
+    const next = !lyricSearchActive
+    setLyricSearchActive(next)
+    if (next && !lyricsFetchDone) {
+      fetchAllLyrics(songs)
+    }
+  }
+
   // Band counts
   const bandCounts = BANDS.reduce((acc, b) => {
     acc[b] = songs.filter(s => s.band === b).length
     return acc
   }, {} as Record<Band, number>)
 
-  const filtered = songs.filter(s =>
-    s.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (!bandFilter || s.band === bandFilter)
-  )
+  // ── Filter ─────────────────────────────────────────────────────────────────
+  const filtered = songs.filter(s => {
+    const q = searchQuery.toLowerCase()
+    if (!q) return !bandFilter || s.band === bandFilter
+    if (!bandFilter || s.band === bandFilter) {
+      // Always match title
+      if (s.title.toLowerCase().includes(q)) return true
+      // Match loaded content if lyric search is active
+      if (lyricSearchActive && songContent[s.id]) {
+        const { body } = extractMeta(songContent[s.id])
+        if (body.toLowerCase().includes(q)) return true
+      }
+      return false
+    }
+    return false
+  })
 
-  // Group by band for display when no filter
-  const grouped = bandFilter
-    ? { [bandFilter]: filtered }
+  // ── Sort ───────────────────────────────────────────────────────────────────
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortMode === 'az') return a.title.localeCompare(b.title)
+    if (sortMode === 'za') return b.title.localeCompare(a.title)
+    // band mode: use BAND_ORDER then alphabetical (default)
+    const bOrder = ['Neo-Somatic','StronGnome','Personal','Well Well Well','Tu Lengua','Covers']
+    const bo = bOrder.indexOf(a.band) - bOrder.indexOf(b.band)
+    if (bo !== 0) return bo
+    return a.title.localeCompare(b.title)
+  })
+
+  // ── Group by band (unless sorting A-Z/Z-A or band-filtered) ───────────────
+  const useFlatList = sortMode !== 'band' || !!bandFilter
+  const grouped: Record<string, Song[]> = useFlatList
+    ? { all: sorted }
     : BANDS.reduce((acc, b) => {
-        const inBand = filtered.filter(s => s.band === b)
+        const inBand = sorted.filter(s => s.band === b)
         if (inBand.length > 0) acc[b] = inBand
         return acc
       }, {} as Record<string, Song[]>)
+
+  const lyricMatchCount = lyricSearchActive && searchQuery
+    ? filtered.filter(s => {
+        const q = searchQuery.toLowerCase()
+        if (s.title.toLowerCase().includes(q)) return false
+        if (songContent[s.id]) {
+          const { body } = extractMeta(songContent[s.id])
+          return body.toLowerCase().includes(q)
+        }
+        return false
+      }).length
+    : 0
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -320,17 +414,60 @@ export default function LyricsPage() {
         <p className="text-midnight/50 text-sm">{songs.length} songs · chords, lyrics, arrangements</p>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-midnight/30" />
-        <input
-          type="text"
-          placeholder="Search by title…"
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 bg-cream border border-midnight/10 rounded-xl focus:outline-none focus:border-ocean text-midnight text-sm"
-        />
+      {/* Search row */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-midnight/30" />
+          <input
+            type="text"
+            placeholder={lyricSearchActive ? 'Search titles and lyrics…' : 'Search by title…'}
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-11 pr-4 py-3 bg-cream border border-midnight/10 rounded-xl focus:outline-none focus:border-ocean text-midnight text-sm"
+          />
+        </div>
+        {/* Lyric search toggle */}
+        <button
+          onClick={handleLyricSearchToggle}
+          title={lyricSearchActive ? 'Searching titles + lyrics' : 'Click to also search lyrics content'}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all ${
+            lyricSearchActive
+              ? 'bg-ocean text-cream border-ocean'
+              : 'bg-cream text-midnight/50 border-midnight/10 hover:border-ocean hover:text-ocean'
+          }`}
+        >
+          {lyricsFetching
+            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            : <AlignLeft className="w-3.5 h-3.5" />
+          }
+          <span className="hidden sm:inline">{lyricSearchActive ? 'Lyrics ✓' : 'Search Lyrics'}</span>
+        </button>
+        {/* Sort toggle */}
+        <button
+          onClick={() => setSortMode(m => m === 'band' ? 'az' : m === 'az' ? 'za' : 'band')}
+          title={sortMode === 'band' ? 'Sort: By Band' : sortMode === 'az' ? 'Sort: A→Z' : 'Sort: Z→A'}
+          className="flex items-center gap-1.5 px-3 py-2 bg-cream border border-midnight/10 rounded-xl text-midnight/50 hover:border-ocean hover:text-ocean text-xs font-semibold transition-all"
+        >
+          {sortMode === 'za' ? <SortDesc className="w-3.5 h-3.5" /> : <SortAsc className="w-3.5 h-3.5" />}
+          <span className="hidden sm:inline">
+            {sortMode === 'band' ? 'By Band' : sortMode === 'az' ? 'A→Z' : 'Z→A'}
+          </span>
+        </button>
       </div>
+
+      {/* Lyric search status */}
+      {lyricSearchActive && searchQuery && (
+        <div className="flex items-center gap-2 text-xs text-midnight/50">
+          {lyricsFetching && <Loader2 className="w-3 h-3 animate-spin text-ocean" />}
+          {lyricsFetching
+            ? <span>Loading lyrics for full-text search…</span>
+            : <span>
+                {filtered.length} result{filtered.length !== 1 ? 's' : ''}
+                {lyricMatchCount > 0 && <span className="text-ocean font-medium"> · {lyricMatchCount} lyric {lyricMatchCount === 1 ? 'match' : 'matches'}</span>}
+              </span>
+          }
+        </div>
+      )}
 
       {/* Band filter chips */}
       <div className="flex flex-wrap gap-2">
@@ -368,14 +505,22 @@ export default function LyricsPage() {
       ) : filtered.length === 0 ? (
         <div className="bg-sand rounded-xl p-12 text-center">
           <Music className="w-10 h-10 text-midnight/20 mx-auto mb-3" />
-          <p className="text-midnight/50 text-sm">{searchQuery ? 'No matches found' : 'No songs yet'}</p>
+          <p className="text-midnight/50 text-sm mb-2">{searchQuery ? 'No matches found' : 'No songs yet'}</p>
+          {searchQuery && !lyricSearchActive && (
+            <button
+              onClick={handleLyricSearchToggle}
+              className="text-xs text-ocean hover:underline"
+            >
+              Try searching inside lyrics too →
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-10">
           {Object.entries(grouped).map(([band, bandSongs]) => (
             <div key={band}>
-              {/* Band section header */}
-              {!bandFilter && (
+              {/* Band section header (only in band mode, not filtered) */}
+              {!useFlatList && (
                 <div className="flex items-center gap-3 mb-3">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold border ${BAND_COLORS[band as Band] ?? ''}`}>{band}</span>
                   <span className="text-xs text-midnight/30">{bandSongs.length} songs</span>
@@ -388,10 +533,18 @@ export default function LyricsPage() {
                   const isLoadingThis = loadingContent === song.id
                   const raw = songContent[song.id] ?? ''
                   const { meta, body } = isOpen && raw ? extractMeta(raw) : { meta: {}, body: raw }
+
+                  // Lyric match snippet (only shown when song is closed and matched by content)
+                  const q = searchQuery.toLowerCase()
+                  const titleMatches = !q || song.title.toLowerCase().includes(q)
+                  const lyricMatch = lyricSearchActive && q && !titleMatches && raw
+                    ? extractMatchSnippet(raw, searchQuery)
+                    : ''
+
                   const isTuLengua = song.id.startsWith('tu-lengua-')
 
                   return (
-                    <div key={song.id} className="bg-cream border border-midnight/8 rounded-xl overflow-hidden">
+                    <div key={song.id} className={`bg-cream border rounded-xl overflow-hidden transition-colors ${lyricMatch ? 'border-ocean/30' : 'border-midnight/8'}`}>
                       {/* Song row */}
                       <button
                         onClick={() => toggleSong(song.id)}
@@ -409,10 +562,34 @@ export default function LyricsPage() {
                           <span className="text-xs text-midnight/40 hidden sm:inline">{meta.feel}</span>
                         )}
                         <StatusBadge status={meta.status} />
-                        {bandFilter && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full border ml-1 ${BAND_COLORS[band as Band] ?? ''}`}>{song.band}</span>
+                        {/* Show band chip in flat/filtered views */}
+                        {(useFlatList && !bandFilter) && (
+                          <span className={`text-xs px-2 py-0.5 rounded-full border ml-1 ${BAND_COLORS[song.band as Band] ?? ''}`}>{song.band}</span>
+                        )}
+                        {/* Lyric match indicator */}
+                        {lyricMatch && !isOpen && (
+                          <span className="text-xs text-ocean font-medium ml-1 hidden sm:inline">lyric match</span>
                         )}
                       </button>
+
+                      {/* Lyric match snippet (visible when collapsed) */}
+                      {lyricMatch && !isOpen && (
+                        <div className="px-5 pb-3 -mt-1">
+                          <p className="text-xs text-midnight/50 italic bg-ocean/5 rounded px-3 py-2 border border-ocean/10">
+                            {(() => {
+                              const idx = lyricMatch.toLowerCase().indexOf(searchQuery.toLowerCase())
+                              if (idx === -1) return lyricMatch
+                              return (
+                                <>
+                                  {lyricMatch.slice(0, idx)}
+                                  <mark className="bg-amber-200 text-midnight not-italic rounded px-0.5">{lyricMatch.slice(idx, idx + searchQuery.length)}</mark>
+                                  {lyricMatch.slice(idx + searchQuery.length)}
+                                </>
+                              )
+                            })()}
+                          </p>
+                        </div>
+                      )}
 
                       {/* Expanded song detail */}
                       {isOpen && (
@@ -443,7 +620,7 @@ export default function LyricsPage() {
                                   </div>
                                   {body ? (
                                     <div className="bg-sand/60 rounded-lg p-4">
-                                      <LyricsBlock text={body} />
+                                      <LyricsBlock text={body} highlight={lyricSearchActive ? searchQuery : undefined} />
                                     </div>
                                   ) : (
                                     <p className="text-sm text-midnight/30 italic">No lyrics content yet</p>
@@ -467,7 +644,7 @@ export default function LyricsPage() {
           ))}
 
           {/* Empty bands notice */}
-          {!bandFilter && (
+          {!useFlatList && (
             <div className="text-xs text-midnight/30 text-center py-2">
               Well Well Well · Neo-Somatic songs will appear here once added to Notion
             </div>
