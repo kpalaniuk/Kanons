@@ -133,6 +133,11 @@ const STOPS = [
     action: 'BOOKED ✅ PIN: 7462. Free cancellation until Jul 13.',
     accommodation: 'Highland Cow Apt, 31 Millburn Court, Inverness IV2 3PW — BOOKED ✅',
     cost: '£205.20 paid',
+    links: [
+      { label: 'Book INV→DUB · Aer Lingus', url: 'https://www.aerlingus.com/en-gb/flights/inverness-to-dublin', primary: true },
+      { label: 'BA Avios', url: 'https://www.britishairways.com/travel/redeem/public/en_gb?eId=106021&tab=redeem' },
+      { label: 'Google Flights', url: 'https://www.google.com/travel/flights?q=INV+to+DUB+Jul+16+2026' },
+    ],
   },
   {
     id: 'dublin', name: 'Dublin, Ireland', emoji: '🍀', nights: 4, dates: 'Jul 16–20',
@@ -141,7 +146,12 @@ const STOPS = [
     highlights: ['🏡 Garden home office for Kyle', 'Bus to city centre 20 min', 'Pool & gym pass', 'Trinity College', 'Phoenix Park', 'Hop-On-Hop-Off bus'],
     action: 'BOOKED ✅ Arrival confirmed Jul 16. Book INV→DUB Aer Lingus (Chase UR → AerClub Avios).',
     accommodation: "12 Adrian Avenue, Harold's Cross — HomeExchange BOOKED ✅ (#119116132)",
-    alert: 'Book INV→DUB Aer Lingus flight — Jul 16, direct 1h35m. Johnsfort collects Jul 20 morning.'
+    alert: 'Book INV→DUB Aer Lingus flight — Jul 16, direct 1h35m. Johnsfort collects Jul 20 morning.',
+    links: [
+      { label: 'Book INV→DUB · Aer Lingus', url: 'https://www.aerlingus.com/en-gb/flights/inverness-to-dublin', primary: true },
+      { label: 'BA Avios (Chase UR)', url: 'https://www.britishairways.com/travel/redeem/public/en_gb?eId=106021&tab=redeem' },
+      { label: 'Google Flights', url: 'https://www.google.com/travel/flights?q=INV+to+DUB+Jul+16+2026' },
+    ],
   },
   {
     id: 'kells', name: 'Johnsfort Farm, Kells', emoji: '🐄', nights: 4, dates: 'Jul 20–24',
@@ -387,6 +397,20 @@ export default function TripPage() {
                         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800">
                           <span className="font-semibold">Action: </span>{stop.action}
                         </div>
+                        {('links' in stop) && stop.links && (stop.links as {label:string,url:string,primary?:boolean}[]).length > 0 && (
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            {(stop.links as {label:string,url:string,primary?:boolean}[]).map((lnk) => (
+                              <a key={lnk.url} href={lnk.url} target="_blank" rel="noopener noreferrer"
+                                className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                                  lnk.primary
+                                    ? 'bg-midnight text-cream hover:bg-ocean'
+                                    : 'bg-white border border-midnight/15 text-midnight/70 hover:border-ocean/40 hover:text-ocean'
+                                }`}>
+                                {lnk.label} <ExternalLink size={10} />
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </button>
