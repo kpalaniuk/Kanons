@@ -99,8 +99,19 @@ interface ClientScenario {
   slug: string
   clientName: string
   type: string
+  isInteractive: boolean
+  interactiveUrl: string | null
+  label: string
+  description: string | null
+  data: Record<string, unknown>
   createdAt: string
   publicUrl: string
+}
+
+interface ScenarioViewData {
+  viewCount: number
+  lastViewed: string | null
+  snapshots: { id: string; data: Record<string, number>; note: string; at: string }[]
 }
 
 const INCOME_TYPES = ['W2', 'SE/Self-Employed', '1099', 'Rental', 'Retired/SSA', 'Pension', 'Other']
@@ -339,8 +350,8 @@ export default function ClientProfilePage() {
   const [loadingCalls, setLoadingCalls] = useState(false)
   const [scenarios, setScenarios] = useState<ClientScenario[]>([])
   const [loadingScenarios, setLoadingScenarios] = useState(false)
-  const [interactiveSnapshots, setInteractiveSnapshots] = useState<{ id: string; data: Record<string, number>; note: string; at: string }[]>([])
-  const [interactiveViewCount, setInteractiveViewCount] = useState<number | null>(null)
+  const [scenarioViews, setScenarioViews] = useState<Record<string, ScenarioViewData>>({})
+  const [showFinancials, setShowFinancials] = useState(false)
 
   // Edit states
   const [editingField, setEditingField] = useState<string | null>(null)
@@ -413,13 +424,8 @@ export default function ClientProfilePage() {
 
   useEffect(() => { fetchClient() }, [id])
   useEffect(() => { if (tab === 'calls') fetchCalls() }, [tab, id])
-  const JH_CLIENT_ID = '77e3ef8a-fe47-44c9-8c78-c45552463818'
-
   useEffect(() => {
-    if (tab === 'scenarios') {
-      fetchScenarios()
-      if (id === JH_CLIENT_ID) fetchInteractiveEvents('jh-domenech')
-    }
+    if (tab === 'scenarios') fetchScenarios()
   }, [tab, id])
   useEffect(() => { if (tab === 'chat' && id) fetchChatHistory() }, [tab, id])
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chatMessages])
@@ -480,20 +486,28 @@ export default function ClientProfilePage() {
     }
   }
 
-  async function fetchInteractiveEvents(pageKey: string) {
-    const res = await fetch(`/api/scenario-events?pageKey=${pageKey}`)
-    if (res.ok) {
-      const d = await res.json()
-      setInteractiveSnapshots(d.snapshots || [])
-      setInteractiveViewCount(d.viewCount ?? null)
-    }
-  }
-
   async function fetchScenarios() {
     try {
       setLoadingScenarios(true)
       const res = await fetch(`/api/pph/scenarios?clientId=${id}`)
-      if (res.ok) setScenarios(await res.json())
+      if (res.ok) {
+        const list = await res.json()
+        setScenarios(list)
+        // Fetch view data for each scenario in parallel
+        const viewEntries = await Promise.all(
+          list.map(async (s: ClientScenario) => {
+            try {
+              const vr = await fetch(`/api/scenario-events?pageKey=${s.slug}`)
+              if (vr.ok) {
+                const vd = await vr.json()
+                return [s.slug, { viewCount: vd.viewCount ?? 0, lastViewed: vd.lastViewed ?? null, snapshots: vd.snapshots || [] }] as [string, ScenarioViewData]
+              }
+            } catch { /* ignore */ }
+            return [s.slug, { viewCount: 0, lastViewed: null, snapshots: [] }] as [string, ScenarioViewData]
+          })
+        )
+        setScenarioViews(Object.fromEntries(viewEntries))
+      }
     } catch (err) {
       console.error(err)
     } finally {
@@ -816,12 +830,17 @@ export default function ClientProfilePage() {
     )
   }
 
-
+  const EARLY_STAGES = ['New Lead', 'Pre-Approved', 'Waiting']
+  const isEarlyStage = EARLY_STAGES.includes(client.stage)
+  const combinedIncome = (client.b1MonthlyIncome || 0) + (client.b2MonthlyIncome || 0)
+  const totalAssets = (client.b1Assets || 0) + (client.b2Assets || 0)
+  const totalDebt = client.liabilities.reduce((s, d) => s + (d.monthlyPayment || 0), 0)
+  const dtiRatio = combinedIncome > 0 ? ((totalDebt / combinedIncome) * 100).toFixed(1) : null
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <PPHNav />
-      {/* Back + Name */}
+      {/* Header: Name + Status Pills */}
       <div className="flex items-start gap-3">
         <Link href="/workshop/pph/opportunities" className="p-2 rounded-lg hover:bg-midnight/5 transition-colors mt-0.5 flex-shrink-0" title="Back to Pipeline">
           <ArrowLeft className="w-5 h-5 text-midnight/40" />
@@ -830,22 +849,16 @@ export default function ClientProfilePage() {
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="font-display text-2xl text-midnight">{client.name}</h1>
             <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STAGE_COLORS[client.stage] || 'bg-gray-100 text-gray-600'}`}>{client.stage}</span>
-            {client.ficoScore && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-midnight/5 text-midnight/60">FICO {client.ficoScore}</span>}
-            {client.targetPurchasePrice && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-midnight/5 text-midnight/60">${(client.targetPurchasePrice/1000).toFixed(0)}k target</span>}
+            {client.ficoScore && <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${client.ficoScore >= 740 ? 'bg-emerald-50 text-emerald-700' : client.ficoScore >= 680 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'}`}>FICO {client.ficoScore}</span>}
+            {client.targetPurchasePrice && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-midnight/5 text-midnight/60">${(client.targetPurchasePrice/1000).toFixed(0)}k</span>}
           </div>
           <div className="flex items-center gap-3 text-xs text-midnight/40 mt-1 flex-wrap">
-            {client.loanType && <span>{client.loanType}</span>}
+            {client.loanType && <span className="font-medium">{client.loanType}</span>}
             {client.targetArea && <span>📍 {client.targetArea}</span>}
             {client.primaryLo && <span>👤 {client.primaryLo}</span>}
-            {(client.referralType || client.referralName || client.referralSource) && (
-              <span>
-                via {[client.referralType, client.referralName, client.referralSource].filter(Boolean).join(' · ')}
-              </span>
-            )}
             {client.phone && <a href={`tel:${client.phone}`} className="hover:text-ocean transition-colors">📞 {client.phone}</a>}
           </div>
         </div>
-        {/* Quick action buttons */}
         <div className="flex gap-1 flex-shrink-0">
           <button onClick={() => setTab('chat')} title="Ask PPH-Claw"
             className={`p-2 rounded-lg transition-colors ${tab === 'chat' ? 'bg-ocean text-white' : 'hover:bg-ocean/10 text-midnight/40 hover:text-ocean'}`}>
@@ -858,18 +871,18 @@ export default function ClientProfilePage() {
         </div>
       </div>
 
-      {/* Header fields grid — tap any field to edit */}
+      {/* Inline status grid */}
       <div className="bg-cream rounded-xl p-4 border border-midnight/5">
         <p className="text-[10px] text-midnight/25 uppercase tracking-wider mb-3 font-medium">Tap any field to edit</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <EditableSelect field="stage" value={client.stage} options={STAGES} label="Stage" onChange={saveField} />
-        <EditableSelect field="priority" value={client.priority} options={PRIORITIES} label="Priority" onChange={saveField} />
-        <EditableSelect field="primaryLo" value={client.primaryLo} options={LO_OPTIONS} label="Primary LO" onChange={saveField} />
-        <EditableText field="primaryContact" value={client.primaryContact} label="Primary Contact" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
-        <EditableText field="phone" value={client.phone} label="Phone" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
-        <EditableText field="followUpDate" value={client.followUpDate} label="Follow-up Date" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
-        <EditableText field="nextAction" value={client.nextAction} label="Next Action" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
-        <EditableText field="notes" value={client.notes} label="Notes" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+          <EditableSelect field="stage" value={client.stage} options={STAGES} label="Stage" onChange={saveField} />
+          <EditableSelect field="priority" value={client.priority} options={PRIORITIES} label="Priority" onChange={saveField} />
+          <EditableSelect field="primaryLo" value={client.primaryLo} options={LO_OPTIONS} label="Primary LO" onChange={saveField} />
+          <EditableText field="primaryContact" value={client.primaryContact} label="Primary Contact" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+          <EditableText field="phone" value={client.phone} label="Phone" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+          <EditableText field="followUpDate" value={client.followUpDate} label="Follow-up Date" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+          <EditableText field="nextAction" value={client.nextAction} label="Next Action" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+          <EditableText field="notes" value={client.notes} label="Notes" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
         </div>
       </div>
 
@@ -891,90 +904,11 @@ export default function ClientProfilePage() {
         ))}
       </div>
 
-      {/* Tab Content */}
+      {/* ═══════ OVERVIEW TAB ═══════ */}
       {tab === 'overview' && (
         <div className="space-y-4">
 
-          {/* Notes + Next Action */}
-          <div className="bg-cream rounded-xl p-5 border border-midnight/5 space-y-4">
-            <div>
-              <h3 className="text-sm font-semibold text-midnight mb-1">Notes</h3>
-              <p className="text-sm text-midnight/70 whitespace-pre-wrap">{client.notes || 'No notes yet.'}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-midnight mb-1">Next Action</h3>
-              <p className="text-sm text-midnight/70">{client.nextAction || 'None set.'}</p>
-            </div>
-            <div className="flex gap-3 pt-1">
-              <Link href={`/workshop/pph/purchase-builder?client=${client.id}&name=${encodeURIComponent(client.name)}`} className="flex items-center gap-2 px-4 py-2 bg-ocean text-white rounded-lg text-sm font-medium hover:bg-ocean/90 transition-colors">
-                <FileText className="w-4 h-4" /> Run Scenario
-              </Link>
-              <button onClick={() => setTab('chat')} className="flex items-center gap-2 px-4 py-2 bg-midnight text-cream rounded-lg text-sm font-medium hover:bg-midnight/80 transition-colors">
-                <MessageSquare className="w-4 h-4" /> Ask PPH-Claw
-              </button>
-            </div>
-          </div>
-
-          {/* Referral Source */}
-          <div className="bg-cream rounded-xl p-5 border border-midnight/5">
-            <h3 className="text-sm font-semibold text-midnight mb-4">Referral Source</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Referral Type */}
-              <div>
-                <span className="text-xs text-midnight/40 block mb-1">Source Type</span>
-                <select
-                  value={client.referralType || ''}
-                  onChange={e => saveClientFields({ referralType: e.target.value || null })}
-                  className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50 text-midnight"
-                >
-                  <option value="">— Select type —</option>
-                  <option value="Realtor">Realtor</option>
-                  <option value="Past Client">Past Client</option>
-                  <option value="Friend / Family">Friend / Family</option>
-                  <option value="Cold Lead">Cold Lead</option>
-                  <option value="Partner">Partner (PPH / GH)</option>
-                  <option value="Online">Online / Social</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              {/* Referred By */}
-              <div>
-                <span className="text-xs text-midnight/40 block mb-1">Referred By</span>
-                <FieldInput type="text" placeholder="Name..." value={client.referralName} onSave={v => saveClientFields({ referralName: v || null })} className="w-full" />
-              </div>
-              {/* Referral Date */}
-              <div>
-                <span className="text-xs text-midnight/40 block mb-1">Referral Date</span>
-                <FieldInput type="date" value={client.referralDate} onSave={v => saveClientFields({ referralDate: v || null })} className="w-full" />
-              </div>
-              {/* Legacy referralSource (free-form notes / company) */}
-              <div className="sm:col-span-3">
-                <span className="text-xs text-midnight/40 block mb-1">Additional Notes (company, context)</span>
-                <FieldInput type="text" placeholder="e.g. Coldwell Banker Mission Hills, met at open house..." value={client.referralSource} onSave={v => saveClientFields({ referralSource: v })} className="w-full" />
-              </div>
-            </div>
-          </div>
-
-          {/* Deal Basics */}
-          <div className="bg-cream rounded-xl p-5 border border-midnight/5">
-            <h3 className="text-sm font-semibold text-midnight mb-4">Deal Basics</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <span className="text-xs text-midnight/40 block mb-1">Target Purchase Price</span>
-                <FieldInput type="number" placeholder="e.g. 850000" prefix="$" value={client.targetPurchasePrice} onSave={v => saveClientFields({ targetPurchasePrice: parseFloat(v) || null })} className="w-full" />
-              </div>
-              <div>
-                <span className="text-xs text-midnight/40 block mb-1">FICO Score</span>
-                <FieldInput type="number" placeholder="e.g. 740" value={client.ficoScore} onSave={v => saveClientFields({ ficoScore: parseInt(v) || null })} className="w-full" />
-              </div>
-              <div>
-                <span className="text-xs text-midnight/40 block mb-1">Target Area</span>
-                <FieldInput type="text" placeholder="e.g. North Park, San Diego CA" value={client.targetArea} onSave={v => saveClientFields({ targetArea: v })} className="w-full" />
-              </div>
-            </div>
-          </div>
-
-          {/* AI Summary */}
+          {/* AI Summary — FIRST */}
           <div className="bg-cream rounded-xl p-5 border border-midnight/5">
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -991,44 +925,164 @@ export default function ClientProfilePage() {
                 {generatingSummary ? 'Generating…' : 'Refresh'}
               </button>
             </div>
-
-            {/* TLDR */}
             {client.aiTldr && (
               <div className="bg-ocean/5 border border-ocean/15 rounded-xl px-4 py-3 mb-3">
                 <p className="text-xs font-semibold text-ocean/70 uppercase tracking-wider mb-1">TL;DR</p>
                 <p className="text-sm font-medium text-midnight">{client.aiTldr}</p>
               </div>
             )}
-
-            {/* Auto-populated fields notice */}
             {lastAppliedFields && Object.keys(lastAppliedFields).length > 0 && (
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5 mb-3 flex items-start gap-2">
                 <span className="text-emerald-500 mt-0.5">✓</span>
                 <div>
-                  <p className="text-xs font-semibold text-emerald-700">Fields auto-populated from summary:</p>
-                  <p className="text-xs text-emerald-600 mt-0.5">
-                    {Object.entries(lastAppliedFields).map(([k, v]) => `${k}: ${v}`).join(' · ')}
-                  </p>
+                  <p className="text-xs font-semibold text-emerald-700">Fields auto-populated:</p>
+                  <p className="text-xs text-emerald-600 mt-0.5">{Object.entries(lastAppliedFields).map(([k, v]) => `${k}: ${v}`).join(' · ')}</p>
                 </div>
               </div>
             )}
-
             {client.aiSummary
               ? <p className="text-sm text-midnight/70 leading-relaxed whitespace-pre-wrap">{client.aiSummary}</p>
-              : <p className="text-sm text-midnight/30 italic">No summary yet — hit Refresh to generate from all client data, notes, and chat history. Will auto-populate FICO, income, and stage when found.</p>
+              : <p className="text-sm text-midnight/30 italic">No summary yet — hit Refresh to generate from all data, notes, and chat history.</p>
             }
           </div>
 
-          {/* Borrowers + Income */}
-          <div className="bg-cream rounded-xl p-5 border border-midnight/5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-midnight">Borrowers & Income</h3>
-              <label className="flex items-center gap-2 text-xs text-midnight/60 cursor-pointer">
-                <input type="checkbox" checked={client.married} onChange={e => saveClientFields({ married: e.target.checked })} className="rounded" />
-                Married
-              </label>
+          {/* Contextual section by stage */}
+          {isEarlyStage ? (
+            <>
+              {/* Referral Source — shown for new/early leads */}
+              <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+                <h3 className="text-sm font-semibold text-midnight mb-4">Referral Source</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <span className="text-xs text-midnight/40 block mb-1">Source Type</span>
+                    <select value={client.referralType || ''} onChange={e => saveClientFields({ referralType: e.target.value || null })}
+                      className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50 text-midnight">
+                      <option value="">— Select type —</option>
+                      {['Realtor','Past Client','Friend / Family','Cold Lead','Partner','Online','Other'].map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <span className="text-xs text-midnight/40 block mb-1">Referred By</span>
+                    <FieldInput type="text" placeholder="Name..." value={client.referralName} onSave={v => saveClientFields({ referralName: v || null })} className="w-full" />
+                  </div>
+                  <div>
+                    <span className="text-xs text-midnight/40 block mb-1">Referral Date</span>
+                    <FieldInput type="date" value={client.referralDate} onSave={v => saveClientFields({ referralDate: v || null })} className="w-full" />
+                  </div>
+                  <div className="sm:col-span-3">
+                    <span className="text-xs text-midnight/40 block mb-1">Notes (company, context)</span>
+                    <FieldInput type="text" placeholder="e.g. Coldwell Banker Mission Hills, met at open house..." value={client.referralSource} onSave={v => saveClientFields({ referralSource: v })} className="w-full" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Deal Basics — also show for early leads */}
+              <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+                <h3 className="text-sm font-semibold text-midnight mb-4">Deal Basics</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <span className="text-xs text-midnight/40 block mb-1">Target Purchase Price</span>
+                    <FieldInput type="number" placeholder="e.g. 850000" prefix="$" value={client.targetPurchasePrice} onSave={v => saveClientFields({ targetPurchasePrice: parseFloat(v) || null })} className="w-full" />
+                  </div>
+                  <div>
+                    <span className="text-xs text-midnight/40 block mb-1">FICO Score</span>
+                    <FieldInput type="number" placeholder="e.g. 740" value={client.ficoScore} onSave={v => saveClientFields({ ficoScore: parseInt(v) || null })} className="w-full" />
+                  </div>
+                  <div>
+                    <span className="text-xs text-midnight/40 block mb-1">Target Area</span>
+                    <FieldInput type="text" placeholder="e.g. North Park, San Diego CA" value={client.targetArea} onSave={v => saveClientFields({ targetArea: v })} className="w-full" />
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Active deal — show financial snapshot */
+            <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+              <h3 className="text-sm font-semibold text-midnight mb-4">Deal Snapshot</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-white rounded-xl p-3 border border-midnight/5 text-center">
+                  <p className="text-[10px] text-midnight/40 uppercase tracking-wider mb-1">Target Price</p>
+                  <p className="text-lg font-bold text-midnight">{client.targetPurchasePrice ? `$${(client.targetPurchasePrice/1000).toFixed(0)}k` : '—'}</p>
+                </div>
+                <div className="bg-white rounded-xl p-3 border border-midnight/5 text-center">
+                  <p className="text-[10px] text-midnight/40 uppercase tracking-wider mb-1">FICO</p>
+                  <p className={`text-lg font-bold ${client.ficoScore ? (client.ficoScore >= 740 ? 'text-emerald-600' : client.ficoScore >= 680 ? 'text-amber-600' : 'text-red-600') : 'text-midnight/20'}`}>
+                    {client.ficoScore || '—'}
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl p-3 border border-midnight/5 text-center">
+                  <p className="text-[10px] text-midnight/40 uppercase tracking-wider mb-1">Monthly Income</p>
+                  <p className="text-lg font-bold text-midnight">{combinedIncome > 0 ? `$${combinedIncome.toLocaleString()}` : '—'}</p>
+                </div>
+                <div className="bg-white rounded-xl p-3 border border-midnight/5 text-center">
+                  <p className="text-[10px] text-midnight/40 uppercase tracking-wider mb-1">DTI (Existing)</p>
+                  <p className={`text-lg font-bold ${dtiRatio ? (parseFloat(dtiRatio) <= 36 ? 'text-emerald-600' : parseFloat(dtiRatio) <= 45 ? 'text-amber-600' : 'text-red-600') : 'text-midnight/20'}`}>
+                    {dtiRatio ? `${dtiRatio}%` : '—'}
+                  </p>
+                </div>
+              </div>
+              {totalAssets > 0 && (
+                <div className="mt-3 flex items-center gap-3 text-sm text-midnight/60">
+                  <span>💰 Assets: <strong className="text-midnight">${totalAssets.toLocaleString()}</strong></span>
+                  {totalDebt > 0 && <span>📊 Monthly Debts: <strong className="text-midnight">${totalDebt.toLocaleString()}</strong></span>}
+                </div>
+              )}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          )}
+
+          {/* Collapsible Financial Details */}
+          <button
+            onClick={() => setShowFinancials(!showFinancials)}
+            className="w-full flex items-center justify-between px-5 py-3 bg-midnight/3 rounded-xl text-sm font-medium text-midnight/60 hover:bg-midnight/5 transition-colors"
+          >
+            <span>{showFinancials ? '▾' : '▸'} Financial Details — Borrowers, Income, Assets, Debts, REO</span>
+            {combinedIncome > 0 && <span className="text-xs text-midnight/30">${combinedIncome.toLocaleString()}/mo combined</span>}
+          </button>
+
+          {showFinancials && (
+            <div className="space-y-4">
+              {/* Deal Basics (editable) — show here for active deals too */}
+              {!isEarlyStage && (
+                <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+                  <h3 className="text-sm font-semibold text-midnight mb-4">Deal Basics</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <span className="text-xs text-midnight/40 block mb-1">Target Purchase Price</span>
+                      <FieldInput type="number" placeholder="e.g. 850000" prefix="$" value={client.targetPurchasePrice} onSave={v => saveClientFields({ targetPurchasePrice: parseFloat(v) || null })} className="w-full" />
+                    </div>
+                    <div>
+                      <span className="text-xs text-midnight/40 block mb-1">FICO Score</span>
+                      <FieldInput type="number" placeholder="e.g. 740" value={client.ficoScore} onSave={v => saveClientFields({ ficoScore: parseInt(v) || null })} className="w-full" />
+                    </div>
+                    <div>
+                      <span className="text-xs text-midnight/40 block mb-1">Target Area</span>
+                      <FieldInput type="text" placeholder="e.g. North Park, San Diego CA" value={client.targetArea} onSave={v => saveClientFields({ targetArea: v })} className="w-full" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Referral for active deals */}
+              {!isEarlyStage && (client.referralType || client.referralName || client.referralSource) && (
+                <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+                  <h3 className="text-sm font-semibold text-midnight mb-3">Referral Source</h3>
+                  <p className="text-sm text-midnight/60">
+                    {[client.referralType, client.referralName, client.referralSource].filter(Boolean).join(' · ')}
+                    {client.referralDate && <span className="text-xs text-midnight/30 ml-2">({client.referralDate})</span>}
+                  </p>
+                </div>
+              )}
+
+              {/* Borrowers + Income */}
+              <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+                <h3 className="text-sm font-semibold text-midnight mb-4 flex items-center gap-2">
+                  Borrowers & Income
+                  <label className="flex items-center gap-1.5 text-xs text-midnight/40 font-normal">
+                    <input type="checkbox" checked={client.married} onChange={e => saveClientFields({ married: e.target.checked })} className="rounded" />
+                    Married
+                  </label>
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {([
                 { label: 'Borrower 1', nameKey: 'b1Name', typeKey: 'b1IncomeType', incomeKey: 'b1MonthlyIncome', detailsKey: 'b1IncomeDetails' },
                 { label: 'Borrower 2', nameKey: 'b2Name', typeKey: 'b2IncomeType', incomeKey: 'b2MonthlyIncome', detailsKey: 'b2IncomeDetails' },
@@ -1042,24 +1096,17 @@ export default function ClientProfilePage() {
                     const bonus = Number(details.bonus || 0)
                     const overtime = Number(details.overtime || 0)
                     const commission = Number(details.commission || 0)
-                    // Base is monthly; bonus/OT/commission are annual, averaged over 24 months per guideline
                     return base + (bonus + overtime + commission) / 24
                   }
                   if (incomeType === 'SE/Self-Employed' || incomeType === '1099') {
                     const y1 = Number(details.year1Net || 0)
                     const y2 = Number(details.year2Net || 0)
-                    if (!y1 && !y2) return null
-                    // Declining income: use lower year; otherwise 2yr avg
-                    const avg = (y1 + y2) / 2
-                    const qualifying = y2 < y1 ? y2 : avg
-                    return qualifying / 12
+                    if (y1 && y2) return (y2 < y1 ? y2 : (y1 + y2) / 2) / 12
                   }
                   return null
                 }
-
                 const suggested = calcSuggestedIncome()
 
-                // Use ref to avoid stale closure — saveDetails is called from onSave callbacks
                 const detailsRef = React.useRef(details)
                 detailsRef.current = details
                 const saveDetails = React.useCallback((updates: Record<string, number | string | null>) => {
@@ -1071,8 +1118,6 @@ export default function ClientProfilePage() {
                   <div key={label} className="bg-white/60 rounded-xl p-4 border border-midnight/5 space-y-3">
                     <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">{label}</p>
                     <EditableText field={nameKey} value={client[nameKey] as string | null} label="Full Name" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
-
-                    {/* Income Type */}
                     <div>
                       <span className="text-xs text-midnight/40 block mb-0.5">Income Type</span>
                       <select value={incomeType || ''} onChange={e => saveClientFields({ [typeKey]: e.target.value })} className="w-full px-2 py-1 bg-cream border border-midnight/10 rounded text-sm focus:outline-none">
@@ -1081,7 +1126,6 @@ export default function ClientProfilePage() {
                       </select>
                     </div>
 
-                    {/* W2 sub-fields */}
                     {incomeType === 'W2' && (
                       <div className="space-y-2 pt-1 border-t border-midnight/8">
                         <p className="text-[10px] text-midnight/30 uppercase tracking-wider font-medium">W2 Breakdown</p>
@@ -1100,59 +1144,44 @@ export default function ClientProfilePage() {
                             </div>
                           </div>
                         ))}
-                        {suggested !== null && (
-                          <div className="mt-2 p-2 bg-ocean/5 rounded-lg border border-ocean/15 flex items-center justify-between gap-2">
-                            <div>
-                              <p className="text-[10px] text-ocean/70 font-medium">Suggested qualifying</p>
-                              <p className="text-sm font-bold text-ocean">${Math.round(suggested).toLocaleString()}/mo</p>
-                              <p className="text-[10px] text-midnight/30">base + (bonus+OT+commission) ÷ 24</p>
-                            </div>
-                            <button onClick={() => saveClientFields({ [incomeKey]: Math.round(suggested) })} className="px-2.5 py-1 text-xs bg-ocean text-white rounded-lg font-medium hover:bg-ocean/90 transition-colors whitespace-nowrap">Apply</button>
-                          </div>
-                        )}
                       </div>
                     )}
 
-                    {/* SE / 1099 sub-fields */}
                     {(incomeType === 'SE/Self-Employed' || incomeType === '1099') && (
                       <div className="space-y-2 pt-1 border-t border-midnight/8">
-                        <p className="text-[10px] text-midnight/30 uppercase tracking-wider font-medium">{incomeType} — Net Income (Schedule C/K-1)</p>
+                        <p className="text-[10px] text-midnight/30 uppercase tracking-wider font-medium">{incomeType} Breakdown</p>
                         {[
-                          { key: 'year2Net', label: 'Year 2 (Most Recent) Net' },
-                          { key: 'year1Net', label: 'Year 1 Net' },
+                          { key: 'year1Gross', label: 'Year 1 Gross Revenue' },
+                          { key: 'year1Net', label: 'Year 1 Net Income' },
+                          { key: 'year2Gross', label: 'Year 2 Gross Revenue' },
+                          { key: 'year2Net', label: 'Year 2 Net Income' },
                         ].map(({ key, label: fLabel }) => (
                           <div key={key}>
                             <span className="text-xs text-midnight/40 block mb-0.5">{fLabel}</span>
                             <div className="flex items-center gap-1">
                               <span className="text-xs text-midnight/40">$</span>
                               <FieldInput type="number" placeholder="0" value={Number(details[key] || "") || null} onSave={v => saveDetails({ [key]: parseFloat(v) || null })} className="flex-1 text-xs" />
-                              <span className="text-[10px] text-midnight/30">/yr</span>
                             </div>
                           </div>
                         ))}
-                        {(details.year1Net || details.year2Net) && (
-                          <div className="text-xs text-midnight/50 space-y-0.5 pt-1">
-                            {details.year1Net && details.year2Net && (
-                              <p className={Number(details.year2Net) < Number(details.year1Net) ? 'text-amber-600' : 'text-emerald-600'}>
-                                {Number(details.year2Net) < Number(details.year1Net) ? '📉 Declining' : '📈 Trending up'} — {Number(details.year2Net) < Number(details.year1Net) ? 'using lower year' : '2yr avg'}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                        {suggested !== null && (
-                          <div className="mt-2 p-2 bg-ocean/5 rounded-lg border border-ocean/15 flex items-center justify-between gap-2">
-                            <div>
-                              <p className="text-[10px] text-ocean/70 font-medium">Suggested qualifying</p>
-                              <p className="text-sm font-bold text-ocean">${Math.round(suggested).toLocaleString()}/mo</p>
-                              <p className="text-[10px] text-midnight/30">{Number(details.year2Net) < Number(details.year1Net) ? 'lower year ÷ 12' : '2yr avg ÷ 12'}</p>
-                            </div>
-                            <button onClick={() => saveClientFields({ [incomeKey]: Math.round(suggested) })} className="px-2.5 py-1 text-xs bg-ocean text-white rounded-lg font-medium hover:bg-ocean/90 transition-colors whitespace-nowrap">Apply</button>
-                          </div>
+                        {details.year1Net && details.year2Net && (
+                          <p className={Number(details.year2Net) < Number(details.year1Net) ? 'text-xs text-amber-600' : 'text-xs text-emerald-600'}>
+                            {Number(details.year2Net) < Number(details.year1Net) ? '📉 Declining — using lower year' : '📈 Trending up — 2yr avg'}
+                          </p>
                         )}
                       </div>
                     )}
 
-                    {/* Monthly qualifying income (always shown) */}
+                    {suggested !== null && (
+                      <div className="mt-2 p-2 bg-ocean/5 rounded-lg border border-ocean/15 flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-[10px] text-ocean/70 font-medium">Suggested qualifying</p>
+                          <p className="text-sm font-bold text-ocean">${Math.round(suggested).toLocaleString()}/mo</p>
+                        </div>
+                        <button onClick={() => saveClientFields({ [incomeKey]: Math.round(suggested) })} className="px-2.5 py-1 text-xs bg-ocean text-white rounded-lg font-medium hover:bg-ocean/90 transition-colors whitespace-nowrap">Apply</button>
+                      </div>
+                    )}
+
                     <div className={incomeType && incomeType !== 'Rental' && incomeType !== 'Other' ? 'pt-2 border-t border-midnight/8' : ''}>
                       <span className="text-xs text-midnight/40 block mb-0.5">Monthly Qualifying Income</span>
                       <div className="flex items-center gap-1">
@@ -1165,22 +1194,22 @@ export default function ClientProfilePage() {
                 )
               })}
             </div>
-            {(client.b1MonthlyIncome || client.b2MonthlyIncome) && (
+            {combinedIncome > 0 && (
               <div className="mt-3 pt-3 border-t border-midnight/8 flex gap-4 text-sm">
                 <span className="text-midnight/50">Combined:</span>
-                <span className="font-semibold text-midnight">${((client.b1MonthlyIncome || 0) + (client.b2MonthlyIncome || 0)).toLocaleString()}/mo</span>
-                <span className="text-midnight/40">${(((client.b1MonthlyIncome || 0) + (client.b2MonthlyIncome || 0)) * 12).toLocaleString()}/yr</span>
+                <span className="font-semibold text-midnight">${combinedIncome.toLocaleString()}/mo</span>
+                <span className="text-midnight/40">${(combinedIncome * 12).toLocaleString()}/yr</span>
               </div>
             )}
           </div>
 
-          {/* Assets */}
-          <div className="bg-cream rounded-xl p-5 border border-midnight/5">
-            <h3 className="text-sm font-semibold text-midnight mb-4">Assets</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Assets */}
+              <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+                <h3 className="text-sm font-semibold text-midnight mb-4">Assets</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[{ label: 'B1 Liquid Assets', assetsKey: 'b1Assets', notesKey: 'b1AssetsNotes' }, { label: 'B2 Liquid Assets', assetsKey: 'b2Assets', notesKey: 'b2AssetsNotes' }].map(({ label, assetsKey, notesKey }) => (
-                <div key={label} className="bg-white/60 rounded-xl p-4 border border-midnight/5 space-y-2">
-                  <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">{label}</p>
+                <div key={label} className="space-y-1.5">
+                <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">{label}</p>
                   <div className="flex items-center gap-1">
                     <span className="text-xs text-midnight/40">$</span>
                     <FieldInput type="number" placeholder="0" value={client[assetsKey as keyof Client] as number} onSave={v => saveClientFields({ [assetsKey]: parseFloat(v) || null })} className="flex-1" />
@@ -1189,200 +1218,142 @@ export default function ClientProfilePage() {
                 </div>
               ))}
             </div>
-            {(client.b1Assets || client.b2Assets) && (
+            {totalAssets > 0 && (
               <div className="mt-3 pt-3 border-t border-midnight/8 flex gap-4 text-sm">
                 <span className="text-midnight/50">Total assets:</span>
-                <span className="font-semibold text-midnight">${((client.b1Assets || 0) + (client.b2Assets || 0)).toLocaleString()}</span>
+                <span className="font-semibold text-midnight">${totalAssets.toLocaleString()}</span>
               </div>
             )}
           </div>
 
-          {/* Liabilities & DTI */}
-          {(() => {
-            const totalDebt = client.liabilities.reduce((sum, d) => sum + (d.monthlyPayment || 0), 0)
-            const combinedIncome = (client.b1MonthlyIncome || 0) + (client.b2MonthlyIncome || 0)
-            const LIABILITY_TYPES: { value: Liability['type']; label: string }[] = [
-              { value: 'auto', label: '🚗 Auto Loan' },
-              { value: 'student', label: '🎓 Student Loan' },
-              { value: 'credit_card', label: '💳 Credit Card' },
-              { value: 'installment', label: '📦 Installment Loan' },
-              { value: 'other', label: '📋 Other' },
-            ]
-
-            function addLiability(entry: Omit<Liability, 'id'>) {
-              if (!client) return
-              const updated = [...client.liabilities, { ...entry, id: `debt-${Date.now()}` }]
-              saveClientFields({ liabilities: JSON.stringify(updated) })
-            }
-            function removeLiability(lid: string) {
-              if (!client) return
-              const updated = client.liabilities.filter(d => d.id !== lid)
-              saveClientFields({ liabilities: JSON.stringify(updated) })
-            }
-
-            return (
-              <div className="bg-cream rounded-xl p-5 border border-midnight/5">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-sm font-semibold text-midnight">Monthly Liabilities</h3>
-                    {totalDebt > 0 && (
-                      <p className="text-xs text-midnight/40 mt-0.5">
-                        Total: <span className="font-semibold text-midnight">${totalDebt.toLocaleString()}/mo</span>
-                        {combinedIncome > 0 && (
-                          <span className="ml-2 text-midnight/50">
-                            Non-housing DTI: <span className={`font-semibold ${totalDebt / combinedIncome > 0.36 ? 'text-red-500' : totalDebt / combinedIncome > 0.28 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                              {((totalDebt / combinedIncome) * 100).toFixed(1)}%
-                            </span>
-                          </span>
-                        )}
-                      </p>
+              {/* Liabilities & DTI */}
+              {(() => {
+                const LIABILITY_TYPES: { value: Liability['type']; label: string }[] = [
+                  { value: 'auto', label: '🚗 Auto Loan' },
+                  { value: 'student', label: '🎓 Student Loan' },
+                  { value: 'credit_card', label: '💳 Credit Card' },
+                  { value: 'installment', label: '📦 Installment Loan' },
+                  { value: 'other', label: '📋 Other' },
+                ]
+                return (
+                  <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-semibold text-midnight">Liabilities & DTI</h3>
+                      <LiabilityAddButton types={LIABILITY_TYPES} onAdd={entry => {
+                        const newList = [...client.liabilities, { ...entry, id: `l-${Date.now()}` }]
+                        saveClientFields({ liabilities: JSON.stringify(newList) })
+                      }} />
+                    </div>
+                    {client.liabilities.length === 0 && (
+                      <p className="text-xs text-midnight/30 italic">No debts recorded. Add monthly obligations to calculate DTI.</p>
                     )}
-                  </div>
-                  <LiabilityAddButton types={LIABILITY_TYPES} onAdd={addLiability} />
-                </div>
-
-                {client.liabilities.length === 0 ? (
-                  <p className="text-sm text-midnight/30">No liabilities on file.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {client.liabilities.map(debt => (
-                      <div key={debt.id} className="flex items-center gap-3 bg-white/60 rounded-lg px-4 py-3 border border-midnight/5">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-midnight/60 capitalize">{debt.type.replace('_', ' ')}</span>
-                            {debt.description && <span className="text-sm text-midnight truncate">{debt.description}</span>}
-                          </div>
-                          {debt.balance !== null && debt.balance > 0 && (
-                            <p className="text-xs text-midnight/40 mt-0.5">Balance: ${debt.balance.toLocaleString()}</p>
-                          )}
+                    {client.liabilities.map(d => (
+                      <div key={d.id} className="flex items-center justify-between py-2 border-b border-midnight/5 last:border-0">
+                        <div>
+                          <span className="text-xs font-medium text-midnight/60">{LIABILITY_TYPES.find(t => t.value === d.type)?.label || d.type}</span>
+                          {d.description && <span className="text-xs text-midnight/30 ml-2">{d.description}</span>}
                         </div>
-                        <span className="text-sm font-semibold text-midnight whitespace-nowrap">${debt.monthlyPayment.toLocaleString()}/mo</span>
-                        <button onClick={() => removeLiability(debt.id)} className="text-midnight/20 hover:text-red-400 transition-colors flex-shrink-0">
-                          <X className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-3">
+                          {d.balance && <span className="text-xs text-midnight/30">${d.balance.toLocaleString()} bal</span>}
+                          <span className="text-sm font-semibold text-midnight">${d.monthlyPayment.toLocaleString()}/mo</span>
+                          <button onClick={() => {
+                            const updated = client.liabilities.filter(l => l.id !== d.id)
+                            saveClientFields({ liabilities: JSON.stringify(updated) })
+                          }} className="text-midnight/20 hover:text-red-400 transition-colors"><X className="w-3.5 h-3.5" /></button>
+                        </div>
                       </div>
                     ))}
+                    {combinedIncome > 0 && totalDebt > 0 && (
+                      <div className="mt-3 pt-3 border-t border-midnight/8">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-midnight/50">Total Monthly Debts:</span>
+                          <span className="font-semibold text-midnight">${totalDebt.toLocaleString()}/mo</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm mt-1">
+                          <span className="text-midnight/50">Back-end DTI (existing debts only):</span>
+                          <span className={`font-bold ${parseFloat(dtiRatio || '0') <= 36 ? 'text-emerald-600' : parseFloat(dtiRatio || '0') <= 45 ? 'text-amber-600' : 'text-red-600'}`}>{dtiRatio}%</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                )
+              })()}
 
-                {/* DTI summary card */}
-                {combinedIncome > 0 && totalDebt > 0 && (
-                  <div className="mt-4 p-3 bg-midnight/3 rounded-xl border border-midnight/8">
-                    <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider mb-2">DTI Snapshot</p>
-                    <div className="grid grid-cols-3 gap-3 text-center text-xs">
+              {/* REO */}
+              <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-midnight">Real Estate Owned</h3>
+                  <button onClick={() => setShowReoForm(!showReoForm)} className="flex items-center gap-1.5 px-3 py-1.5 bg-midnight text-cream rounded-lg text-xs font-medium hover:bg-midnight/80 transition-colors">
+                    <Plus className="w-3.5 h-3.5" /> Add Property
+                  </button>
+                </div>
+                {client.reo.length === 0 && !showReoForm && (
+                  <p className="text-xs text-midnight/30 italic">No properties recorded.</p>
+                )}
+                {client.reo.map(r => (
+                  <div key={r.id} className="bg-white/60 rounded-xl p-3 border border-midnight/5 mb-2">
+                    <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-midnight/40">Monthly Income</p>
-                        <p className="font-bold text-midnight mt-0.5">${combinedIncome.toLocaleString()}</p>
+                        <p className="text-sm font-medium text-midnight">{r.address}</p>
+                        <p className="text-xs text-midnight/40 mt-0.5">{r.propertyType} · {r.status} {r.lender && `· ${r.lender}`}</p>
+                      </div>
+                      <button onClick={() => removeReo(r.id)} className="text-midnight/20 hover:text-red-400"><X className="w-3.5 h-3.5" /></button>
+                    </div>
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-2 text-xs text-midnight/50">
+                      {r.marketValue && <span>Value: <strong className="text-midnight">${r.marketValue.toLocaleString()}</strong></span>}
+                      {r.mortgageBalance && <span>Mortgage: <strong className="text-midnight">${r.mortgageBalance.toLocaleString()}</strong></span>}
+                      {r.monthlyPayment && <span>Payment: <strong className="text-midnight">${r.monthlyPayment.toLocaleString()}/mo</strong></span>}
+                      {r.estimatedRent && <span>Rent: <strong className="text-midnight">${r.estimatedRent.toLocaleString()}/mo</strong></span>}
+                    </div>
+                  </div>
+                ))}
+                {showReoForm && (
+                  <div className="bg-white rounded-xl p-4 border border-ocean/20 space-y-3 mt-2">
+                    <input placeholder="Address" value={reoForm.address || ''} onChange={e => setReoForm(p => ({...p, address: e.target.value}))} className="w-full px-2 py-1.5 border border-midnight/10 rounded text-sm focus:outline-none focus:border-ocean/50" />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <span className="text-xs text-midnight/40 block mb-0.5">Type</span>
+                        <select value={reoForm.propertyType || 'SFR'} onChange={e => setReoForm(p => ({...p, propertyType: e.target.value}))} className="w-full px-2 py-1 border border-midnight/10 rounded text-sm focus:outline-none">
+                          {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
                       </div>
                       <div>
-                        <p className="text-midnight/40">Non-Housing Debts</p>
-                        <p className="font-bold text-midnight mt-0.5">${totalDebt.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-midnight/40">Max Housing (43% BTI)</p>
-                        <p className="font-bold text-emerald-600 mt-0.5">${Math.max(0, Math.round(combinedIncome * 0.43 - totalDebt)).toLocaleString()}</p>
+                        <span className="text-xs text-midnight/40 block mb-0.5">Status</span>
+                        <select value={reoForm.status || 'rental'} onChange={e => setReoForm(p => ({...p, status: e.target.value}))} className="w-full px-2 py-1 border border-midnight/10 rounded text-sm focus:outline-none">
+                          {PROPERTY_STATUSES.map(s => <option key={s} value={s.toLowerCase()}>{s}</option>)}
+                        </select>
                       </div>
                     </div>
-                    <div className="mt-2">
-                      <div className="h-1.5 bg-midnight/8 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all ${totalDebt / combinedIncome > 0.36 ? 'bg-red-400' : totalDebt / combinedIncome > 0.28 ? 'bg-amber-400' : 'bg-emerald-400'}`}
-                          style={{ width: `${Math.min(100, (totalDebt / combinedIncome) * 100 / 0.43 * 100)}%` }}
-                        />
-                      </div>
-                      <p className="text-[10px] text-midnight/30 mt-1">Non-housing debts vs 43% back-end limit</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {[
+                        { key: 'marketValue', label: 'Market Value' },
+                        { key: 'mortgageBalance', label: 'Mortgage Balance' },
+                        { key: 'monthlyPayment', label: 'Monthly Payment' },
+                        { key: 'estimatedRent', label: 'Est. Rent' },
+                      ].map(({ key, label }) => (
+                        <div key={key}>
+                          <span className="text-xs text-midnight/40 block mb-0.5">{label}</span>
+                          <input type="number" placeholder="0" value={(reoForm[key as keyof typeof reoForm] as number) || ''} onChange={e => setReoForm(p => ({...p, [key]: parseFloat(e.target.value) || null}))} className="w-full px-2 py-1 border border-midnight/10 rounded text-sm focus:outline-none" />
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                )}
-              </div>
-            )
-          })()}
-
-          {/* REO */}
-          <div className="bg-cream rounded-xl p-5 border border-midnight/5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-midnight">Real Estate Owned (REO)</h3>
-              <button onClick={() => setShowReoForm(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-midnight text-cream rounded-lg text-xs font-medium hover:bg-midnight/80 transition-colors">
-                <Plus className="w-3.5 h-3.5" /> Add Property
-              </button>
-            </div>
-
-            {client.reo.length === 0 && !showReoForm && <p className="text-sm text-midnight/30">No properties on file.</p>}
-
-            {client.reo.map(prop => {
-              const netRental = prop.estimatedRent ? prop.estimatedRent * (1 - (prop.vacancyRate / 100)) * 0.75 : null
-              return (
-                <div key={prop.id} className="bg-white/60 rounded-xl p-4 border border-midnight/5 mb-3 text-sm">
-                  <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-medium text-midnight">{prop.address}</p>
-                      <p className="text-xs text-midnight/50 mt-0.5">{prop.propertyType} · {prop.status} · {prop.lender || 'no lender'}</p>
+                      <span className="text-xs text-midnight/40 block mb-0.5">Lender</span>
+                      <input type="text" placeholder="Chase, BofA..." value={reoForm.lender || ''} onChange={e => setReoForm(p => ({...p, lender: e.target.value}))} className="w-full px-2 py-1 border border-midnight/10 rounded text-sm focus:outline-none" />
                     </div>
-                    <button onClick={() => removeReo(prop.id)} className="text-midnight/20 hover:text-red-400 transition-colors"><X className="w-4 h-4" /></button>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 text-xs">
-                    <div><span className="text-midnight/40 block">Market Value</span><span className="font-medium">{prop.marketValue ? `$${prop.marketValue.toLocaleString()}` : '—'}</span></div>
-                    <div><span className="text-midnight/40 block">Mortgage Balance</span><span className="font-medium">{prop.mortgageBalance ? `$${prop.mortgageBalance.toLocaleString()}` : '—'}</span></div>
-                    <div><span className="text-midnight/40 block">Monthly PITIA</span><span className="font-medium">{prop.monthlyPayment ? `$${prop.monthlyPayment.toLocaleString()}` : '—'}</span></div>
-                    <div><span className="text-midnight/40 block">Est. Rent</span><span className="font-medium">{prop.estimatedRent ? `$${prop.estimatedRent.toLocaleString()}` : '—'}</span></div>
-                    <div><span className="text-midnight/40 block">Vacancy Rate</span><span className="font-medium">{prop.vacancyRate}%</span></div>
-                    <div><span className="text-midnight/40 block">Taxes + Ins</span><span className="font-medium">{prop.taxesInsurance ? `$${prop.taxesInsurance.toLocaleString()}/mo` : '—'}</span></div>
-                    <div><span className="text-midnight/40 block">HOA</span><span className="font-medium">{prop.hoaDues ? `$${prop.hoaDues.toLocaleString()}/mo` : '—'}</span></div>
-                    {netRental !== null && <div><span className="text-midnight/40 block">Net Rental Income</span><span className="font-semibold text-emerald-600">${Math.round(netRental).toLocaleString()}/mo</span></div>}
-                  </div>
-                </div>
-              )
-            })}
-
-            {showReoForm && (
-              <div className="bg-white/80 rounded-xl p-4 border border-ocean/20 mt-3 space-y-3">
-                <p className="text-xs font-semibold text-midnight/60 uppercase tracking-wider">New Property</p>
-                <input placeholder="Address" value={reoForm.address || ''} onChange={e => setReoForm(p => ({...p, address: e.target.value}))} className="w-full px-2 py-1.5 border border-midnight/10 rounded text-sm focus:outline-none focus:border-ocean/50" />
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-xs text-midnight/40 block mb-0.5">Type</label>
-                    <select value={reoForm.propertyType || 'SFR'} onChange={e => setReoForm(p => ({...p, propertyType: e.target.value}))} className="w-full px-2 py-1 border border-midnight/10 rounded text-sm focus:outline-none">
-                      {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs text-midnight/40 block mb-0.5">Status</label>
-                    <select value={reoForm.status || 'rental'} onChange={e => setReoForm(p => ({...p, status: e.target.value}))} className="w-full px-2 py-1 border border-midnight/10 rounded text-sm focus:outline-none">
-                      {PROPERTY_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                  {[
-                    { key: 'marketValue', label: 'Market Value ($)' },
-                    { key: 'mortgageBalance', label: 'Mortgage Balance ($)' },
-                    { key: 'monthlyPayment', label: 'Monthly PITIA ($)' },
-                    { key: 'estimatedRent', label: 'Est. Monthly Rent ($)' },
-                    { key: 'vacancyRate', label: 'Vacancy Rate (%)' },
-                    { key: 'taxesInsurance', label: 'Tax + Ins/mo ($)' },
-                    { key: 'hoaDues', label: 'HOA/mo ($)' },
-                  ].map(({ key, label }) => (
-                    <div key={key}>
-                      <label className="text-midnight/40 block mb-0.5">{label}</label>
-                      <input type="number" placeholder="0" value={(reoForm[key as keyof typeof reoForm] as number) || ''} onChange={e => setReoForm(p => ({...p, [key]: parseFloat(e.target.value) || null}))} className="w-full px-2 py-1 border border-midnight/10 rounded text-sm focus:outline-none" />
+                    <div className="flex justify-end gap-2">
+                      <button onClick={() => setShowReoForm(false)} className="px-3 py-1.5 text-xs text-midnight/40 hover:text-midnight transition-colors">Cancel</button>
+                      <button onClick={addReo} disabled={!reoForm.address?.trim()} className="px-3 py-1.5 bg-ocean text-white rounded-lg text-xs font-medium hover:bg-ocean/90 disabled:opacity-40 transition-colors">Add Property</button>
                     </div>
-                  ))}
-                  <div>
-                    <label className="text-midnight/40 block mb-0.5">Lender</label>
-                    <input type="text" placeholder="Chase, BofA..." value={reoForm.lender || ''} onChange={e => setReoForm(p => ({...p, lender: e.target.value}))} className="w-full px-2 py-1 border border-midnight/10 rounded text-sm focus:outline-none" />
                   </div>
-                </div>
-                <div className="flex gap-2 pt-1">
-                  <button onClick={addReo} className="px-4 py-1.5 bg-midnight text-cream rounded-lg text-xs font-medium hover:bg-midnight/80 transition-colors">Save Property</button>
-                  <button onClick={() => setShowReoForm(false)} className="px-3 py-1.5 text-midnight/40 hover:text-midnight text-xs transition-colors">Cancel</button>
-                </div>
+                )}
               </div>
-            )}
-          </div>
-
+            </div>
+          )}
         </div>
       )}
 
+      {/* ═══════ ACTIVITY TAB ═══════ */}
       {tab === 'calls' && (
         <div className="space-y-4">
           {/* Log new call */}
@@ -1457,108 +1428,107 @@ export default function ClientProfilePage() {
         </div>
       )}
 
+
+
+      {/* ═══════ SCENARIOS TAB ═══════ */}
       {tab === 'scenarios' && (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-sm font-semibold text-midnight">Scenarios</h3>
-            <Link
-              href={`/workshop/pph/purchase-builder?client=${client.id}&name=${encodeURIComponent(client.name)}`}
-              className="flex items-center gap-1 px-3 py-1.5 bg-ocean text-white rounded-lg text-xs font-medium hover:bg-ocean/90 transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" /> New Scenario
+          {/* Action buttons */}
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/workshop/pph/purchase-builder?client=${client.id}&name=${encodeURIComponent(client.name)}`}
+              className="flex items-center gap-1.5 px-4 py-2 bg-ocean text-white rounded-lg text-sm font-medium hover:bg-ocean/90 transition-colors">
+              <Plus className="w-3.5 h-3.5" /> Purchase Scenario
             </Link>
+            <Link href={`/workshop/pph/refi-builder?client=${client.id}&name=${encodeURIComponent(client.name)}`}
+              className="flex items-center gap-1.5 px-4 py-2 bg-midnight/80 text-cream rounded-lg text-sm font-medium hover:bg-midnight/70 transition-colors">
+              <Plus className="w-3.5 h-3.5" /> Refi Scenario
+            </Link>
+            <button onClick={() => setTab('chat')}
+              className="flex items-center gap-1.5 px-4 py-2 bg-midnight/5 text-midnight/60 rounded-lg text-sm font-medium hover:bg-midnight/10 transition-colors">
+              <MessageSquare className="w-3.5 h-3.5" /> Ask PPH-Claw
+            </button>
           </div>
-          {/* Interactive scenario — only show for J&H */}
-          {id === JH_CLIENT_ID && <div className="bg-white rounded-xl border border-ocean/20 overflow-hidden">
-            <div className="bg-ocean/5 px-5 py-4 border-b border-ocean/10">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-bold text-ocean uppercase tracking-wider">Interactive Scenario</span>
-                    {interactiveViewCount !== null && (
-                      <span className="px-2 py-0.5 rounded-full bg-ocean/10 text-xs text-ocean font-medium">
-                        {interactiveViewCount} view{interactiveViewCount !== 1 ? 's' : ''}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-base font-semibold text-midnight">Jeffrey & Hannah Domenech — Purchase</p>
-                  <p className="text-xs text-midnight/50 mt-1">
-                    A live, shareable page where Jeffrey & Hannah can drag sliders to explore different purchase prices, down payments, and Hannah&apos;s income scenarios in real time. When they find a number they like, they hit <strong>Save This Scenario</strong> and it appears below — with their note to you.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="px-5 py-3 flex items-center gap-2">
-              <a href="/clients/interactive/jh-domenech" target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-4 py-2 bg-ocean text-white rounded-lg text-xs font-semibold hover:bg-ocean/90 transition-colors">
-                Open Page ↗
-              </a>
-              <button onClick={() => { navigator.clipboard.writeText('https://kyle.palaniuk.net/clients/interactive/jh-domenech') }}
-                className="flex items-center gap-1.5 px-4 py-2 bg-midnight/5 text-midnight/60 rounded-lg text-xs font-medium hover:bg-midnight/10 transition-colors">
-                🔗 Copy Link
-              </button>
-            </div>
 
-            {/* Client snapshots */}
-            {interactiveSnapshots.length > 0 && (
-              <div className="px-5 pb-4 space-y-2 border-t border-midnight/8 pt-4">
-                <p className="text-xs font-semibold text-midnight/40 uppercase tracking-wider">Client Snapshots — what they saved</p>
-                {interactiveSnapshots.map((s, i) => (
-                  <div key={s.id} className="bg-[#f8f7f4] rounded-xl p-3 border border-midnight/5">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-semibold text-midnight/60">Snapshot #{interactiveSnapshots.length - i}</span>
-                      <span className="text-[10px] text-midnight/30">
-                        {new Date(s.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-midnight/60 mb-1.5">
-                      <span>Price: <strong className="text-midnight">${Math.round(s.data.purchasePrice / 1000)}k</strong></span>
-                      <span>Down: <strong className="text-midnight">{s.data.downPct}%</strong></span>
-                      <span>Hannah income: <strong className="text-midnight">${s.data.hannahIncome?.toLocaleString()}/mo</strong></span>
-                      <span>PITIA: <strong className="text-midnight">${Math.round(s.data.total).toLocaleString()}/mo</strong></span>
-                      <span>Back DTI: <strong className="text-midnight">{s.data.backDTI?.toFixed(1)}%</strong></span>
-                    </div>
-                    {s.note && <p className="text-xs text-midnight italic border-l-2 border-ocean/30 pl-2">&ldquo;{s.note}&rdquo;</p>}
-                  </div>
-                ))}
-              </div>
-            )}
-            {interactiveSnapshots.length === 0 && (
-              <div className="px-5 pb-4 pt-3 border-t border-midnight/8">
-                <p className="text-xs text-midnight/30 italic">No snapshots yet — send them the link and ask them to save their favorite scenario.</p>
-              </div>
-            )}
-          </div>}
+          {/* Scenario cards */}
+          {loadingScenarios && <div className="text-center py-8"><RefreshCw className="w-5 h-5 text-ocean animate-spin mx-auto" /></div>}
 
-          {/* Static scenarios (PPH-Claw generated) */}
-          {scenarios.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-midnight/40 uppercase tracking-wider px-1">Saved Scenarios</p>
-              {scenarios.map(s => (
-                <div key={s.slug} className="bg-cream rounded-lg p-4 border border-midnight/5 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-midnight">{s.type === 'purchase-grid' ? 'Purchase Scenario' : s.type}</p>
-                    <p className="text-xs text-midnight/40 mt-0.5">
-                      {new Date(s.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <a href={s.publicUrl} target="_blank" rel="noopener noreferrer"
-                      className="px-3 py-1.5 text-xs text-ocean border border-ocean/30 rounded-lg hover:bg-ocean/5 transition-colors">
-                      View
-                    </a>
-                    <button onClick={() => { navigator.clipboard.writeText(`kyle.palaniuk.net${s.publicUrl}`) }}
-                      className="px-3 py-1.5 text-xs text-midnight/50 border border-midnight/10 rounded-lg hover:bg-midnight/5 transition-colors">
-                      Copy Link
-                    </button>
-                  </div>
-                </div>
-              ))}
+          {!loadingScenarios && scenarios.length === 0 && (
+            <div className="text-center py-8 space-y-1">
+              <p className="text-2xl">📊</p>
+              <p className="text-midnight/40 text-sm font-medium">No scenarios yet</p>
+              <p className="text-midnight/25 text-xs">Create one above or ask PPH-Claw to generate one in chat</p>
             </div>
           )}
+
+          {scenarios.map(s => {
+            const views = scenarioViews[s.slug]
+            const isInteractive = s.isInteractive
+            return (
+              <div key={s.slug} className={`bg-white rounded-xl border overflow-hidden ${isInteractive ? 'border-ocean/20' : 'border-midnight/10'}`}>
+                <div className={`px-5 py-4 ${isInteractive ? 'bg-ocean/5 border-b border-ocean/10' : ''}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        {isInteractive && <span className="text-xs font-bold text-ocean uppercase tracking-wider">Interactive</span>}
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${isInteractive ? 'bg-ocean/10 text-ocean' : 'bg-midnight/5 text-midnight/50'}`}>
+                          {s.type === 'interactive' ? 'Live' : s.type === 'purchase-grid' ? 'Purchase' : s.type}
+                        </span>
+                        {views && views.viewCount > 0 && (
+                          <span className="text-[10px] text-midnight/30">
+                            👁 {views.viewCount} view{views.viewCount !== 1 ? 's' : ''}
+                            {views.lastViewed && <> · last {new Date(views.lastViewed).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</>}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm font-semibold text-midnight">{s.label}</p>
+                      {s.description && <p className="text-xs text-midnight/50 mt-1">{s.description}</p>}
+                      <p className="text-[10px] text-midnight/30 mt-1">
+                        Created {new Date(s.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-5 py-3 flex items-center gap-2">
+                  <a href={s.publicUrl} target="_blank" rel="noopener noreferrer"
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-colors ${isInteractive ? 'bg-ocean text-white hover:bg-ocean/90' : 'bg-midnight/5 text-midnight/60 hover:bg-midnight/10'}`}>
+                    {isInteractive ? 'Open Page ↗' : 'View ↗'}
+                  </a>
+                  <button onClick={() => navigator.clipboard.writeText(`https://kyle.palaniuk.net${s.publicUrl}`)}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-midnight/5 text-midnight/60 rounded-lg text-xs font-medium hover:bg-midnight/10 transition-colors">
+                    🔗 Copy Link
+                  </button>
+                </div>
+
+                {/* Snapshots (client-saved scenarios) */}
+                {views && views.snapshots.length > 0 && (
+                  <div className="px-5 pb-4 space-y-2 border-t border-midnight/8 pt-4">
+                    <p className="text-xs font-semibold text-midnight/40 uppercase tracking-wider">Client Snapshots — what they saved</p>
+                    {views.snapshots.map((snap, i) => (
+                      <div key={snap.id} className="bg-[#f8f7f4] rounded-xl p-3 border border-midnight/5">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-xs font-semibold text-midnight/60">Snapshot #{views.snapshots.length - i}</span>
+                          <span className="text-[10px] text-midnight/30">
+                            {new Date(snap.at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-midnight/60 mb-1.5">
+                          {snap.data.purchasePrice && <span>Price: <strong className="text-midnight">${Math.round(snap.data.purchasePrice / 1000)}k</strong></span>}
+                          {snap.data.downPct && <span>Down: <strong className="text-midnight">{snap.data.downPct}%</strong></span>}
+                          {snap.data.total && <span>Payment: <strong className="text-midnight">${Math.round(snap.data.total).toLocaleString()}/mo</strong></span>}
+                          {snap.data.backDTI && <span>DTI: <strong className="text-midnight">{snap.data.backDTI.toFixed(1)}%</strong></span>}
+                        </div>
+                        {snap.note && <p className="text-xs text-midnight italic border-l-2 border-ocean/30 pl-2">&ldquo;{snap.note}&rdquo;</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
 
+      {/* ═══════ CHAT TAB ═══════ */}
       {tab === 'chat' && (
         <div className="bg-cream rounded-xl border border-midnight/5 flex flex-col sm:flex-row" style={{ height: 'min(580px, 80dvh)' }}>
 
