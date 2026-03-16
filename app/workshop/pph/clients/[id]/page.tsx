@@ -76,6 +76,7 @@ interface Client {
   targetArea: string | null
   // AI summary
   aiSummary: string | null
+  aiTldr: string | null
   aiSummaryUpdatedAt: string | null
 }
 
@@ -330,6 +331,8 @@ export default function ClientProfilePage() {
   const initialTab = (searchParams.get('tab') as Tab) || 'overview'
 
   const [client, setClient] = useState<Client | null>(null)
+  const clientRef = useRef<Client | null>(null)
+  useEffect(() => { clientRef.current = client }, [client])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>(initialTab)
   const [callLogs, setCallLogs] = useState<CallLog[]>([])
@@ -351,6 +354,7 @@ export default function ClientProfilePage() {
 
   // AI summary
   const [generatingSummary, setGeneratingSummary] = useState(false)
+  const [lastAppliedFields, setLastAppliedFields] = useState<Record<string, unknown> | null>(null)
 
   // Chat layout
   const [showHistory, setShowHistory] = useState(false)
@@ -358,6 +362,7 @@ export default function ClientProfilePage() {
   async function refreshSummary() {
     if (!client) return
     setGeneratingSummary(true)
+    setLastAppliedFields(null)
     try {
       const res = await fetch('/api/pph/ai-summary', {
         method: 'POST',
@@ -365,8 +370,21 @@ export default function ClientProfilePage() {
         body: JSON.stringify({ clientId: client.id }),
       })
       if (res.ok) {
-        const { summary } = await res.json()
-        setClient(prev => prev ? { ...prev, aiSummary: summary, aiSummaryUpdatedAt: new Date().toISOString() } : prev)
+        const { tldr, summary, extractedFields } = await res.json()
+        setClient(prev => {
+          if (!prev) return prev
+          const u = { ...prev, aiSummary: summary, aiTldr: tldr, aiSummaryUpdatedAt: new Date().toISOString() }
+          if (extractedFields?.ficoScore)           u.ficoScore = extractedFields.ficoScore
+          if (extractedFields?.targetPurchasePrice) u.targetPurchasePrice = extractedFields.targetPurchasePrice
+          if (extractedFields?.b1MonthlyIncome)     u.b1MonthlyIncome = extractedFields.b1MonthlyIncome
+          if (extractedFields?.b2MonthlyIncome)     u.b2MonthlyIncome = extractedFields.b2MonthlyIncome
+          if (extractedFields?.b1Assets)            u.b1Assets = extractedFields.b1Assets
+          if (extractedFields?.stage)               u.stage = extractedFields.stage as string
+          if (extractedFields?.loanType)            u.loanType = extractedFields.loanType as string
+          return u
+        })
+        const applied = Object.fromEntries(Object.entries(extractedFields || {}).filter(([, v]) => v !== null && v !== undefined))
+        if (Object.keys(applied).length > 0) setLastAppliedFields(applied)
       }
     } finally {
       setGeneratingSummary(false)
@@ -444,6 +462,7 @@ export default function ClientProfilePage() {
       ficoScore: (row.fico_score as number) || null,
       targetArea: (row.target_area as string) || null,
       aiSummary: (row.ai_summary as string) || null,
+      aiTldr: (row.ai_tldr as string) || null,
       aiSummaryUpdatedAt: (row.ai_summary_updated_at as string) || null,
     }
   }
@@ -539,18 +558,29 @@ export default function ClientProfilePage() {
     }
   }
 
-  async function saveClientFields(fields: Record<string, unknown>) {
-    if (!client) return
+  const saveClientFields = useCallback(async (fields: Record<string, unknown>) => {
+    setClient(prev => {
+      if (!prev) return prev
+      // Optimistic update — no re-render storm from API roundtrip
+      const optimistic = { ...prev }
+      for (const [k, v] of Object.entries(fields)) {
+        // camelCase field names map directly to Client interface
+        (optimistic as Record<string, unknown>)[k] = v
+      }
+      return optimistic
+    })
+    const currentId = clientRef.current?.id
+    if (!currentId) return
     const res = await fetch('/api/pph/clients', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: client.id, ...fields }),
+      body: JSON.stringify({ id: currentId, ...fields }),
     })
     if (res.ok) {
       const updated = await res.json()
       setClient(mapRow(updated))
     }
-  }
+  }, []) // stable ref
 
   async function addReo() {
     if (!client || !reoForm.address?.trim()) return
@@ -910,34 +940,17 @@ export default function ClientProfilePage() {
               {/* Referred By */}
               <div>
                 <span className="text-xs text-midnight/40 block mb-1">Referred By</span>
-                <input
-                  type="text"
-                  placeholder="Name..."
-                  value={client.referralName || ''}
-                  onChange={e => saveClientFields({ referralName: e.target.value || null })}
-                  className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50"
-                />
+                <FieldInput type="text" placeholder="Name..." value={client.referralName} onSave={v => saveClientFields({ referralName: v || null })} className="w-full" />
               </div>
               {/* Referral Date */}
               <div>
                 <span className="text-xs text-midnight/40 block mb-1">Referral Date</span>
-                <input
-                  type="date"
-                  value={client.referralDate || ''}
-                  onChange={e => saveClientFields({ referralDate: e.target.value || null })}
-                  className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50 text-midnight"
-                />
+                <FieldInput type="date" value={client.referralDate} onSave={v => saveClientFields({ referralDate: v || null })} className="w-full" />
               </div>
               {/* Legacy referralSource (free-form notes / company) */}
               <div className="sm:col-span-3">
                 <span className="text-xs text-midnight/40 block mb-1">Additional Notes (company, context)</span>
-                <input
-                  type="text"
-                  placeholder="e.g. Coldwell Banker Mission Hills, met at open house..."
-                  value={client.referralSource || ''}
-                  onChange={e => saveClientFields({ referralSource: e.target.value })}
-                  className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50"
-                />
+                <FieldInput type="text" placeholder="e.g. Coldwell Banker Mission Hills, met at open house..." value={client.referralSource} onSave={v => saveClientFields({ referralSource: v })} className="w-full" />
               </div>
             </div>
           </div>
@@ -972,18 +985,37 @@ export default function ClientProfilePage() {
                   </p>
                 )}
               </div>
-              <button
-                onClick={refreshSummary}
-                disabled={generatingSummary}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-midnight/5 text-midnight/50 rounded-lg text-xs hover:bg-midnight/10 transition-colors disabled:opacity-40"
-              >
+              <button onClick={refreshSummary} disabled={generatingSummary}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-midnight/5 text-midnight/50 rounded-lg text-xs hover:bg-midnight/10 transition-colors disabled:opacity-40">
                 <RefreshCw className={`w-3 h-3 ${generatingSummary ? 'animate-spin' : ''}`} />
                 {generatingSummary ? 'Generating…' : 'Refresh'}
               </button>
             </div>
+
+            {/* TLDR */}
+            {client.aiTldr && (
+              <div className="bg-ocean/5 border border-ocean/15 rounded-xl px-4 py-3 mb-3">
+                <p className="text-xs font-semibold text-ocean/70 uppercase tracking-wider mb-1">TL;DR</p>
+                <p className="text-sm font-medium text-midnight">{client.aiTldr}</p>
+              </div>
+            )}
+
+            {/* Auto-populated fields notice */}
+            {lastAppliedFields && Object.keys(lastAppliedFields).length > 0 && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5 mb-3 flex items-start gap-2">
+                <span className="text-emerald-500 mt-0.5">✓</span>
+                <div>
+                  <p className="text-xs font-semibold text-emerald-700">Fields auto-populated from summary:</p>
+                  <p className="text-xs text-emerald-600 mt-0.5">
+                    {Object.entries(lastAppliedFields).map(([k, v]) => `${k}: ${v}`).join(' · ')}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {client.aiSummary
               ? <p className="text-sm text-midnight/70 leading-relaxed whitespace-pre-wrap">{client.aiSummary}</p>
-              : <p className="text-sm text-midnight/30 italic">No summary yet. Hit Refresh to generate one from this client&apos;s data.</p>
+              : <p className="text-sm text-midnight/30 italic">No summary yet — hit Refresh to generate from all client data, notes, and chat history. Will auto-populate FICO, income, and stage when found.</p>
             }
           </div>
 
@@ -1027,10 +1059,13 @@ export default function ClientProfilePage() {
 
                 const suggested = calcSuggestedIncome()
 
-                function saveDetails(updates: Record<string, number | string | null>) {
-                  const merged = { ...details, ...updates }
+                // Use ref to avoid stale closure — saveDetails is called from onSave callbacks
+                const detailsRef = React.useRef(details)
+                detailsRef.current = details
+                const saveDetails = React.useCallback((updates: Record<string, number | string | null>) => {
+                  const merged = { ...detailsRef.current, ...updates }
                   saveClientFields({ [detailsKey]: merged })
-                }
+                }, [detailsKey, saveClientFields])
 
                 return (
                   <div key={label} className="bg-white/60 rounded-xl p-4 border border-midnight/5 space-y-3">
@@ -1060,7 +1095,7 @@ export default function ClientProfilePage() {
                             <span className="text-xs text-midnight/40 block mb-0.5">{fLabel}</span>
                             <div className="flex items-center gap-1">
                               <span className="text-xs text-midnight/40">$</span>
-                              <input type="number" placeholder="0" value={Number(details[key] || '') || ''} onChange={e => saveDetails({ [key]: parseFloat(e.target.value) || null })} className="flex-1 px-2 py-1 bg-cream border border-midnight/10 rounded text-xs focus:outline-none" />
+                              <FieldInput type="number" placeholder="0" value={Number(details[key] || "") || null} onSave={v => saveDetails({ [key]: parseFloat(v) || null })} className="flex-1 text-xs" />
                               <span className="text-[10px] text-midnight/30">{unit}</span>
                             </div>
                           </div>
@@ -1090,7 +1125,7 @@ export default function ClientProfilePage() {
                             <span className="text-xs text-midnight/40 block mb-0.5">{fLabel}</span>
                             <div className="flex items-center gap-1">
                               <span className="text-xs text-midnight/40">$</span>
-                              <input type="number" placeholder="0" value={Number(details[key] || '') || ''} onChange={e => saveDetails({ [key]: parseFloat(e.target.value) || null })} className="flex-1 px-2 py-1 bg-cream border border-midnight/10 rounded text-xs focus:outline-none" />
+                              <FieldInput type="number" placeholder="0" value={Number(details[key] || "") || null} onSave={v => saveDetails({ [key]: parseFloat(v) || null })} className="flex-1 text-xs" />
                               <span className="text-[10px] text-midnight/30">/yr</span>
                             </div>
                           </div>
