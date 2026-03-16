@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { PPHNav } from '../../_components/PPHNav'
@@ -235,6 +235,34 @@ function LiabilityAddButton({
   )
 }
 
+// FieldInput — defined outside page component so it never remounts on parent re-render
+// Manages local state, saves on blur or Enter only
+function FieldInput({ value, onSave, type = 'text', placeholder, prefix, className = '' }: {
+  value: string | number | null
+  onSave: (v: string) => void
+  type?: string
+  placeholder?: string
+  prefix?: string
+  className?: string
+}) {
+  const [local, setLocal] = React.useState(String(value ?? ''))
+  React.useEffect(() => { setLocal(String(value ?? '')) }, [value])
+  return (
+    <div className={`flex items-center gap-1 ${prefix ? '' : ''}`}>
+      {prefix && <span className="text-xs text-midnight/40">{prefix}</span>}
+      <input
+        type={type}
+        value={local}
+        placeholder={placeholder}
+        onChange={e => setLocal(e.target.value)}
+        onBlur={() => onSave(local)}
+        onKeyDown={e => { if (e.key === 'Enter') { e.currentTarget.blur() } }}
+        className={`px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50 ${className}`}
+      />
+    </div>
+  )
+}
+
 function EditableSelect({ field, value, options, label, onChange }: {
   field: string; value: string | null; options: string[]; label: string
   onChange: (field: string, value: string) => void
@@ -367,10 +395,12 @@ export default function ClientProfilePage() {
 
   useEffect(() => { fetchClient() }, [id])
   useEffect(() => { if (tab === 'calls') fetchCalls() }, [tab, id])
+  const JH_CLIENT_ID = '77e3ef8a-fe47-44c9-8c78-c45552463818'
+
   useEffect(() => {
     if (tab === 'scenarios') {
       fetchScenarios()
-      fetchInteractiveEvents('jh-domenech') // TODO: generalize per client
+      if (id === JH_CLIENT_ID) fetchInteractiveEvents('jh-domenech')
     }
   }, [tab, id])
   useEffect(() => { if (tab === 'chat' && id) fetchChatHistory() }, [tab, id])
@@ -918,27 +948,15 @@ export default function ClientProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <span className="text-xs text-midnight/40 block mb-1">Target Purchase Price</span>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-midnight/40">$</span>
-                  <input type="number" placeholder="e.g. 850000"
-                    value={client.targetPurchasePrice || ''}
-                    onChange={e => saveClientFields({ targetPurchasePrice: parseFloat(e.target.value) || null })}
-                    className="flex-1 px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50" />
-                </div>
+                <FieldInput type="number" placeholder="e.g. 850000" prefix="$" value={client.targetPurchasePrice} onSave={v => saveClientFields({ targetPurchasePrice: parseFloat(v) || null })} className="w-full" />
               </div>
               <div>
                 <span className="text-xs text-midnight/40 block mb-1">FICO Score</span>
-                <input type="number" placeholder="e.g. 740" min={300} max={850}
-                  value={client.ficoScore || ''}
-                  onChange={e => saveClientFields({ ficoScore: parseInt(e.target.value) || null })}
-                  className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50" />
+                <FieldInput type="number" placeholder="e.g. 740" value={client.ficoScore} onSave={v => saveClientFields({ ficoScore: parseInt(v) || null })} className="w-full" />
               </div>
               <div>
                 <span className="text-xs text-midnight/40 block mb-1">Target Area</span>
-                <input type="text" placeholder="e.g. North Park, San Diego CA"
-                  value={client.targetArea || ''}
-                  onChange={e => saveClientFields({ targetArea: e.target.value })}
-                  className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50" />
+                <FieldInput type="text" placeholder="e.g. North Park, San Diego CA" value={client.targetArea} onSave={v => saveClientFields({ targetArea: v })} className="w-full" />
               </div>
             </div>
           </div>
@@ -1104,7 +1122,7 @@ export default function ClientProfilePage() {
                       <span className="text-xs text-midnight/40 block mb-0.5">Monthly Qualifying Income</span>
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-midnight/40">$</span>
-                        <input type="number" placeholder="0" value={(client[incomeKey] as number) || ''} onChange={e => saveClientFields({ [incomeKey]: parseFloat(e.target.value) || null })} className="flex-1 px-2 py-1 bg-cream border border-midnight/10 rounded text-sm focus:outline-none" />
+                        <FieldInput type="number" placeholder="0" value={client[incomeKey] as number} onSave={v => saveClientFields({ [incomeKey]: parseFloat(v) || null })} className="flex-1" />
                         <span className="text-xs text-midnight/40">/mo</span>
                       </div>
                     </div>
@@ -1130,9 +1148,9 @@ export default function ClientProfilePage() {
                   <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">{label}</p>
                   <div className="flex items-center gap-1">
                     <span className="text-xs text-midnight/40">$</span>
-                    <input type="number" placeholder="0" value={(client[assetsKey as keyof Client] as number) || ''} onChange={e => saveClientFields({ [assetsKey]: parseFloat(e.target.value) || null })} className="flex-1 px-2 py-1 bg-cream border border-midnight/10 rounded text-sm focus:outline-none" />
+                    <FieldInput type="number" placeholder="0" value={client[assetsKey as keyof Client] as number} onSave={v => saveClientFields({ [assetsKey]: parseFloat(v) || null })} className="flex-1" />
                   </div>
-                  <input type="text" placeholder="Notes (checking, savings, 401k, stocks...)" value={(client[notesKey as keyof Client] as string) || ''} onChange={e => saveClientFields({ [notesKey]: e.target.value })} className="w-full px-2 py-1 bg-cream border border-midnight/10 rounded text-xs focus:outline-none text-midnight/60" />
+                  <FieldInput type="text" placeholder="Notes (checking, savings, 401k, stocks...)" value={client[notesKey as keyof Client] as string} onSave={v => saveClientFields({ [notesKey]: v })} className="w-full text-xs text-midnight/60" />
                 </div>
               ))}
             </div>
@@ -1415,8 +1433,8 @@ export default function ClientProfilePage() {
               <Plus className="w-3.5 h-3.5" /> New Scenario
             </Link>
           </div>
-          {/* Interactive scenario — primary card */}
-          <div className="bg-white rounded-xl border border-ocean/20 overflow-hidden">
+          {/* Interactive scenario — only show for J&H */}
+          {id === JH_CLIENT_ID && <div className="bg-white rounded-xl border border-ocean/20 overflow-hidden">
             <div className="bg-ocean/5 px-5 py-4 border-b border-ocean/10">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -1475,7 +1493,7 @@ export default function ClientProfilePage() {
                 <p className="text-xs text-midnight/30 italic">No snapshots yet — send them the link and ask them to save their favorite scenario.</p>
               </div>
             )}
-          </div>
+          </div>}
 
           {/* Static scenarios (PPH-Claw generated) */}
           {scenarios.length > 0 && (

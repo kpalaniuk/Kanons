@@ -115,5 +115,20 @@ export async function PATCH(request: NextRequest) {
     .single()
 
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 })
+
+  // Notify Kyle when follow-up date is set or changed
+  if (mapped['follow_up_date'] && process.env.DISCORD_JASPER_BOT_TOKEN && process.env.DISCORD_JASPER_CHANNEL_ID) {
+    const clientName = (data?.name || 'client') as string
+    const dateStr = mapped['follow_up_date'] as string
+    const formatted = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    const nextAction = (mapped['next_action'] || data?.next_action || '') as string
+    const msg = `📅 Follow-up set for **${clientName}** — **${formatted}**${nextAction ? `\n→ ${nextAction}` : ''}`
+    fetch(`https://discord.com/api/v10/channels/${process.env.DISCORD_JASPER_CHANNEL_ID}/messages`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bot ${process.env.DISCORD_JASPER_BOT_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: msg }),
+    }).catch(() => {})
+  }
+
   return NextResponse.json(data)
 }
