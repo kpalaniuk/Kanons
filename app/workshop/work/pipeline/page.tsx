@@ -735,6 +735,9 @@ export default function PipelinePage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-display text-lg font-bold text-midnight truncate">{client.name}</h3>
+                {client.notes && (
+                  <span title="Has notes" className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-ocean/40 mt-1" />
+                )}
 
                 {/* Priority badge — tap to change */}
                 <div className="relative">
@@ -898,6 +901,24 @@ export default function PipelinePage() {
               </button>
             )}
           </div>
+
+          {/* Note Preview — visible on collapsed card */}
+          {client.notes && !isExpanded && (
+            <div
+              className="mb-3 group cursor-pointer"
+              onClick={() => {
+                setExpandedClient(client.id)
+                setTimeout(() => handleFieldEdit(client.id, 'notes', client.notes), 50)
+              }}
+            >
+              <div className="flex items-start gap-1.5 px-2.5 py-2 bg-midnight/4 rounded-lg border border-midnight/6 hover:border-ocean/30 hover:bg-ocean/3 transition-colors">
+                <span className="text-midnight/30 text-xs mt-0.5 flex-shrink-0">📝</span>
+                <p className="text-xs text-midnight/60 leading-relaxed line-clamp-2 flex-1">
+                  {client.notes.split('\n')[0].slice(0, 120)}{client.notes.length > 120 || client.notes.includes('\n') ? '…' : ''}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Referral Source */}
           {client.referralSource && (
