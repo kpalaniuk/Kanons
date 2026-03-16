@@ -44,6 +44,9 @@ interface Client {
   lastTouched: string | null
   notes: string
   referralSource: string
+  referralName: string | null
+  referralDate: string | null
+  referralType: string | null
   primaryLo: string | null
   primaryContact: string | null
   phone: string | null
@@ -386,6 +389,9 @@ export default function ClientProfilePage() {
       lastTouched: (row.last_touched as string) || null,
       notes: (row.notes as string) || '',
       referralSource: (row.referral_source as string) || '',
+      referralName: (row.referral_name as string) || null,
+      referralDate: (row.referral_date as string) || null,
+      referralType: (row.referral_type as string) || null,
       primaryLo: (row.primary_lo as string) || null,
       primaryContact: (row.primary_contact as string) || null,
       phone: (row.phone as string) || null,
@@ -637,6 +643,7 @@ export default function ClientProfilePage() {
         loanType: client.loanType, loanAmount: client.loanAmount, nextAction: client.nextAction,
         notes: client.notes, primaryLo: client.primaryLo, primaryContact: client.primaryContact,
         followUpDate: client.followUpDate, referralSource: client.referralSource,
+        referralType: client.referralType, referralName: client.referralName, referralDate: client.referralDate,
         married: client.married,
         b1: { name: client.b1Name, incomeType: client.b1IncomeType, monthlyIncome: client.b1MonthlyIncome, assets: client.b1Assets, assetsNotes: client.b1AssetsNotes },
         b2: { name: client.b2Name, incomeType: client.b2IncomeType, monthlyIncome: client.b2MonthlyIncome, assets: client.b2Assets, assetsNotes: client.b2AssetsNotes },
@@ -770,7 +777,11 @@ export default function ClientProfilePage() {
             {client.loanType && <span>{client.loanType}</span>}
             {client.targetArea && <span>📍 {client.targetArea}</span>}
             {client.primaryLo && <span>👤 {client.primaryLo}</span>}
-            {client.referralSource && <span>via {client.referralSource}</span>}
+            {(client.referralType || client.referralName || client.referralSource) && (
+              <span>
+                via {[client.referralType, client.referralName, client.referralSource].filter(Boolean).join(' · ')}
+              </span>
+            )}
             {client.phone && <a href={`tel:${client.phone}`} className="hover:text-ocean transition-colors">📞 {client.phone}</a>}
           </div>
         </div>
@@ -841,6 +852,63 @@ export default function ClientProfilePage() {
               <button onClick={() => setTab('chat')} className="flex items-center gap-2 px-4 py-2 bg-midnight text-cream rounded-lg text-sm font-medium hover:bg-midnight/80 transition-colors">
                 <MessageSquare className="w-4 h-4" /> Ask PPH-Claw
               </button>
+            </div>
+          </div>
+
+          {/* Referral Source */}
+          <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+            <h3 className="text-sm font-semibold text-midnight mb-4">Referral Source</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Referral Type */}
+              <div>
+                <span className="text-xs text-midnight/40 block mb-1">Source Type</span>
+                <select
+                  value={client.referralType || ''}
+                  onChange={e => saveClientFields({ referralType: e.target.value || null })}
+                  className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50 text-midnight"
+                >
+                  <option value="">— Select type —</option>
+                  <option value="Realtor">Realtor</option>
+                  <option value="Past Client">Past Client</option>
+                  <option value="Friend / Family">Friend / Family</option>
+                  <option value="Cold Lead">Cold Lead</option>
+                  <option value="Partner">Partner (PPH / GH)</option>
+                  <option value="Online">Online / Social</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              {/* Referred By */}
+              <div>
+                <span className="text-xs text-midnight/40 block mb-1">Referred By</span>
+                <input
+                  type="text"
+                  placeholder="Name..."
+                  value={client.referralName || ''}
+                  onChange={e => saveClientFields({ referralName: e.target.value || null })}
+                  className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50"
+                />
+              </div>
+              {/* Referral Date */}
+              <div>
+                <span className="text-xs text-midnight/40 block mb-1">Referral Date</span>
+                <input
+                  type="date"
+                  value={client.referralDate || ''}
+                  onChange={e => saveClientFields({ referralDate: e.target.value || null })}
+                  className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50 text-midnight"
+                />
+              </div>
+              {/* Legacy referralSource (free-form notes / company) */}
+              <div className="sm:col-span-3">
+                <span className="text-xs text-midnight/40 block mb-1">Additional Notes (company, context)</span>
+                <input
+                  type="text"
+                  placeholder="e.g. Coldwell Banker Mission Hills, met at open house..."
+                  value={client.referralSource || ''}
+                  onChange={e => saveClientFields({ referralSource: e.target.value })}
+                  className="w-full px-2 py-1.5 bg-white border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50"
+                />
+              </div>
             </div>
           </div>
 

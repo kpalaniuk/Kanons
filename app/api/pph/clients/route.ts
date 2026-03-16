@@ -90,6 +90,7 @@ export async function PATCH(request: NextRequest) {
     followUpDate: 'follow_up_date', lastTouched: 'last_touched',
     referralSource: 'referral_source', primaryLo: 'primary_lo',
     primaryContact: 'primary_contact',
+    referralName: 'referral_name', referralDate: 'referral_date', referralType: 'referral_type',
     b1Name: 'b1_name', b1IncomeType: 'b1_income_type', b1MonthlyIncome: 'b1_monthly_income',
     b1IncomeDetails: 'b1_income_details',
     b2Name: 'b2_name', b2IncomeType: 'b2_income_type', b2MonthlyIncome: 'b2_monthly_income',

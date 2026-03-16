@@ -21,6 +21,8 @@ interface Client {
   lastTouched: string | null
   notes: string
   referralSource: string
+  referralName: string | null
+  referralType: string | null
   primaryLo: string | null
   primaryContact: string | null
   phone: string | null
@@ -122,6 +124,8 @@ export default function OpportunitiesPage() {
       lastTouched: (row.last_touched as string) || null,
       notes: (row.notes as string) || '',
       referralSource: (row.referral_source as string) || '',
+      referralName: (row.referral_name as string) || null,
+      referralType: (row.referral_type as string) || null,
       primaryLo: (row.primary_lo as string) || null,
       primaryContact: (row.primary_contact as string) || null,
       phone: (row.phone as string) || null,
@@ -498,6 +502,11 @@ export default function OpportunitiesPage() {
                       </button>
                     )}
                     {client.lastTouched && <span>Touched {relativeDate(client.lastTouched)}</span>}
+                    {(client.referralType || client.referralName) && (
+                      <span className="flex items-center gap-1 text-midnight/40 italic">
+                        via {[client.referralType, client.referralName].filter(Boolean).join(' · ')}
+                      </span>
+                    )}
                   </div>
                   {client.nextAction && (
                     <p className="text-xs text-midnight/60 mt-1 truncate">→ {client.nextAction}</p>
