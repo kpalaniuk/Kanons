@@ -291,6 +291,9 @@ export default function LyricsPage() {
   const [lyricSearchActive, setLyricSearchActive] = useState(false)
   const [lyricsFetching, setLyricsFetching] = useState(false)
   const [lyricsFetchDone, setLyricsFetchDone] = useState(false)
+  // Status filter (populated from loaded content)
+  const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const [songMeta, setSongMeta] = useState<Record<string, SongMeta>>({})
 
   useEffect(() => {
     fetch('/api/lyrics')
@@ -299,6 +302,17 @@ export default function LyricsPage() {
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
+
+  // ── Extract meta from loaded content ──────────────────────────────────────
+  useEffect(() => {
+    const newMeta: Record<string, SongMeta> = {}
+    for (const [id, raw] of Object.entries(songContent)) {
+      if (raw && raw !== '(No content found)' && raw !== '(Error loading lyrics)') {
+        newMeta[id] = extractMeta(raw).meta
+      }
+    }
+    setSongMeta(prev => ({ ...prev, ...newMeta }))
+  }, [songContent])
 
   // ── Fetch all lyrics content for full-text search ──────────────────────────
   const fetchAllLyrics = useCallback(async (songList: Song[]) => {
@@ -355,20 +369,30 @@ export default function LyricsPage() {
 
   // ── Filter ─────────────────────────────────────────────────────────────────
   const filtered = songs.filter(s => {
+    if (bandFilter && s.band !== bandFilter) return false
+    if (statusFilter) {
+      const meta = songMeta[s.id]
+      if (!meta || meta.status !== statusFilter) return false
+    }
     const q = searchQuery.toLowerCase()
-    if (!q) return !bandFilter || s.band === bandFilter
-    if (!bandFilter || s.band === bandFilter) {
-      // Always match title
-      if (s.title.toLowerCase().includes(q)) return true
-      // Match loaded content if lyric search is active
-      if (lyricSearchActive && songContent[s.id]) {
-        const { body } = extractMeta(songContent[s.id])
-        if (body.toLowerCase().includes(q)) return true
-      }
-      return false
+    if (!q) return true
+    if (s.title.toLowerCase().includes(q)) return true
+    if (lyricSearchActive && songContent[s.id]) {
+      const { body } = extractMeta(songContent[s.id])
+      if (body.toLowerCase().includes(q)) return true
     }
     return false
   })
+
+  // Unique statuses from loaded metadata
+  const knownStatuses = [...new Set(
+    Object.values(songMeta).map(m => m.status).filter(Boolean)
+  )].sort() as string[]
+
+  const statusCounts = knownStatuses.reduce((acc, st) => {
+    acc[st] = songs.filter(s => songMeta[s.id]?.status === st).length
+    return acc
+  }, {} as Record<string, number>)
 
   // ── Sort ───────────────────────────────────────────────────────────────────
   const sorted = [...filtered].sort((a, b) => {
@@ -494,6 +518,46 @@ export default function LyricsPage() {
           </button>
         ))}
       </div>
+
+      {/* Status filter chips (shown once any metadata is loaded) */}
+      {knownStatuses.length > 0 && (
+        <div className="flex flex-wrap gap-2 -mt-4">
+          <span className="text-xs text-midnight/30 self-center font-medium">Status:</span>
+          {knownStatuses.map(st => {
+            const statusColors: Record<string, string> = {
+              'Active Setlist': 'bg-cyan/10 text-cyan border-cyan/30',
+              'Know It':        'bg-green-100 text-green-700 border-green-200',
+              'Learning':       'bg-amber-100 text-amber-700 border-amber-200',
+              'Shelved':        'bg-midnight/5 text-midnight/40 border-midnight/10',
+            }
+            const base = statusColors[st] ?? 'bg-sand text-midnight/50 border-midnight/10'
+            return (
+              <button
+                key={st}
+                onClick={() => setStatusFilter(statusFilter === st ? null : st)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                  statusFilter === st
+                    ? base + ' ring-2 ring-offset-1 ring-ocean/30'
+                    : base + ' opacity-60 hover:opacity-100'
+                }`}
+              >
+                {st}
+                {statusCounts[st] > 0 && (
+                  <span className="ml-1.5 opacity-60">({statusCounts[st]})</span>
+                )}
+              </button>
+            )
+          })}
+          {statusFilter && (
+            <button
+              onClick={() => setStatusFilter(null)}
+              className="flex items-center gap-1 px-2 py-1 rounded-full text-xs text-midnight/40 hover:text-midnight transition-colors"
+            >
+              <X className="w-3 h-3" /> Clear
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Content */}
       {loading ? (
