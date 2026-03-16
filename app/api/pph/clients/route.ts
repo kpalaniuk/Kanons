@@ -99,6 +99,7 @@ export async function PATCH(request: NextRequest) {
     targetPurchasePrice: 'target_purchase_price',
     ficoScore: 'fico_score',
     targetArea: 'target_area',
+    liabilities: 'liabilities',
   }
   for (const [key, val] of Object.entries(fields)) {
     const col = fieldMap[key] || key

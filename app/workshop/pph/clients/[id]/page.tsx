@@ -24,6 +24,14 @@ interface ReoProperty {
   hoaDues: number | null
 }
 
+interface Liability {
+  id: string
+  type: 'auto' | 'student' | 'credit_card' | 'installment' | 'other'
+  description: string
+  balance: number | null
+  monthlyPayment: number
+}
+
 interface Client {
   id: string
   name: string
@@ -55,6 +63,8 @@ interface Client {
   b1AssetsNotes: string | null
   b2Assets: number | null
   b2AssetsNotes: string | null
+  // Liabilities
+  liabilities: Liability[]
   // REO
   reo: ReoProperty[]
   // Deal basics
@@ -118,6 +128,109 @@ const TABS = [
 type Tab = typeof TABS[number]['id']
 
 // ── Module-level components (NOT inside the page fn) to prevent remount on re-render ──
+
+// ── Liability add button + inline form ───────────────────────────────────────
+function LiabilityAddButton({
+  types,
+  onAdd,
+}: {
+  types: { value: Liability['type']; label: string }[]
+  onAdd: (entry: Omit<Liability, 'id'>) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [form, setForm] = useState<{
+    type: Liability['type']
+    description: string
+    balance: string
+    monthlyPayment: string
+  }>({ type: 'auto', description: '', balance: '', monthlyPayment: '' })
+
+  function submit() {
+    const payment = parseFloat(form.monthlyPayment)
+    if (!payment) return
+    onAdd({
+      type: form.type,
+      description: form.description.trim(),
+      balance: parseFloat(form.balance) || null,
+      monthlyPayment: payment,
+    })
+    setForm({ type: 'auto', description: '', balance: '', monthlyPayment: '' })
+    setOpen(false)
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-midnight text-cream rounded-lg text-xs font-medium hover:bg-midnight/80 transition-colors"
+      >
+        <Plus className="w-3.5 h-3.5" /> Add Debt
+      </button>
+    )
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-midnight/40 backdrop-blur-sm p-4" onClick={() => setOpen(false)}>
+      <div className="bg-white rounded-2xl p-5 w-full max-w-sm shadow-2xl space-y-3" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold text-midnight">Add Monthly Debt</p>
+          <button onClick={() => setOpen(false)} className="text-midnight/30 hover:text-midnight"><X className="w-4 h-4" /></button>
+        </div>
+        <div>
+          <label className="text-xs text-midnight/40 block mb-1">Type</label>
+          <select
+            value={form.type}
+            onChange={e => setForm(p => ({ ...p, type: e.target.value as Liability['type'] }))}
+            className="w-full px-3 py-2 border border-midnight/10 rounded-lg text-sm focus:outline-none"
+          >
+            {types.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="text-xs text-midnight/40 block mb-1">Description (optional)</label>
+          <input
+            type="text"
+            placeholder="e.g. Honda Civic, Chase Visa…"
+            value={form.description}
+            onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+            className="w-full px-3 py-2 border border-midnight/10 rounded-lg text-sm focus:outline-none"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs text-midnight/40 block mb-1">Outstanding Balance ($)</label>
+            <input
+              type="number"
+              placeholder="0"
+              value={form.balance}
+              onChange={e => setForm(p => ({ ...p, balance: e.target.value }))}
+              className="w-full px-3 py-2 border border-midnight/10 rounded-lg text-sm focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-midnight/40 block mb-1">Monthly Payment ($) *</label>
+            <input
+              type="number"
+              placeholder="0"
+              value={form.monthlyPayment}
+              onChange={e => setForm(p => ({ ...p, monthlyPayment: e.target.value }))}
+              className="w-full px-3 py-2 border border-midnight/10 rounded-lg text-sm focus:outline-none focus:border-ocean/50"
+              autoFocus
+              onKeyDown={e => { if (e.key === 'Enter') submit() }}
+            />
+          </div>
+        </div>
+        <button
+          onClick={submit}
+          disabled={!form.monthlyPayment}
+          className="w-full py-2.5 bg-midnight text-cream rounded-xl text-sm font-semibold hover:bg-midnight/80 transition-colors disabled:opacity-40"
+        >
+          Add Debt
+        </button>
+      </div>
+    </div>
+  )
+}
 
 function EditableSelect({ field, value, options, label, onChange }: {
   field: string; value: string | null; options: string[]; label: string
@@ -289,6 +402,7 @@ export default function ClientProfilePage() {
       b1AssetsNotes: (row.b1_assets_notes as string) || null,
       b2Assets: (row.b2_assets as number) || null,
       b2AssetsNotes: (row.b2_assets_notes as string) || null,
+      liabilities: (row.liabilities as Liability[]) || [],
       reo: (row.reo as ReoProperty[]) || [],
       targetPurchasePrice: (row.target_purchase_price as number) || null,
       ficoScore: (row.fico_score as number) || null,
@@ -961,6 +1075,107 @@ export default function ClientProfilePage() {
               </div>
             )}
           </div>
+
+          {/* Liabilities & DTI */}
+          {(() => {
+            const totalDebt = client.liabilities.reduce((sum, d) => sum + (d.monthlyPayment || 0), 0)
+            const combinedIncome = (client.b1MonthlyIncome || 0) + (client.b2MonthlyIncome || 0)
+            const LIABILITY_TYPES: { value: Liability['type']; label: string }[] = [
+              { value: 'auto', label: '🚗 Auto Loan' },
+              { value: 'student', label: '🎓 Student Loan' },
+              { value: 'credit_card', label: '💳 Credit Card' },
+              { value: 'installment', label: '📦 Installment Loan' },
+              { value: 'other', label: '📋 Other' },
+            ]
+
+            function addLiability(entry: Omit<Liability, 'id'>) {
+              if (!client) return
+              const updated = [...client.liabilities, { ...entry, id: `debt-${Date.now()}` }]
+              saveClientFields({ liabilities: JSON.stringify(updated) })
+            }
+            function removeLiability(lid: string) {
+              if (!client) return
+              const updated = client.liabilities.filter(d => d.id !== lid)
+              saveClientFields({ liabilities: JSON.stringify(updated) })
+            }
+
+            return (
+              <div className="bg-cream rounded-xl p-5 border border-midnight/5">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-midnight">Monthly Liabilities</h3>
+                    {totalDebt > 0 && (
+                      <p className="text-xs text-midnight/40 mt-0.5">
+                        Total: <span className="font-semibold text-midnight">${totalDebt.toLocaleString()}/mo</span>
+                        {combinedIncome > 0 && (
+                          <span className="ml-2 text-midnight/50">
+                            Non-housing DTI: <span className={`font-semibold ${totalDebt / combinedIncome > 0.36 ? 'text-red-500' : totalDebt / combinedIncome > 0.28 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                              {((totalDebt / combinedIncome) * 100).toFixed(1)}%
+                            </span>
+                          </span>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                  <LiabilityAddButton types={LIABILITY_TYPES} onAdd={addLiability} />
+                </div>
+
+                {client.liabilities.length === 0 ? (
+                  <p className="text-sm text-midnight/30">No liabilities on file.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {client.liabilities.map(debt => (
+                      <div key={debt.id} className="flex items-center gap-3 bg-white/60 rounded-lg px-4 py-3 border border-midnight/5">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-midnight/60 capitalize">{debt.type.replace('_', ' ')}</span>
+                            {debt.description && <span className="text-sm text-midnight truncate">{debt.description}</span>}
+                          </div>
+                          {debt.balance !== null && debt.balance > 0 && (
+                            <p className="text-xs text-midnight/40 mt-0.5">Balance: ${debt.balance.toLocaleString()}</p>
+                          )}
+                        </div>
+                        <span className="text-sm font-semibold text-midnight whitespace-nowrap">${debt.monthlyPayment.toLocaleString()}/mo</span>
+                        <button onClick={() => removeLiability(debt.id)} className="text-midnight/20 hover:text-red-400 transition-colors flex-shrink-0">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* DTI summary card */}
+                {combinedIncome > 0 && totalDebt > 0 && (
+                  <div className="mt-4 p-3 bg-midnight/3 rounded-xl border border-midnight/8">
+                    <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider mb-2">DTI Snapshot</p>
+                    <div className="grid grid-cols-3 gap-3 text-center text-xs">
+                      <div>
+                        <p className="text-midnight/40">Monthly Income</p>
+                        <p className="font-bold text-midnight mt-0.5">${combinedIncome.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-midnight/40">Non-Housing Debts</p>
+                        <p className="font-bold text-midnight mt-0.5">${totalDebt.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-midnight/40">Max Housing (43% BTI)</p>
+                        <p className="font-bold text-emerald-600 mt-0.5">${Math.max(0, Math.round(combinedIncome * 0.43 - totalDebt)).toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <div className="h-1.5 bg-midnight/8 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${totalDebt / combinedIncome > 0.36 ? 'bg-red-400' : totalDebt / combinedIncome > 0.28 ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                          style={{ width: `${Math.min(100, (totalDebt / combinedIncome) * 100 / 0.43 * 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-midnight/30 mt-1">Non-housing debts vs 43% back-end limit</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
 
           {/* REO */}
           <div className="bg-cream rounded-xl p-5 border border-midnight/5">
