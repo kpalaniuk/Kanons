@@ -87,6 +87,7 @@ export default function OpportunitiesPage() {
   const [filterStage, setFilterStage] = useState('all')
   const [filterLo, setFilterLo] = useState('all')
   const [filterPriority, setFilterPriority] = useState('all')
+  const [filterReferral, setFilterReferral] = useState('all')
   const [showAddForm, setShowAddForm] = useState(false)
   const [logCallClient, setLogCallClient] = useState<Client | null>(null)
   const [logCallType, setLogCallType] = useState('Call')
@@ -281,6 +282,19 @@ export default function OpportunitiesPage() {
     [clients]
   )
 
+  // Referral type counts (active clients only)
+  const referralCounts = useMemo(() => {
+    const active = clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost')
+    const counts: Record<string, number> = {}
+    active.forEach(c => {
+      const t = c.referralType || 'Unknown'
+      counts[t] = (counts[t] || 0) + 1
+    })
+    return counts
+  }, [clients])
+
+  const referralTypes = useMemo(() => Object.keys(referralCounts).sort(), [referralCounts])
+
   // Filtered + searched
   const filtered = useMemo(() => {
     let list = clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost')
@@ -291,6 +305,7 @@ export default function OpportunitiesPage() {
     if (filterStage !== 'all') list = list.filter(c => c.stage === filterStage)
     if (filterLo !== 'all') list = list.filter(c => c.primaryLo === filterLo)
     if (filterPriority !== 'all') list = list.filter(c => c.priority === filterPriority)
+    if (filterReferral !== 'all') list = list.filter(c => (c.referralType || 'Unknown') === filterReferral)
     // Sort: Hot first, then by follow-up date (overdue first)
     const priorityOrder: Record<string, number> = { Hot: 0, Active: 1, Warm: 2, Monitoring: 3 }
     list.sort((a, b) => {
@@ -402,6 +417,36 @@ export default function OpportunitiesPage() {
           <RefreshCw className="w-4 h-4 text-midnight/40" />
         </button>
       </div>
+
+      {/* Referral Source Filter Chips */}
+      {referralTypes.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-midnight/40 font-medium uppercase tracking-wide">Source:</span>
+          <button
+            onClick={() => setFilterReferral('all')}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+              filterReferral === 'all'
+                ? 'bg-midnight text-cream'
+                : 'bg-midnight/8 text-midnight/60 hover:bg-midnight/15'
+            }`}
+          >
+            All
+          </button>
+          {referralTypes.map(type => (
+            <button
+              key={type}
+              onClick={() => setFilterReferral(filterReferral === type ? 'all' : type)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                filterReferral === type
+                  ? 'bg-ocean text-white'
+                  : 'bg-ocean/10 text-ocean hover:bg-ocean/20'
+              }`}
+            >
+              {type} <span className="opacity-60">·{referralCounts[type]}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Client Cards */}
       <div className="grid gap-3">
