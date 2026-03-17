@@ -21,9 +21,9 @@ import {
 } from 'lucide-react'
 
 const workLinks = [
-  { href: '/workshop/work/pipeline',       label: 'Pipeline',  icon: ClipboardList },
-  { href: '/workshop/work/tools',          label: 'Tools',     icon: Wrench },
-  { href: '/workshop/work/clients',        label: 'Clients',   icon: Users },
+  { href: '/workshop/pph/opportunities',       label: 'Pipeline',  icon: ClipboardList },
+  { href: '/workshop/pph/scenarios',          label: 'Tools',     icon: Wrench },
+  { href: '/workshop/pph/opportunities',        label: 'Clients',   icon: Users },
   { href: '/workshop/work/lo-buddy-landing', label: 'LO Buddy', icon: Sword },
 ]
 
@@ -50,7 +50,7 @@ export default function WorkshopNav() {
   const isPersonalActive = pathname?.startsWith('/workshop/personal')
 
   function workLinkClass(href: string) {
-    const active = pathname === href || (href !== '/workshop/work/pipeline' && pathname?.startsWith(href))
+    const active = pathname === href || (href !== '/workshop/pph/opportunities' && pathname?.startsWith(href))
     return `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
       active ? 'bg-ocean text-cream' : 'text-midnight/50 hover:text-midnight hover:bg-sand'
     }`

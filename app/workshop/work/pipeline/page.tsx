@@ -1,4 +1,2 @@
 import { redirect } from 'next/navigation'
-export default function WorkPipelinePage() {
-  redirect('/workshop/pph/opportunities')
-}
+export default function Page() { redirect('/workshop/pph/opportunities') }

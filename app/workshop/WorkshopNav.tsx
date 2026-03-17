@@ -35,8 +35,9 @@ const pphLinks = [
   { href: '/workshop/pph/purchase-builder', label: 'Purchase',  icon: Building2 },
   { href: '/workshop/pph/refi-builder',     label: 'Refi',      icon: RefreshCw },
   { href: '/workshop/pph/dscr-calculator',  label: 'DSCR',      icon: BarChart3 },
-  { href: '/workshop/work/income-qualifier',label: 'Income',    icon: DollarSign },
+  { href: '/workshop/pph/income-qualifier',label: 'Income',    icon: DollarSign },
   { href: '/workshop/pph/scenarios',        label: 'Scenarios', icon: ClipboardList },
+  { href: '/workshop/pph/roomforge',        label: 'RoomForge', icon: Box },
 ]
 
 const hotDogLinks = [
@@ -86,7 +87,6 @@ export default function WorkshopNav() {
   const canLOBuddy  = hasAccess(roles, 'lo-buddy')
   const canPersonal = hasAccess(roles, 'personal')
 
-  // Treat /workshop/work/* as PPH section for sub-nav purposes
   const inPPH      = pathname?.startsWith('/workshop/pph') || pathname?.startsWith('/workshop/work')
   const inHotDog   = pathname?.startsWith('/workshop/operation-hot-dog')
   const inLOBuddy  = pathname?.startsWith('/workshop/lo-buddy')
@@ -169,12 +169,6 @@ export default function WorkshopNav() {
               </Link>
             </>
           )}
-
-          <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
-          <Link href="/workshop/work/roomforge" className={sectionClass(!!pathname?.startsWith('/workshop/work/roomforge'))}>
-            <Box size={14} />
-            RoomForge
-          </Link>
 
           <div className="h-5 w-px bg-midnight/10 mx-1 flex-shrink-0" />
           <Link href="/workshop/kb" className={sectionClass(!!inKB)}>
