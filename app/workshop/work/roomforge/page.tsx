@@ -1,2 +1,2 @@
 import { redirect } from 'next/navigation'
-export default function Page() { redirect('/workshop/pph/roomforge') }
+export default function Page() { redirect('/workshop/personal/roomforge') }

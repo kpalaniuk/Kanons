@@ -1,2 +1,2 @@
 import { redirect } from 'next/navigation'
-export default function Page() { redirect('/workshop/pph/hopper') }
+export default function Page() { redirect('/workshop/lo-buddy/hopper') }

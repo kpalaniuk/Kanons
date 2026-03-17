@@ -37,7 +37,6 @@ const pphLinks = [
   { href: '/workshop/pph/dscr-calculator',  label: 'DSCR',      icon: BarChart3 },
   { href: '/workshop/pph/income-qualifier',label: 'Income',    icon: DollarSign },
   { href: '/workshop/pph/scenarios',        label: 'Scenarios', icon: ClipboardList },
-  { href: '/workshop/pph/roomforge',        label: 'RoomForge', icon: Box },
 ]
 
 const hotDogLinks = [
@@ -50,6 +49,7 @@ const hotDogLinks = [
 const loBuddyLinks = [
   { href: '/workshop/lo-buddy',           label: 'Control Center', icon: LayoutDashboard },
   { href: '/workshop/lo-buddy/character', label: 'Character',      icon: Sparkles },
+  { href: '/workshop/lo-buddy/hopper',    label: 'Hopper',         icon: Inbox },
 ]
 
 const personalLinks = [
@@ -62,6 +62,7 @@ const personalLinks = [
   { href: '/workshop/personal/fc-balboa',      label: 'FC Balboa',  icon: Trophy },
   { href: '/workshop/personal/life',           label: 'Life',       icon: Leaf },
   { href: '/workshop/personal/jasper-health',  label: 'Jasper ♥',  icon: Activity },
+  { href: '/workshop/personal/roomforge',      label: 'RoomForge', icon: Box },
 ]
 
 function useRoles(): string[] {
