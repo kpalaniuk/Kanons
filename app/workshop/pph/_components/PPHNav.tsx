@@ -2,22 +2,20 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutGrid, Calculator, RefreshCw, BarChart3 } from 'lucide-react'
+import { LayoutGrid, Users } from 'lucide-react'
 
 const links = [
   { href: '/workshop/pph/opportunities', label: 'Pipeline', icon: LayoutGrid },
-  { href: '/workshop/pph/purchase-builder', label: 'Purchase', icon: Calculator },
-  { href: '/workshop/pph/refi-builder', label: 'Refi', icon: RefreshCw },
-  { href: '/workshop/pph/dscr-calculator', label: 'DSCR', icon: BarChart3 },
+  { href: '/workshop/pph/clients', label: 'Clients', icon: Users, matchPrefix: true },
 ]
 
 export function PPHNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="flex items-center gap-1 mb-6 bg-midnight/5 rounded-xl p-1 w-fit">
-      {links.map(({ href, label, icon: Icon }) => {
-        const active = pathname === href || (href !== '/workshop/pph/opportunities' && pathname.startsWith(href))
+    <nav className="flex items-center gap-1 mb-4 bg-midnight/5 rounded-xl p-1 w-fit">
+      {links.map(({ href, label, icon: Icon, matchPrefix }) => {
+        const active = pathname === href || (matchPrefix && pathname.startsWith('/workshop/pph/clients'))
         return (
           <Link
             key={href}

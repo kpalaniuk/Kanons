@@ -40,6 +40,8 @@ interface Client {
   loanType: string | null
   loanAmount: number | null
   nextAction: string
+  nextActionAiGenerated: boolean
+  nextActionUpdatedAt: string | null
   followUpDate: string | null
   lastTouched: string | null
   notes: string
@@ -365,6 +367,9 @@ export default function ClientProfilePage() {
 
   // AI summary
   const [generatingSummary, setGeneratingSummary] = useState(false)
+  const [generatingNextAction, setGeneratingNextAction] = useState(false)
+  const [showNextActionPrompt, setShowNextActionPrompt] = useState(false)
+  const [nextActionDraft, setNextActionDraft] = useState('')
   const [lastAppliedFields, setLastAppliedFields] = useState<Record<string, unknown> | null>(null)
 
   // Chat layout
@@ -402,6 +407,25 @@ export default function ClientProfilePage() {
     }
   }
 
+  async function generateNextAction(silent = false) {
+    if (!client) return
+    setGeneratingNextAction(true)
+    try {
+      const res = await fetch('/api/pph/next-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: client.id }),
+      })
+      if (res.ok) {
+        const { nextAction } = await res.json()
+        setClient(prev => prev ? { ...prev, nextAction, nextActionAiGenerated: true, nextActionUpdatedAt: new Date().toISOString() } : prev)
+        if (!silent) setNextActionDraft(nextAction)
+      }
+    } finally {
+      setGeneratingNextAction(false)
+    }
+  }
+
   // REO
   const [showReoForm, setShowReoForm] = useState(false)
   const [reoForm, setReoForm] = useState<Partial<ReoProperty>>({
@@ -423,6 +447,12 @@ export default function ClientProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { fetchClient() }, [id])
+  // Auto-generate next action if empty after client loads
+  useEffect(() => {
+    if (client && !client.nextAction?.trim()) {
+      generateNextAction(true)
+    }
+  }, [client?.id]) // only fires once per client load
   useEffect(() => { if (tab === 'calls') fetchCalls() }, [tab, id])
   useEffect(() => {
     if (tab === 'scenarios') fetchScenarios()
@@ -439,6 +469,8 @@ export default function ClientProfilePage() {
       loanType: (row.loan_type as string) || null,
       loanAmount: (row.loan_amount as number) || null,
       nextAction: (row.next_action as string) || '',
+      nextActionAiGenerated: (row.next_action_ai_generated as boolean) || false,
+      nextActionUpdatedAt: (row.next_action_updated_at as string) || null,
       followUpDate: (row.follow_up_date as string) || null,
       lastTouched: (row.last_touched as string) || null,
       notes: (row.notes as string) || '',
@@ -647,6 +679,9 @@ export default function ClientProfilePage() {
       setLogType('Call')
       fetchCalls()
       fetchClient()
+      // Prompt to update next action after every call/note log
+      setShowNextActionPrompt(true)
+      setNextActionDraft(client.nextAction || '')
     } catch (err) {
       console.error(err)
     } finally {
@@ -871,20 +906,112 @@ export default function ClientProfilePage() {
         </div>
       </div>
 
-      {/* Inline status grid */}
-      <div className="bg-cream rounded-xl p-4 border border-midnight/5">
-        <p className="text-[10px] text-midnight/25 uppercase tracking-wider mb-3 font-medium">Tap any field to edit</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {/* Compact status row — 4 fields only */}
+      <div className="bg-cream rounded-xl px-4 py-3 border border-midnight/5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <EditableSelect field="stage" value={client.stage} options={STAGES} label="Stage" onChange={saveField} />
           <EditableSelect field="priority" value={client.priority} options={PRIORITIES} label="Priority" onChange={saveField} />
-          <EditableSelect field="primaryLo" value={client.primaryLo} options={LO_OPTIONS} label="Primary LO" onChange={saveField} />
-          <EditableText field="primaryContact" value={client.primaryContact} label="Primary Contact" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+          <EditableText field="followUpDate" value={client.followUpDate} label="Follow-up" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
           <EditableText field="phone" value={client.phone} label="Phone" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
-          <EditableText field="followUpDate" value={client.followUpDate} label="Follow-up Date" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
-          <EditableText field="nextAction" value={client.nextAction} label="Next Action" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
-          <EditableText field="notes" value={client.notes} label="Notes" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
         </div>
       </div>
+
+      {/* Next Action — To-Do card */}
+      {(() => {
+        const followUpPast = client.followUpDate && new Date(client.followUpDate + 'T12:00:00') < new Date()
+        const updatedAt = client.nextActionUpdatedAt ? new Date(client.nextActionUpdatedAt) : null
+        const daysSinceUpdate = updatedAt ? Math.floor((Date.now() - updatedAt.getTime()) / 86400000) : null
+        const isStale = daysSinceUpdate !== null && daysSinceUpdate > 3
+        const showWarning = followUpPast || isStale
+        return (
+          <div className={`rounded-xl border px-4 py-3 ${showWarning ? 'bg-amber-50 border-amber-200' : 'bg-cream border-midnight/5'}`}>
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-midnight/60 uppercase tracking-wider">Next Action</span>
+                {client.nextActionAiGenerated && (
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-ocean/10 text-ocean uppercase tracking-wider">AI</span>
+                )}
+                {showWarning && (
+                  <span className="text-xs text-amber-700 font-medium">
+                    {followUpPast ? '⚠️ Follow-up date passed' : `⚠️ Not updated in ${daysSinceUpdate}d`}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => generateNextAction(false)}
+                disabled={generatingNextAction}
+                className="text-[10px] text-midnight/30 hover:text-ocean transition-colors disabled:opacity-40 flex items-center gap-1"
+              >
+                <RefreshCw className={`w-3 h-3 ${generatingNextAction ? 'animate-spin' : ''}`} />
+                Regenerate
+              </button>
+            </div>
+            {editingField === 'nextAction' ? (
+              <div className="flex gap-2">
+                <input
+                  autoFocus
+                  type="text"
+                  value={editValue}
+                  onChange={e => setEditValue(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { saveField('nextAction', editValue); setEditingField(null) } if (e.key === 'Escape') setEditingField(null) }}
+                  className="flex-1 px-2 py-1 bg-white border border-ocean/40 rounded text-sm focus:outline-none"
+                />
+                <button onClick={() => { saveField('nextAction', editValue); setEditingField(null) }} className="px-2 py-1 bg-ocean text-white rounded text-xs">Save</button>
+                <button onClick={() => setEditingField(null)} className="px-2 py-1 text-midnight/40 text-xs">✕</button>
+              </div>
+            ) : (
+              <button
+                onClick={() => { setEditingField('nextAction'); setEditValue(client.nextAction || '') }}
+                className="w-full text-left"
+              >
+                <p className={`text-sm ${client.nextAction ? 'text-midnight font-medium' : 'text-midnight/30 italic'}`}>
+                  {client.nextAction || 'No next action — tap to set or regenerate'}
+                </p>
+              </button>
+            )}
+            {client.followUpDate && !followUpPast && (
+              <p className="text-[10px] text-midnight/30 mt-1">
+                📅 Due {new Date(client.followUpDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+              </p>
+            )}
+          </div>
+        )
+      })()}
+
+      {/* Post-call: prompt to update next action */}
+      {showNextActionPrompt && (
+        <div className="bg-ocean/5 border border-ocean/20 rounded-xl px-4 py-3">
+          <p className="text-xs font-semibold text-ocean mb-2">Update next action after this contact?</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="What needs to happen next..."
+              value={nextActionDraft}
+              onChange={e => setNextActionDraft(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && nextActionDraft.trim()) {
+                  saveClientFields({ nextAction: nextActionDraft, nextActionAiGenerated: false, nextActionUpdatedAt: new Date().toISOString() })
+                  setShowNextActionPrompt(false)
+                }
+              }}
+              className="flex-1 px-3 py-1.5 bg-white border border-ocean/30 rounded-lg text-sm focus:outline-none"
+              autoFocus
+            />
+            <button
+              onClick={() => {
+                if (nextActionDraft.trim()) saveClientFields({ nextAction: nextActionDraft, nextActionAiGenerated: false, nextActionUpdatedAt: new Date().toISOString() })
+                setShowNextActionPrompt(false)
+              }}
+              className="px-3 py-1.5 bg-ocean text-white rounded-lg text-xs font-medium hover:bg-ocean/90 transition-colors"
+            >Save</button>
+            <button onClick={() => { generateNextAction(true); setShowNextActionPrompt(false) }}
+              className="px-3 py-1.5 bg-midnight/5 text-midnight/50 rounded-lg text-xs hover:bg-midnight/10 transition-colors">
+              AI Generate
+            </button>
+            <button onClick={() => setShowNextActionPrompt(false)} className="text-midnight/30 hover:text-midnight text-xs px-1">Skip</button>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-0 border-b border-midnight/10 -mx-1">
