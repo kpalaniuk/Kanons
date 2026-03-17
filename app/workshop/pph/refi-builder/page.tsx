@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { PPHNav } from '../_components/PPHNav'
 import { ScenarioDescribeInput } from '../_components/ScenarioDescribeInput'
 import { Save, Copy, Check } from 'lucide-react'
 
@@ -227,7 +226,7 @@ export default function RefiScenarioBuilderPage() {
 
   return (
     <div className="max-w-6xl mx-auto pb-24">
-      <PPHNav />
+
       {/* Header */}
       <div
         className="mb-8"

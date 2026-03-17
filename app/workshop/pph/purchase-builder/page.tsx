@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { PPHNav } from '../_components/PPHNav'
 import { ScenarioDescribeInput } from '../_components/ScenarioDescribeInput'
 import { Save, Copy, Check, ExternalLink, Loader2 } from 'lucide-react'
 
@@ -353,7 +352,7 @@ export default function PurchaseScenarioBuilderPage() {
 
   return (
     <div className="max-w-7xl mx-auto pb-24">
-      <PPHNav />
+
       {/* Header */}
       <div
         className="mb-8"

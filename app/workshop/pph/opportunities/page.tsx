@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { PPHNav } from '../_components/PPHNav'
 import {
   AlertTriangle, Clock, Phone, MessageSquare, FileText,
   ChevronDown, ChevronUp, Plus, Search, User, Calendar,
@@ -315,7 +314,7 @@ export default function OpportunitiesPage() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      <PPHNav />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
