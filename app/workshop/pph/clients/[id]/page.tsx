@@ -354,6 +354,11 @@ export default function ClientProfilePage() {
   const [loadingScenarios, setLoadingScenarios] = useState(false)
   const [scenarioViews, setScenarioViews] = useState<Record<string, ScenarioViewData>>({})
   const [showFinancials, setShowFinancials] = useState(false)
+  const [showFullSummary, setShowFullSummary] = useState(false)
+  const [editingNotes, setEditingNotes] = useState(false)
+  const [notesDraft, setNotesDraft] = useState('')
+  const [editingReferralNote, setEditingReferralNote] = useState(false)
+  const [referralNoteDraft, setReferralNoteDraft] = useState('')
 
   // Edit states
   const [editingField, setEditingField] = useState<string | null>(null)
@@ -1035,7 +1040,66 @@ export default function ClientProfilePage() {
       {tab === 'overview' && (
         <div className="space-y-4">
 
-          {/* AI Summary — FIRST */}
+          {/* Notes — inline click-to-edit, same style as Next Action */}
+          <div className="bg-cream rounded-xl px-4 py-3 border border-midnight/5">
+            <p className="text-xs font-semibold text-midnight/60 uppercase tracking-wider mb-1.5">Notes</p>
+            {editingNotes ? (
+              <div className="space-y-2">
+                <textarea
+                  autoFocus
+                  value={notesDraft}
+                  onChange={e => setNotesDraft(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Escape') setEditingNotes(false) }}
+                  rows={3}
+                  className="w-full px-2 py-1.5 bg-white border border-ocean/40 rounded-lg text-sm focus:outline-none resize-none"
+                  placeholder="Internal notes about this client..."
+                />
+                <div className="flex gap-2">
+                  <button onClick={() => { saveClientFields({ notes: notesDraft, nextActionUpdatedAt: client.nextActionUpdatedAt }); setEditingNotes(false) }}
+                    className="px-3 py-1 bg-ocean text-white rounded-lg text-xs font-medium">Save</button>
+                  <button onClick={() => setEditingNotes(false)} className="text-midnight/30 hover:text-midnight text-xs px-1">Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => { setNotesDraft(client.notes || ''); setEditingNotes(true) }} className="w-full text-left">
+                <p className={`text-sm leading-relaxed ${client.notes ? 'text-midnight' : 'text-midnight/30 italic'}`}>
+                  {client.notes || 'No notes — tap to add'}
+                </p>
+              </button>
+            )}
+
+            {/* Referral context — moved here from Referral Source section */}
+            {(client.referralType || client.referralName || client.referralSource || editingReferralNote) && (
+              <div className="mt-3 pt-3 border-t border-midnight/8">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-[10px] text-midnight/30 uppercase tracking-wider font-medium">Referral</p>
+                  {(client.referralType || client.referralName) && (
+                    <p className="text-[10px] text-midnight/40">
+                      {[client.referralType, client.referralName, client.referralDate].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
+                </div>
+                {editingReferralNote ? (
+                  <div className="flex gap-2">
+                    <input autoFocus type="text" value={referralNoteDraft} onChange={e => setReferralNoteDraft(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { saveClientFields({ referralSource: referralNoteDraft }); setEditingReferralNote(false) } if (e.key === 'Escape') setEditingReferralNote(false) }}
+                      className="flex-1 px-2 py-1 bg-white border border-ocean/40 rounded text-sm focus:outline-none"
+                      placeholder="Referral context..." />
+                    <button onClick={() => { saveClientFields({ referralSource: referralNoteDraft }); setEditingReferralNote(false) }} className="px-2 py-1 bg-ocean text-white rounded text-xs">Save</button>
+                    <button onClick={() => setEditingReferralNote(false)} className="text-midnight/30 text-xs px-1">✕</button>
+                  </div>
+                ) : (
+                  <button onClick={() => { setReferralNoteDraft(client.referralSource || ''); setEditingReferralNote(true) }} className="w-full text-left">
+                    <p className={`text-xs leading-relaxed ${client.referralSource ? 'text-midnight/60' : 'text-midnight/25 italic'}`}>
+                      {client.referralSource || 'Tap to add referral context...'}
+                    </p>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* AI Summary */}
           <div className="bg-cream rounded-xl p-5 border border-midnight/5">
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -1067,10 +1131,19 @@ export default function ClientProfilePage() {
                 </div>
               </div>
             )}
-            {client.aiSummary
-              ? <p className="text-sm text-midnight/70 leading-relaxed whitespace-pre-wrap">{client.aiSummary}</p>
-              : <p className="text-sm text-midnight/30 italic">No summary yet — hit Refresh to generate from all data, notes, and chat history.</p>
-            }
+            {client.aiSummary ? (
+              <>
+                <p className={`text-sm text-midnight/70 leading-relaxed whitespace-pre-wrap ${!showFullSummary ? 'line-clamp-3' : ''}`}>
+                  {client.aiSummary}
+                </p>
+                <button onClick={() => setShowFullSummary(!showFullSummary)}
+                  className="mt-2 flex items-center gap-1 text-xs text-midnight/40 hover:text-midnight transition-colors">
+                  {showFullSummary ? '▲ Show less' : '▼ Show more'}
+                </button>
+              </>
+            ) : (
+              <p className="text-sm text-midnight/30 italic">No summary yet — hit Refresh to generate from all data, notes, and chat history.</p>
+            )}
           </div>
 
           {/* Contextual section by stage */}
@@ -1095,10 +1168,6 @@ export default function ClientProfilePage() {
                   <div>
                     <span className="text-xs text-midnight/40 block mb-1">Referral Date</span>
                     <FieldInput type="date" value={client.referralDate} onSave={v => saveClientFields({ referralDate: v || null })} className="w-full" />
-                  </div>
-                  <div className="sm:col-span-3">
-                    <span className="text-xs text-midnight/40 block mb-1">Notes (company, context)</span>
-                    <FieldInput type="text" placeholder="e.g. Coldwell Banker Mission Hills, met at open house..." value={client.referralSource} onSave={v => saveClientFields({ referralSource: v })} className="w-full" />
                   </div>
                 </div>
               </div>
