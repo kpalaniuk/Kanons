@@ -232,7 +232,7 @@ export default function RefiScenarioBuilderPage() {
         className="mb-8"
       >
         <Link 
-          href="/family/tools"
+          href="/workshop/pph/opportunities"
           className="inline-flex items-center gap-2 text-sm text-midnight/60 hover:text-midnight mb-4 group"
         >
           <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
