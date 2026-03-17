@@ -1204,34 +1204,33 @@ export default function ClientProfilePage() {
               </button>
             )}
 
-            {/* Referral context — moved here from Referral Source section */}
-            {(client.referralType || client.referralName || client.referralSource || editingReferralNote) && (
-              <div className="mt-3 pt-3 border-t border-midnight/8">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="text-[10px] text-midnight/30 uppercase tracking-wider font-medium">Referral</p>
-                  {(client.referralType || client.referralName) && (
-                    <p className="text-[10px] text-midnight/40">
-                      {[client.referralType, client.referralName, client.referralDate].filter(Boolean).join(' · ')}
-                    </p>
-                  )}
-                </div>
-                {editingReferralNote ? (
-                  <div className="flex gap-2">
-                    <input autoFocus type="text" value={referralNoteDraft} onChange={e => setReferralNoteDraft(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') { saveClientFields({ referralSource: referralNoteDraft }); setEditingReferralNote(false) } if (e.key === 'Escape') setEditingReferralNote(false) }}
-                      className="flex-1 px-2 py-1 bg-white border border-ocean/40 rounded text-sm focus:outline-none"
-                      placeholder="Referral context..." />
-                    <button onClick={() => { saveClientFields({ referralSource: referralNoteDraft }); setEditingReferralNote(false) }} className="px-2 py-1 bg-ocean text-white rounded text-xs">Save</button>
-                    <button onClick={() => setEditingReferralNote(false)} className="text-midnight/30 text-xs px-1">✕</button>
-                  </div>
-                ) : (
-                  <button onClick={() => { setReferralNoteDraft(client.referralSource || ''); setEditingReferralNote(true) }} className="w-full text-left">
-                    <p className={`text-xs leading-relaxed ${client.referralSource ? 'text-midnight/60' : 'text-midnight/25 italic'}`}>
-                      {client.referralSource || 'Tap to add referral context...'}
-                    </p>
-                  </button>
-                )}
+          </div>
+
+          {/* Referral context — own card, same position */}
+          <div className="bg-cream rounded-xl px-4 py-3 border border-midnight/5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <p className="text-xs font-semibold text-midnight/60 uppercase tracking-wider">Referral</p>
+              {(client.referralType || client.referralName) && (
+                <p className="text-[10px] text-midnight/35">
+                  {[client.referralType, client.referralName, client.referralDate].filter(Boolean).join(' · ')}
+                </p>
+              )}
+            </div>
+            {editingReferralNote ? (
+              <div className="flex gap-2">
+                <input autoFocus type="text" value={referralNoteDraft} onChange={e => setReferralNoteDraft(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { saveClientFields({ referralSource: referralNoteDraft }); setEditingReferralNote(false) } if (e.key === 'Escape') setEditingReferralNote(false) }}
+                  className="flex-1 px-2 py-1.5 bg-white border border-ocean/40 rounded-lg text-sm focus:outline-none"
+                  placeholder="Referral context, company, how you met..." />
+                <button onClick={() => { saveClientFields({ referralSource: referralNoteDraft }); setEditingReferralNote(false) }} className="px-2 py-1 bg-ocean text-white rounded text-xs">Save</button>
+                <button onClick={() => setEditingReferralNote(false)} className="text-midnight/30 text-xs px-1">✕</button>
               </div>
+            ) : (
+              <button onClick={() => { setReferralNoteDraft(client.referralSource || ''); setEditingReferralNote(true) }} className="w-full text-left">
+                <p className={`text-sm ${client.referralSource ? 'text-midnight' : 'text-midnight/30 italic'}`}>
+                  {client.referralSource || 'No referral context — tap to add'}
+                </p>
+              </button>
             )}
           </div>
 
