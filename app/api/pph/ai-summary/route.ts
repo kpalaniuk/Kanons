@@ -82,13 +82,15 @@ Only populate extractedFields values when you have high confidence from the data
   let extractedFields: Record<string, unknown> = {}
 
   try {
-    const parsed = JSON.parse(raw)
+    // Strip markdown code fences if model wrapped in ```json ... ```
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
+    const parsed = JSON.parse(cleaned)
     tldr = parsed.tldr || ''
     summary = parsed.summary || ''
     extractedFields = parsed.extractedFields || {}
   } catch {
-    // Fallback: treat as plain summary
-    summary = raw
+    // Fallback: treat as plain summary (strip any code fence artifacts)
+    summary = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
   }
 
   // Build DB update — only apply non-null extracted fields
