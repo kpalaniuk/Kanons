@@ -1,16 +1,18 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Search, UserPlus, Check, Loader } from 'lucide-react'
+import { Search, UserPlus, Check, Loader, Database } from 'lucide-react'
 
 interface ClientResult {
-  id: string
+  id: string        // 'lob:<uuid>' for LO Buddy, plain uuid for PPH
   name: string
   stage: string
   phone: string | null
-  primary_lo: string | null
-  fico_score: number | null
-  target_purchase_price: number | null
+  primary_lo?: string | null
+  fico_score?: number | null
+  target_purchase_price?: number | null
+  source?: 'pph' | 'lo-buddy'
+  lobId?: string
 }
 
 interface Props {
@@ -26,11 +28,13 @@ const STAGE_COLORS: Record<string, string> = {
   'In Process': 'bg-amber-100 text-amber-700',
   'Funded': 'bg-emerald-100 text-emerald-700',
   'Closed': 'bg-gray-100 text-gray-500',
+  'LOB Contact': 'bg-violet-100 text-violet-700',
 }
 
 export function ClientSearchInput({ value, clientId, onChange, placeholder = 'Search or create client...' }: Props) {
   const [query, setQuery] = useState(value)
-  const [results, setResults] = useState<ClientResult[]>([])
+  const [pphResults, setPphResults] = useState<ClientResult[]>([])
+  const [lobResults, setLobResults] = useState<ClientResult[]>([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -39,13 +43,16 @@ export function ClientSearchInput({ value, clientId, onChange, placeholder = 'Se
   const dropdownRef = useRef<HTMLDivElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Search as user types
   const search = useCallback(async (q: string) => {
-    if (!q.trim() || q.trim().length < 2) { setResults([]); return }
+    if (!q.trim() || q.trim().length < 2) { setPphResults([]); setLobResults([]); return }
     setLoading(true)
     try {
-      const res = await fetch(`/api/pph/clients/search?q=${encodeURIComponent(q)}`)
-      if (res.ok) setResults(await res.json())
+      const [pphRes, lobRes] = await Promise.allSettled([
+        fetch(`/api/pph/clients/search?q=${encodeURIComponent(q)}`).then(r => r.ok ? r.json() : []),
+        fetch(`/api/pph/lob-contacts?q=${encodeURIComponent(q)}`).then(r => r.ok ? r.json() : []),
+      ])
+      setPphResults(pphRes.status === 'fulfilled' ? pphRes.value.map((c: ClientResult) => ({ ...c, source: 'pph' as const })) : [])
+      setLobResults(lobRes.status === 'fulfilled' ? lobRes.value.map((c: ClientResult) => ({ ...c, source: 'lo-buddy' as const })) : [])
     } finally {
       setLoading(false)
     }
@@ -56,7 +63,6 @@ export function ClientSearchInput({ value, clientId, onChange, placeholder = 'Se
     debounceRef.current = setTimeout(() => search(query), 250)
   }, [query, search])
 
-  // Close on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (!dropdownRef.current?.contains(e.target as Node) && !inputRef.current?.contains(e.target as Node)) {
@@ -85,7 +91,8 @@ export function ClientSearchInput({ value, clientId, onChange, placeholder = 'Se
       })
       if (res.ok) {
         const created = await res.json()
-        setLinked(created)
+        const result: ClientResult = { ...created, source: 'pph' }
+        setLinked(result)
         setOpen(false)
         onChange(created.name, created.id)
       }
@@ -101,16 +108,20 @@ export function ClientSearchInput({ value, clientId, onChange, placeholder = 'Se
     setOpen(true)
   }
 
-  const exactMatch = results.some(r => r.name.toLowerCase() === query.trim().toLowerCase())
+  const allResults = [...pphResults, ...lobResults]
+  const exactMatch = allResults.some(r => r.name.toLowerCase() === query.trim().toLowerCase())
   const showCreate = query.trim().length >= 2 && !exactMatch && !linked
+  const isLOB = linked?.source === 'lo-buddy'
 
   return (
     <div className="relative">
       <div className={`flex items-center gap-2 w-full bg-white border rounded-lg px-4 py-3 transition-colors ${
-        linked ? 'border-emerald-400 ring-1 ring-emerald-200' : 'border-midnight/10 focus-within:border-ocean focus-within:ring-1 focus-within:ring-ocean'
+        linked
+          ? isLOB ? 'border-violet-400 ring-1 ring-violet-200' : 'border-emerald-400 ring-1 ring-emerald-200'
+          : 'border-midnight/10 focus-within:border-ocean focus-within:ring-1 focus-within:ring-ocean'
       }`}>
         {linked
-          ? <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+          ? <Check className={`w-4 h-4 flex-shrink-0 ${isLOB ? 'text-violet-500' : 'text-emerald-500'}`} />
           : <Search className="w-4 h-4 text-midnight/30 flex-shrink-0" />
         }
         <input
@@ -131,21 +142,31 @@ export function ClientSearchInput({ value, clientId, onChange, placeholder = 'Se
 
       {/* Linked badge */}
       {linked && (
-        <div className="mt-1.5 flex items-center gap-2 text-xs text-emerald-700">
-          <span className="font-medium">✓ Linked to {linked.name}</span>
-          <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${STAGE_COLORS[linked.stage] || 'bg-gray-100 text-gray-500'}`}>{linked.stage}</span>
-          <a href={`/workshop/pph/clients/${linked.id}`} target="_blank" rel="noopener noreferrer"
-            className="text-ocean hover:underline">View profile ↗</a>
+        <div className={`mt-1.5 flex items-center gap-2 text-xs ${isLOB ? 'text-violet-700' : 'text-emerald-700'}`}>
+          <span className="font-medium">
+            {isLOB ? '🔗 Linked to LO Buddy:' : '✓ Linked to'} {linked.name}
+          </span>
+          <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${STAGE_COLORS[linked.stage] || 'bg-gray-100 text-gray-500'}`}>
+            {linked.stage}
+          </span>
+          {!isLOB && linked.id && (
+            <a href={`/workshop/pph/clients/${linked.id}`} target="_blank" rel="noopener noreferrer"
+              className="text-ocean hover:underline">View profile ↗</a>
+          )}
         </div>
       )}
 
       {/* Dropdown */}
       {open && query.trim().length >= 2 && (
-        <div ref={dropdownRef} className="absolute z-50 top-full mt-1 w-full bg-white rounded-xl border border-midnight/10 shadow-lg overflow-hidden">
-          {results.length > 0 && (
+        <div ref={dropdownRef} className="absolute z-50 top-full mt-1 w-full bg-white rounded-xl border border-midnight/10 shadow-lg overflow-hidden max-h-80 overflow-y-auto">
+
+          {/* PPH clients */}
+          {pphResults.length > 0 && (
             <div>
-              <p className="px-3 py-1.5 text-[10px] text-midnight/40 uppercase tracking-wider font-medium border-b border-midnight/5">Existing clients</p>
-              {results.map(c => (
+              <p className="px-3 py-1.5 text-[10px] text-midnight/40 uppercase tracking-wider font-medium bg-midnight/2 border-b border-midnight/5">
+                PPH Clients
+              </p>
+              {pphResults.map(c => (
                 <button key={c.id} onClick={() => selectClient(c)}
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-midnight/3 transition-colors text-left border-b border-midnight/5 last:border-0">
                   <div className="flex-1 min-w-0">
@@ -154,10 +175,31 @@ export function ClientSearchInput({ value, clientId, onChange, placeholder = 'Se
                       <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${STAGE_COLORS[c.stage] || 'bg-gray-100 text-gray-500'}`}>{c.stage}</span>
                       {c.fico_score && <span className="text-[10px] text-midnight/40">FICO {c.fico_score}</span>}
                       {c.target_purchase_price && <span className="text-[10px] text-midnight/40">${Math.round(c.target_purchase_price/1000)}k</span>}
-                      {c.primary_lo && <span className="text-[10px] text-midnight/30">{c.primary_lo}</span>}
                     </div>
                   </div>
-                  <Check className="w-4 h-4 text-midnight/10" />
+                  <Check className="w-4 h-4 text-midnight/10 flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* LO Buddy contacts */}
+          {lobResults.length > 0 && (
+            <div>
+              <p className="px-3 py-1.5 text-[10px] text-violet-600 uppercase tracking-wider font-medium bg-violet-50 border-b border-violet-100 flex items-center gap-1.5">
+                <Database className="w-3 h-3" /> LO Buddy
+              </p>
+              {lobResults.map(c => (
+                <button key={c.id} onClick={() => selectClient(c)}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-violet-50/50 transition-colors text-left border-b border-midnight/5 last:border-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-midnight">{c.name}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-violet-100 text-violet-700">LO Buddy</span>
+                      {c.phone && <span className="text-[10px] text-midnight/40">{c.phone}</span>}
+                    </div>
+                  </div>
+                  <Database className="w-3.5 h-3.5 text-violet-300 flex-shrink-0" />
                 </button>
               ))}
             </div>
@@ -171,12 +213,12 @@ export function ClientSearchInput({ value, clientId, onChange, placeholder = 'Se
                 <p className="text-sm font-medium text-ocean">
                   {creating ? 'Creating...' : `Create "${query.trim()}" as new client`}
                 </p>
-                <p className="text-[10px] text-midnight/40 mt-0.5">New Lead — you can fill in details from their profile</p>
+                <p className="text-[10px] text-midnight/40 mt-0.5">New Lead in PPH — fill in details from their profile</p>
               </div>
             </button>
           )}
 
-          {results.length === 0 && !showCreate && (
+          {allResults.length === 0 && !showCreate && (
             <p className="px-4 py-3 text-sm text-midnight/40 italic">Type a name to search...</p>
           )}
         </div>
