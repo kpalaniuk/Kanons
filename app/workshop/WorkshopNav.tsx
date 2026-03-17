@@ -26,6 +26,7 @@ import {
   RefreshCw,
   BarChart3,
   DollarSign,
+  Database,
 } from 'lucide-react'
 
 // PPH — mortgage team tools
@@ -37,6 +38,7 @@ const pphLinks = [
   { href: '/workshop/pph/dscr-calculator',  label: 'DSCR',      icon: BarChart3 },
   { href: '/workshop/pph/income-qualifier',label: 'Income',    icon: DollarSign },
   { href: '/workshop/pph/scenarios',        label: 'Scenarios', icon: ClipboardList },
+  { href: '/workshop/pph/import',           label: 'Import',    icon: Database },
 ]
 
 const hotDogLinks = [

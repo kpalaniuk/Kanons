@@ -1,12 +1,28 @@
 /**
  * LO Buddy Supabase client — read/write access to the LO Buddy database.
- * Used to bridge PPH prototype data with LO Buddy's contact/opportunity/scenario tables.
+ * ALL queries are scoped to GH Group team to prevent cross-team data exposure.
  *
  * LO Buddy Supabase project: vzkjlgcpggwyxcewukaq
+ * GH Group team: c88f677b-ebdc-4421-be6c-2ac0345e7a7d
+ * Members: Kyle (ef30c794 / admin), Jim (5aae2c67 / LO), Anthony (651cfeab / LO), Chad (787db203 / admin)
  */
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 let _lob: SupabaseClient | null = null
+
+/** GH Group team ID — all LOB queries are scoped to this team */
+export const GH_GROUP_TEAM_ID = process.env.LOB_GH_GROUP_TEAM_ID || 'c88f677b-ebdc-4421-be6c-2ac0345e7a7d'
+
+/** Kyle's LO Buddy user ID (admin in GH Group) */
+export const LOB_DEFAULT_USER_ID = process.env.LOB_DEFAULT_USER_ID || 'ef30c794-7b09-4df7-935b-e1036e7c80fe'
+
+/** GH Group member user IDs */
+export const GH_GROUP_MEMBERS = {
+  kyle:    'ef30c794-7b09-4df7-935b-e1036e7c80fe',
+  jim:     '5aae2c67-7481-44bc-86e2-06c20dda7f65',
+  anthony: '651cfeab-95ef-46e3-a59b-55fb5dc8e9ee',
+  chad:    '787db203-3ffb-469f-b18c-9d3d6afd32ab',
+}
 
 export function getLOBSupabase(): SupabaseClient {
   if (_lob) return _lob
@@ -63,13 +79,16 @@ export interface LOBScenario {
   created_at: string
 }
 
-/** Search LO Buddy contacts by name */
+/** Search LO Buddy contacts — SCOPED TO GH GROUP ONLY */
 export async function searchLOBContacts(query: string, limit = 8): Promise<LOBContact[]> {
   const sb = getLOBSupabase()
+  // Get GH Group member user IDs for scope filter
+  const memberIds = Object.values(GH_GROUP_MEMBERS)
   const { data } = await sb
     .from('contacts')
-    .select('id,first_name,last_name,email,phone,assigned_to,created_at,updated_at')
+    .select('id,first_name,last_name,email,phone,assigned_to,created_at,updated_at,team_id')
     .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
+    .or(`team_id.eq.${GH_GROUP_TEAM_ID},assigned_to.in.(${memberIds.join(',')})`)
     .order('updated_at', { ascending: false })
     .limit(limit)
   return data || []
@@ -110,6 +129,7 @@ export async function createLOBContact(params: {
       phone: params.phone || null,
       email: params.email || null,
       assigned_to: params.assignedTo,
+      team_id: GH_GROUP_TEAM_ID,   // always scope to GH Group
     })
     .select()
     .single()
