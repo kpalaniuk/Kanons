@@ -49,8 +49,12 @@ export async function createScenario(input: Scenario): Promise<Scenario> {
     created_at: now,
     updated_at: now,
   }
-  if ((input as unknown as Record<string, unknown>).notionClientId) {
-    row.notion_client_id = (input as unknown as Record<string, unknown>).notionClientId
+  const extra = input as unknown as Record<string, unknown>
+  if (extra.notionClientId) {
+    row.notion_client_id = extra.notionClientId
+  }
+  if (extra.pphClientId) {
+    row.pph_client_id = extra.pphClientId
   }
 
   const { error } = await getSupabase().from(TABLE).insert(row);

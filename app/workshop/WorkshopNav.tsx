@@ -36,6 +36,7 @@ const pphLinks = [
   { href: '/workshop/pph/refi-builder',     label: 'Refi',      icon: RefreshCw },
   { href: '/workshop/pph/dscr-calculator',  label: 'DSCR',      icon: BarChart3 },
   { href: '/workshop/work/income-qualifier',label: 'Income',    icon: DollarSign },
+  { href: '/workshop/pph/scenarios',        label: 'Scenarios', icon: ClipboardList },
 ]
 
 const hotDogLinks = [

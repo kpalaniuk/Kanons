@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ScenarioDescribeInput } from '../_components/ScenarioDescribeInput'
+import { ClientSearchInput } from '../_components/ClientSearchInput'
 import { Save, Copy, Check } from 'lucide-react'
 
 export default function RefiScenarioBuilderPage() {
@@ -13,6 +14,7 @@ export default function RefiScenarioBuilderPage() {
 
   // Client info
   const [clientName, setClientName] = useState(urlClientName)
+  const [pphClientId, setPphClientId] = useState<string | null>(urlClientId || null)
   const [clientPhone, setClientPhone] = useState('')
   const [notionClientId] = useState(urlClientId)
 
@@ -155,7 +157,7 @@ export default function RefiScenarioBuilderPage() {
     const res = await fetch('/api/scenarios', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, pphClientId: pphClientId || undefined }),
     })
     if (res.ok) {
       setSavedSlug(slug)
@@ -270,16 +272,13 @@ export default function RefiScenarioBuilderPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-midnight mb-2">
-                  Client Name
-                </label>
-                <input
-                  type="text"
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-midnight mb-2">Client Name <span className="text-red-400">*</span></label>
+                <ClientSearchInput
                   value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="John Doe"
-                  className="w-full bg-white border border-midnight/10 rounded-lg px-4 py-3 text-sm text-midnight placeholder:text-midnight/30 focus:outline-none focus:border-ocean focus:ring-1 focus:ring-ocean"
+                  clientId={pphClientId}
+                  onChange={(name, id) => { setClientName(name); setPphClientId(id) }}
+                  placeholder="Search existing clients or type a new name..."
                 />
               </div>
 

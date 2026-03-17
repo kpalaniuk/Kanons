@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { ClientSearchInput } from '../_components/ClientSearchInput'
 import { ScenarioDescribeInput } from '../_components/ScenarioDescribeInput'
 import { Save, Copy, Check, ExternalLink, Loader2 } from 'lucide-react'
 
@@ -46,6 +47,7 @@ export default function PurchaseScenarioBuilderPage() {
   const urlClientId = searchParams.get('client') || ''
   const urlClientName = searchParams.get('name') || ''
   const [clientName, setClientName] = useState(urlClientName)
+  const [pphClientId, setPphClientId] = useState<string | null>(urlClientId || null)
   const [notionClientId] = useState(urlClientId)
   const [clientPhone, setClientPhone] = useState('')
   const [ficoScore, setFicoScore] = useState(720)
@@ -105,7 +107,7 @@ export default function PurchaseScenarioBuilderPage() {
     const res = await fetch('/api/scenarios', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, pphClientId: pphClientId || undefined }),
     })
     if (res.ok) {
       setSavedSlug(slug)
@@ -427,15 +429,14 @@ export default function PurchaseScenarioBuilderPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Name & Phone */}
-            <div>
-              <label className="block text-sm font-medium text-midnight mb-2">Client Name</label>
-              <input
-                type="text"
+            {/* Name — search/create */}
+            <div className="md:col-span-2 lg:col-span-3">
+              <label className="block text-sm font-medium text-midnight mb-2">Client Name <span className="text-red-400">*</span></label>
+              <ClientSearchInput
                 value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                placeholder="Jane Smith"
-                className="w-full bg-white border border-midnight/10 rounded-lg px-4 py-3 text-sm text-midnight placeholder:text-midnight/30 focus:outline-none focus:border-ocean focus:ring-1 focus:ring-ocean"
+                clientId={pphClientId}
+                onChange={(name, id) => { setClientName(name); setPphClientId(id) }}
+                placeholder="Search existing clients or type a new name..."
               />
             </div>
 
