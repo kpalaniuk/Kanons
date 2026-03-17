@@ -28,9 +28,38 @@ interface Client {
   ficoScore: number | null
   targetPurchasePrice: number | null
   targetArea: string | null
+  stageUpdatedAt: string | null
 }
 
 const STAGES = ['New Lead', 'Pre-Approved', 'In Process', 'Waiting', 'App Sent', 'Processing', 'Closing', 'Closed', 'Lost']
+const ACTIVE_STAGES = ['New Lead', 'Pre-Approved', 'In Process', 'Waiting', 'App Sent', 'Processing', 'Closing']
+
+function StageTimeline({ stage, stageUpdatedAt }: { stage: string; stageUpdatedAt: string | null }) {
+  const idx = ACTIVE_STAGES.indexOf(stage)
+  if (idx === -1) return null // Closed/Lost handled separately
+  const daysSince = stageUpdatedAt
+    ? Math.floor((Date.now() - new Date(stageUpdatedAt).getTime()) / (1000 * 60 * 60 * 24))
+    : null
+  const stale = daysSince !== null && daysSince > 14
+  return (
+    <div className="mt-2 flex items-center gap-0.5" title={stageUpdatedAt ? `In ${stage} for ${daysSince}d` : ''}>
+      {ACTIVE_STAGES.map((s, i) => (
+        <div key={s} className="flex items-center gap-0.5">
+          <div className={`h-1.5 rounded-full transition-all ${
+            i < idx ? 'w-4 bg-ocean/40' :
+            i === idx ? `w-5 ${stale ? 'bg-amber-400' : 'bg-ocean'}` :
+            'w-3 bg-midnight/10'
+          }`} title={s} />
+        </div>
+      ))}
+      {daysSince !== null && (
+        <span className={`ml-1.5 text-[10px] font-medium ${stale ? 'text-amber-500' : 'text-midnight/30'}`}>
+          {daysSince}d
+        </span>
+      )}
+    </div>
+  )
+}
 const PRIORITIES = ['Hot', 'Active', 'Warm', 'Monitoring']
 const LO_OPTIONS = ['Kyle', 'Jim', 'Anthony']
 
@@ -132,6 +161,7 @@ export default function OpportunitiesPage() {
       ficoScore: (row.fico_score as number) || null,
       targetPurchasePrice: (row.target_purchase_price as number) || null,
       targetArea: (row.target_area as string) || null,
+      stageUpdatedAt: (row.stage_updated_at as string) || null,
     }
   }
 
@@ -554,6 +584,9 @@ export default function OpportunitiesPage() {
                   </div>
                   {client.nextAction && (
                     <p className="text-xs text-midnight/60 mt-1 truncate">→ {client.nextAction}</p>
+                  )}
+                  {client.stage !== 'Closed' && client.stage !== 'Lost' && (
+                    <StageTimeline stage={client.stage} stageUpdatedAt={client.stageUpdatedAt} />
                   )}
                 </div>
 

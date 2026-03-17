@@ -107,6 +107,11 @@ export async function PATCH(request: NextRequest) {
     mapped[col] = val
   }
 
+  // Auto-stamp stage_updated_at when stage changes
+  if (mapped['stage']) {
+    mapped['stage_updated_at'] = new Date().toISOString()
+  }
+
   const { data, error: dbErr } = await supabaseAdmin
     .from('pph_clients')
     .update(mapped)
