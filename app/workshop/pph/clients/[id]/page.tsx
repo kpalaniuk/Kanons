@@ -147,6 +147,143 @@ type Tab = typeof TABS[number]['id']
 // ── Module-level components (NOT inside the page fn) to prevent remount on re-render ──
 
 // ── Liability add button + inline form ───────────────────────────────────────
+// BorrowerCard — must be outside page component to avoid hooks-in-map violation
+function BorrowerCard({
+  label,
+  nameKey, typeKey, incomeKey, detailsKey,
+  client, editingField, editValue, saving,
+  onStartEdit, onSave, onCancel, onEditChange,
+  saveClientFields,
+}: {
+  label: string
+  nameKey: 'b1Name' | 'b2Name'
+  typeKey: 'b1IncomeType' | 'b2IncomeType'
+  incomeKey: 'b1MonthlyIncome' | 'b2MonthlyIncome'
+  detailsKey: 'b1IncomeDetails' | 'b2IncomeDetails'
+  client: Record<string, unknown>
+  editingField: string | null
+  editValue: string
+  saving: boolean
+  onStartEdit: (f: string, v: string) => void
+  onSave: (f: string, v: string) => void
+  onCancel: () => void
+  onEditChange: (v: string) => void
+  saveClientFields: (fields: Record<string, unknown>) => void
+}) {
+  const incomeType = client[typeKey] as string | null
+  const details = (client[detailsKey] || {}) as Record<string, number | string | null>
+  const detailsRef = React.useRef(details)
+  detailsRef.current = details
+
+  const saveDetails = React.useCallback((updates: Record<string, number | string | null>) => {
+    const merged = { ...detailsRef.current, ...updates }
+    saveClientFields({ [detailsKey]: merged })
+  }, [detailsKey, saveClientFields])
+
+  function calcSuggestedIncome(): number | null {
+    if (incomeType === 'W2') {
+      const base = Number(details.base || 0)
+      const bonus = Number(details.bonus || 0)
+      const overtime = Number(details.overtime || 0)
+      const commission = Number(details.commission || 0)
+      return base + (bonus + overtime + commission) / 24
+    }
+    if (incomeType === 'SE/Self-Employed' || incomeType === '1099') {
+      const y1 = Number(details.year1Net || 0)
+      const y2 = Number(details.year2Net || 0)
+      if (y1 && y2) return (y2 < y1 ? y2 : (y1 + y2) / 2) / 12
+    }
+    return null
+  }
+  const suggested = calcSuggestedIncome()
+
+  return (
+    <div className="bg-white/60 rounded-xl p-4 border border-midnight/5 space-y-3">
+      <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">{label}</p>
+      <EditableText field={nameKey} value={client[nameKey] as string | null} label="Full Name"
+        editingField={editingField} editValue={editValue} saving={saving}
+        onStartEdit={onStartEdit} onSave={onSave} onCancel={onCancel} onEditChange={onEditChange} />
+      <div>
+        <span className="text-xs text-midnight/40 block mb-0.5">Income Type</span>
+        <select value={incomeType || ''} onChange={e => saveClientFields({ [typeKey]: e.target.value })}
+          className="w-full px-2 py-1 bg-cream border border-midnight/10 rounded text-sm focus:outline-none">
+          <option value="">—</option>
+          {INCOME_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+      </div>
+
+      {incomeType === 'W2' && (
+        <div className="space-y-2 pt-1 border-t border-midnight/8">
+          <p className="text-[10px] text-midnight/30 uppercase tracking-wider font-medium">W2 Breakdown</p>
+          {[
+            { key: 'base', label: 'Base Salary', unit: '/mo' },
+            { key: 'bonus', label: 'Annual Bonus', unit: '/yr' },
+            { key: 'overtime', label: 'Overtime', unit: '/yr' },
+            { key: 'commission', label: 'Commission', unit: '/yr' },
+          ].map(({ key, label: fLabel, unit }) => (
+            <div key={key}>
+              <span className="text-xs text-midnight/40 block mb-0.5">{fLabel}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-midnight/40">$</span>
+                <FieldInput type="number" placeholder="0" value={Number(details[key] || '') || null}
+                  onSave={v => saveDetails({ [key]: parseFloat(v) || null })} className="flex-1 text-xs" />
+                <span className="text-[10px] text-midnight/30">{unit}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {(incomeType === 'SE/Self-Employed' || incomeType === '1099') && (
+        <div className="space-y-2 pt-1 border-t border-midnight/8">
+          <p className="text-[10px] text-midnight/30 uppercase tracking-wider font-medium">{incomeType} Breakdown</p>
+          {[
+            { key: 'year1Gross', label: 'Year 1 Gross Revenue' },
+            { key: 'year1Net', label: 'Year 1 Net Income' },
+            { key: 'year2Gross', label: 'Year 2 Gross Revenue' },
+            { key: 'year2Net', label: 'Year 2 Net Income' },
+          ].map(({ key, label: fLabel }) => (
+            <div key={key}>
+              <span className="text-xs text-midnight/40 block mb-0.5">{fLabel}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-midnight/40">$</span>
+                <FieldInput type="number" placeholder="0" value={Number(details[key] || '') || null}
+                  onSave={v => saveDetails({ [key]: parseFloat(v) || null })} className="flex-1 text-xs" />
+              </div>
+            </div>
+          ))}
+          {details.year1Net && details.year2Net && (
+            <p className={Number(details.year2Net) < Number(details.year1Net) ? 'text-xs text-amber-600' : 'text-xs text-emerald-600'}>
+              {Number(details.year2Net) < Number(details.year1Net) ? '📉 Declining — using lower year' : '📈 Trending up — 2yr avg'}
+            </p>
+          )}
+        </div>
+      )}
+
+      {suggested !== null && (
+        <div className="mt-2 p-2 bg-ocean/5 rounded-lg border border-ocean/15 flex items-center justify-between gap-2">
+          <div>
+            <p className="text-[10px] text-ocean/70 font-medium">Suggested qualifying</p>
+            <p className="text-sm font-bold text-ocean">${Math.round(suggested).toLocaleString()}/mo</p>
+          </div>
+          <button onClick={() => saveClientFields({ [incomeKey]: Math.round(suggested) })}
+            className="px-2.5 py-1 text-xs bg-ocean text-white rounded-lg font-medium hover:bg-ocean/90 transition-colors whitespace-nowrap">Apply</button>
+        </div>
+      )}
+
+      <div className={incomeType && incomeType !== 'Rental' && incomeType !== 'Other' ? 'pt-2 border-t border-midnight/8' : ''}>
+        <span className="text-xs text-midnight/40 block mb-0.5">Monthly Qualifying Income</span>
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-midnight/40">$</span>
+          <FieldInput type="number" placeholder="0" value={client[incomeKey] as number}
+            onSave={v => saveClientFields({ [incomeKey]: parseFloat(v) || null })} className="flex-1" />
+          <span className="text-xs text-midnight/40">/mo</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function LiabilityAddButton({
   types,
   onAdd,
@@ -1282,113 +1419,16 @@ export default function ClientProfilePage() {
               {([
                 { label: 'Borrower 1', nameKey: 'b1Name', typeKey: 'b1IncomeType', incomeKey: 'b1MonthlyIncome', detailsKey: 'b1IncomeDetails' },
                 { label: 'Borrower 2', nameKey: 'b2Name', typeKey: 'b2IncomeType', incomeKey: 'b2MonthlyIncome', detailsKey: 'b2IncomeDetails' },
-              ] as const).map(({ label, nameKey, typeKey, incomeKey, detailsKey }) => {
-                const incomeType = client[typeKey] as string | null
-                const details = (client[detailsKey] || {}) as Record<string, number | string | null>
-
-                function calcSuggestedIncome(): number | null {
-                  if (incomeType === 'W2') {
-                    const base = Number(details.base || 0)
-                    const bonus = Number(details.bonus || 0)
-                    const overtime = Number(details.overtime || 0)
-                    const commission = Number(details.commission || 0)
-                    return base + (bonus + overtime + commission) / 24
-                  }
-                  if (incomeType === 'SE/Self-Employed' || incomeType === '1099') {
-                    const y1 = Number(details.year1Net || 0)
-                    const y2 = Number(details.year2Net || 0)
-                    if (y1 && y2) return (y2 < y1 ? y2 : (y1 + y2) / 2) / 12
-                  }
-                  return null
-                }
-                const suggested = calcSuggestedIncome()
-
-                const detailsRef = React.useRef(details)
-                detailsRef.current = details
-                const saveDetails = React.useCallback((updates: Record<string, number | string | null>) => {
-                  const merged = { ...detailsRef.current, ...updates }
-                  saveClientFields({ [detailsKey]: merged })
-                }, [detailsKey, saveClientFields])
-
-                return (
-                  <div key={label} className="bg-white/60 rounded-xl p-4 border border-midnight/5 space-y-3">
-                    <p className="text-xs font-semibold text-midnight/50 uppercase tracking-wider">{label}</p>
-                    <EditableText field={nameKey} value={client[nameKey] as string | null} label="Full Name" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
-                    <div>
-                      <span className="text-xs text-midnight/40 block mb-0.5">Income Type</span>
-                      <select value={incomeType || ''} onChange={e => saveClientFields({ [typeKey]: e.target.value })} className="w-full px-2 py-1 bg-cream border border-midnight/10 rounded text-sm focus:outline-none">
-                        <option value="">—</option>
-                        {INCOME_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                    </div>
-
-                    {incomeType === 'W2' && (
-                      <div className="space-y-2 pt-1 border-t border-midnight/8">
-                        <p className="text-[10px] text-midnight/30 uppercase tracking-wider font-medium">W2 Breakdown</p>
-                        {[
-                          { key: 'base', label: 'Base Salary', unit: '/mo' },
-                          { key: 'bonus', label: 'Annual Bonus', unit: '/yr' },
-                          { key: 'overtime', label: 'Overtime', unit: '/yr' },
-                          { key: 'commission', label: 'Commission', unit: '/yr' },
-                        ].map(({ key, label: fLabel, unit }) => (
-                          <div key={key}>
-                            <span className="text-xs text-midnight/40 block mb-0.5">{fLabel}</span>
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs text-midnight/40">$</span>
-                              <FieldInput type="number" placeholder="0" value={Number(details[key] || "") || null} onSave={v => saveDetails({ [key]: parseFloat(v) || null })} className="flex-1 text-xs" />
-                              <span className="text-[10px] text-midnight/30">{unit}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {(incomeType === 'SE/Self-Employed' || incomeType === '1099') && (
-                      <div className="space-y-2 pt-1 border-t border-midnight/8">
-                        <p className="text-[10px] text-midnight/30 uppercase tracking-wider font-medium">{incomeType} Breakdown</p>
-                        {[
-                          { key: 'year1Gross', label: 'Year 1 Gross Revenue' },
-                          { key: 'year1Net', label: 'Year 1 Net Income' },
-                          { key: 'year2Gross', label: 'Year 2 Gross Revenue' },
-                          { key: 'year2Net', label: 'Year 2 Net Income' },
-                        ].map(({ key, label: fLabel }) => (
-                          <div key={key}>
-                            <span className="text-xs text-midnight/40 block mb-0.5">{fLabel}</span>
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs text-midnight/40">$</span>
-                              <FieldInput type="number" placeholder="0" value={Number(details[key] || "") || null} onSave={v => saveDetails({ [key]: parseFloat(v) || null })} className="flex-1 text-xs" />
-                            </div>
-                          </div>
-                        ))}
-                        {details.year1Net && details.year2Net && (
-                          <p className={Number(details.year2Net) < Number(details.year1Net) ? 'text-xs text-amber-600' : 'text-xs text-emerald-600'}>
-                            {Number(details.year2Net) < Number(details.year1Net) ? '📉 Declining — using lower year' : '📈 Trending up — 2yr avg'}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {suggested !== null && (
-                      <div className="mt-2 p-2 bg-ocean/5 rounded-lg border border-ocean/15 flex items-center justify-between gap-2">
-                        <div>
-                          <p className="text-[10px] text-ocean/70 font-medium">Suggested qualifying</p>
-                          <p className="text-sm font-bold text-ocean">${Math.round(suggested).toLocaleString()}/mo</p>
-                        </div>
-                        <button onClick={() => saveClientFields({ [incomeKey]: Math.round(suggested) })} className="px-2.5 py-1 text-xs bg-ocean text-white rounded-lg font-medium hover:bg-ocean/90 transition-colors whitespace-nowrap">Apply</button>
-                      </div>
-                    )}
-
-                    <div className={incomeType && incomeType !== 'Rental' && incomeType !== 'Other' ? 'pt-2 border-t border-midnight/8' : ''}>
-                      <span className="text-xs text-midnight/40 block mb-0.5">Monthly Qualifying Income</span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs text-midnight/40">$</span>
-                        <FieldInput type="number" placeholder="0" value={client[incomeKey] as number} onSave={v => saveClientFields({ [incomeKey]: parseFloat(v) || null })} className="flex-1" />
-                        <span className="text-xs text-midnight/40">/mo</span>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+              ] as const).map(({ label, nameKey, typeKey, incomeKey, detailsKey }) => (
+                <BorrowerCard key={label} label={label}
+                  nameKey={nameKey} typeKey={typeKey} incomeKey={incomeKey} detailsKey={detailsKey}
+                  client={client as unknown as Record<string, unknown>}
+                  editingField={editingField} editValue={editValue} saving={saving}
+                  onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }}
+                  onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue}
+                  saveClientFields={saveClientFields}
+                />
+              ))}
             </div>
             {combinedIncome > 0 && (
               <div className="mt-3 pt-3 border-t border-midnight/8 flex gap-4 text-sm">
