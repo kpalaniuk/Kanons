@@ -1042,6 +1042,29 @@ export default function MorningBriefPage() {
               </div>
             )}
 
+            {/* Overdue follow-ups */}
+            {overdueFollowUp.length > 0 && (
+              <div className="space-y-2 mt-3">
+                <p className="text-[10px] font-semibold text-orange-500 uppercase tracking-wider flex items-center gap-1">
+                  📅 Overdue Follow-Ups
+                </p>
+                {overdueFollowUp.slice(0, 4).map(c => {
+                  const due = new Date(c.followUpDate!); due.setHours(0,0,0,0)
+                  const daysOverdue = Math.floor((today.getTime() - due.getTime()) / 86400000)
+                  return (
+                    <Link key={c.id} href={`/workshop/pph/clients/${c.id}`} className="flex items-center gap-3 bg-orange-50 rounded-xl px-3 py-2.5 border border-orange-100 hover:border-orange-300 transition-colors">
+                      <span className="w-2 h-2 rounded-full shrink-0 bg-orange-400" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-midnight truncate">{c.name}</p>
+                        <p className="text-xs text-midnight/40 truncate">{c.stage} · {c.nextAction || 'Follow up needed'}</p>
+                      </div>
+                      <span className="text-[10px] font-bold text-orange-500 shrink-0">{daysOverdue}d late</span>
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
+
             {/* Stuck deals — 14+ days in same stage */}
             {stuckDeals.length > 0 && (
               <div className="space-y-2 mt-3">
@@ -1051,14 +1074,14 @@ export default function MorningBriefPage() {
                 {stuckDeals.map(c => {
                   const days = c.lastTouched ? Math.floor((today.getTime() - (() => { const d = new Date(c.lastTouched!); d.setHours(0,0,0,0); return d })().getTime()) / 86400000) : 0
                   return (
-                    <div key={c.id} className="flex items-center gap-3 bg-red-50 rounded-xl px-3 py-2.5 border border-red-100">
+                    <Link key={c.id} href={`/workshop/pph/clients/${c.id}`} className="flex items-center gap-3 bg-red-50 rounded-xl px-3 py-2.5 border border-red-100 hover:border-red-200 transition-colors">
                       <span className="w-2 h-2 rounded-full shrink-0 bg-red-400" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-midnight truncate">{c.name}</p>
                         <p className="text-xs text-midnight/40 truncate">{c.stage} · {c.nextAction || 'No next action set'}</p>
                       </div>
                       <span className="text-[10px] font-bold text-red-500 shrink-0">{days}d</span>
-                    </div>
+                    </Link>
                   )
                 })}
               </div>
