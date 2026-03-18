@@ -576,10 +576,18 @@ export default function OpportunitiesPage() {
                       </button>
                     )}
                     {client.lastTouched && <span>Touched {relativeDate(client.lastTouched)}</span>}
-                    {(client.referralType || client.referralName) && (
+                    {(client.referralType || client.referralName) ? (
                       <span className="flex items-center gap-1 text-midnight/40 italic">
                         via {[client.referralType, client.referralName].filter(Boolean).join(' · ')}
                       </span>
+                    ) : (
+                      <Link
+                        href={`/workshop/pph/clients/${client.id}?tab=profile`}
+                        className="flex items-center gap-1 text-[10px] font-medium text-amber-500 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 hover:bg-amber-100 transition-colors"
+                        title="Add referral source"
+                      >
+                        <span>+ referral source</span>
+                      </Link>
                     )}
                   </div>
                   {client.nextAction && (
