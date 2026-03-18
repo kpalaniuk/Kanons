@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   AlertTriangle, Clock, Phone, MessageSquare, FileText,
   ChevronDown, ChevronUp, Plus, Search, User, Calendar,
-  Filter, RefreshCw
+  Filter, RefreshCw, StickyNote
 } from 'lucide-react'
 
 interface Client {
@@ -128,6 +128,7 @@ export default function OpportunitiesPage() {
   const [editingStage, setEditingStage] = useState<string | null>(null)
   const [savingStage, setSavingStage] = useState(false)
   const [savingPriority, setSavingPriority] = useState<string | null>(null)
+  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set())
 
   // New client form state
   const [newName, setNewName] = useState('')
@@ -137,6 +138,14 @@ export default function OpportunitiesPage() {
   const [newPhone, setNewPhone] = useState('')
   const [newNotes, setNewNotes] = useState('')
   const [submittingNew, setSubmittingNew] = useState(false)
+
+  function toggleNotes(id: string) {
+    setExpandedNotes(prev => {
+      const n = new Set(prev)
+      n.has(id) ? n.delete(id) : n.add(id)
+      return n
+    })
+  }
 
   useEffect(() => { fetchClients() }, [])
 
@@ -482,6 +491,8 @@ export default function OpportunitiesPage() {
       <div className="grid gap-3">
         {filtered.map(client => {
           const followUp = getFollowUpStatus(client.followUpDate)
+          const notesExpanded = expandedNotes.has(client.id)
+          const hasNotes = !!client.notes?.trim()
           return (
             <div
               key={client.id}
@@ -592,6 +603,28 @@ export default function OpportunitiesPage() {
                   </div>
                   {client.nextAction && (
                     <p className="text-xs text-midnight/60 mt-1 truncate">→ {client.nextAction}</p>
+                  )}
+                  {/* Notes Quick-Preview */}
+                  {hasNotes && (
+                    <button
+                      onClick={e => { e.preventDefault(); toggleNotes(client.id) }}
+                      className="w-full text-left mt-1.5 flex items-start gap-1.5 px-1 -mx-1 py-0.5 rounded cursor-pointer hover:bg-midnight/[0.03] transition-colors group"
+                    >
+                      <StickyNote className="w-3 h-3 text-midnight/25 flex-shrink-0 mt-0.5 group-hover:text-midnight/40 transition-colors" />
+                      {notesExpanded ? (
+                        <span className="flex-1 text-xs text-midnight/60 whitespace-pre-wrap leading-relaxed">{client.notes}</span>
+                      ) : (
+                        <span className="flex-1 text-xs text-midnight/45 italic truncate">
+                          {client.notes.length > 120 ? client.notes.slice(0, 120) + '…' : client.notes}
+                        </span>
+                      )}
+                      <span className="flex-shrink-0 ml-1 text-midnight/25 group-hover:text-midnight/40 transition-colors">
+                        {notesExpanded
+                          ? <ChevronUp className="w-3 h-3" />
+                          : <ChevronDown className="w-3 h-3" />
+                        }
+                      </span>
+                    </button>
                   )}
                   {client.stage !== 'Closed' && client.stage !== 'Lost' && (
                     <StageTimeline stage={client.stage} stageUpdatedAt={client.stageUpdatedAt} />
