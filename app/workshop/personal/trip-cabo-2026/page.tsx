@@ -1,24 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import { Plane, Car, Home, AlertCircle, CheckCircle, ExternalLink, MapPin } from 'lucide-react'
-import Link from 'next/link'
+import { Plane, Car, Home, AlertCircle, CheckCircle, ExternalLink, MapPin, Phone } from 'lucide-react'
 
 const DAYS = [
-  { date: 'Mon Mar 30', label: 'Fly SAN → SJD · Arrive 2:48 PM', icon: '✈️', note: 'AS 1414 nonstop. Pick up rental car at airport. Check in to accommodation.' },
-  { date: 'Tue Mar 31', label: 'First full day in Cabo', icon: '🌊', note: 'Settle in, beach, explore.' },
-  { date: 'Wed Apr 1',  label: 'Explore', icon: '🐟', note: '' },
+  { date: 'Mon Mar 30', label: 'Fly SAN → SJD · Arrive 2:48 PM', icon: '✈️', note: 'AS 1414 nonstop. Pick up rental car at airport. Check in to HomeExchange at Cerritos/Pescadero.' },
+  { date: 'Tue Mar 31', label: 'First full day', icon: '🌊', note: 'Cerritos Beach. Settle in, surf, explore Pescadero.' },
+  { date: 'Wed Apr 1',  label: 'Explore', icon: '🐟', note: 'Day trip options: Todos Santos, La Paz, or beach day.' },
   { date: 'Thu Apr 2',  label: 'Explore', icon: '🌮', note: '' },
   { date: 'Fri Apr 3',  label: 'Explore', icon: '🏖️', note: '' },
   { date: 'Sat Apr 4',  label: 'Explore', icon: '🎉', note: '' },
-  { date: 'Sun Apr 5',  label: 'Last night — near SJD airport', icon: '🏨', note: 'Check in to airport hotel for easy morning departure.' },
+  { date: 'Sun Apr 5',  label: 'Check out → Airport hotel', icon: '🏨', note: 'Check out of HomeExchange. Head to SJD area. Hotel near airport for early morning departure.' },
   { date: 'Mon Apr 6',  label: 'Fly home 🎂', icon: '✈️', note: "AS 547. Departs 10:40 AM → SAN 1:06 PM. Kyle's birthday!" },
 ]
 
 const OPEN_ITEMS = [
-  { done: false, urgent: true,  text: 'Rental car — Mar 30–Apr 6. 4x4, good AC, fits 4. Pick up/drop off SJD.' },
-  { done: false, urgent: true,  text: 'Main accommodation — Mar 30–Apr 5 (6 nights). HomeExchange or hotel.' },
-  { done: false, urgent: true,  text: 'Airport hotel — Apr 5 night near SJD, shuttle included.' },
+  { done: false, urgent: true,  text: 'Rental car — choose from Laura\'s options (see Overview). Reply to cars@justasklaura.com.mx.' },
+  { done: false, urgent: true,  text: 'Airport hotel — Apr 5 night near SJD. Need shuttle or close to airport for 10:40 AM flight.' },
+  { done: true,  urgent: false, text: 'Main accommodation — HomeExchange confirmed ✓ (Destrie Long, Pescadero/Cerritos, Mar 30–Apr 5).' },
   { done: true,  urgent: false, text: 'Flights booked — AS 1414 out (Mar 30) + AS 547 return (Apr 6). Conf: YAKQHZ.' },
 ]
 
@@ -36,8 +35,9 @@ export default function CaboTripPage() {
           <p className="text-[#f8f7f4]/50 text-sm mt-1">March 30 – April 6, 2026 · Family of 4</p>
           <div className="flex justify-center gap-2 mt-3 flex-wrap">
             <span className="text-xs bg-green-900/50 text-green-300 border border-green-700/40 px-3 py-1 rounded-full">✈️ Flights Booked</span>
+            <span className="text-xs bg-green-900/50 text-green-300 border border-green-700/40 px-3 py-1 rounded-full">🏠 HX Confirmed</span>
             <span className="text-xs bg-amber-900/50 text-amber-300 border border-amber-700/40 px-3 py-1 rounded-full">🚗 Car Needed</span>
-            <span className="text-xs bg-amber-900/50 text-amber-300 border border-amber-700/40 px-3 py-1 rounded-full">🏨 Hotel Needed</span>
+            <span className="text-xs bg-amber-900/50 text-amber-300 border border-amber-700/40 px-3 py-1 rounded-full">🏨 Airport Hotel Needed</span>
           </div>
         </div>
 
@@ -78,50 +78,83 @@ export default function CaboTripPage() {
         {/* Overview */}
         {view === 'overview' && (
           <div className="space-y-3">
-            {/* Rental Car */}
+
+            {/* HomeExchange — CONFIRMED */}
+            <div className="bg-green-900/20 border border-green-700/40 rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Home size={16} className="text-green-400" />
+                <span className="font-semibold text-green-300">HomeExchange — Confirmed ✓</span>
+              </div>
+              <div className="space-y-1 text-sm text-[#f8f7f4]/70 mb-3">
+                <p>📅 <span className="text-[#f8f7f4]/90">Mar 30 – Apr 5</span> (6 nights) · Non-reciprocal · 1,344 GP</p>
+                <p>📍 <span className="text-[#f8f7f4]/90">Cerritos / Pescadero, BCS</span> — Vista Sol 6 Cerritos 2358, Pescadero</p>
+                <p>👤 <span className="text-[#f8f7f4]/90">Destrie Long</span> · destrie.jensen@gmail.com</p>
+                <p>📞 <span className="text-[#f8f7f4]/90 font-mono">+1 801 664 8906</span></p>
+                <p className="text-[#f8f7f4]/40 text-xs">Exchange #118502653</p>
+              </div>
+              <a href="https://www.homeexchange.com/en/stay/118502653" target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-medium bg-green-800/60 text-green-300 border border-green-700/40 px-3 py-1.5 rounded-lg hover:bg-green-800 transition-colors">
+                View on HomeExchange <ExternalLink size={10} />
+              </a>
+            </div>
+
+            {/* Airport Hotel — NEEDED */}
             <div className="bg-amber-900/20 border border-amber-700/40 rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Car size={16} className="text-amber-400" />
-                <span className="font-semibold text-amber-300">Rental Car</span>
+                <Home size={16} className="text-amber-400" />
+                <span className="font-semibold text-amber-300">Airport Hotel — Apr 5 night</span>
                 <span className="ml-auto text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full">Needed</span>
               </div>
-              <p className="text-[#f8f7f4]/60 text-sm mb-3">Mar 30 (2:48 PM) → Apr 6 (by 9 AM) · SJD Airport · 4x4, good AC, seats 4</p>
+              <p className="text-[#f8f7f4]/60 text-sm mb-3">1 night near SJD. Flight departs Apr 6 at 10:40 AM — want easy morning. Shuttle or walkable preferred.</p>
               <div className="flex flex-wrap gap-2">
-                <a href="https://www.discovercars.com/cabo-san-lucas-airport" target="_blank" rel="noopener noreferrer"
+                <a href="https://www.hotelaeropuertoloscabos.com/en" target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-xs font-medium bg-amber-500 text-[#0a0a0a] px-3 py-1.5 rounded-lg hover:bg-amber-400 transition-colors">
-                  Discover Cars <ExternalLink size={10} />
+                  Hotel Aeropuerto Los Cabos <ExternalLink size={10} />
                 </a>
-                <a href="https://www.google.com/travel/explore?dest=Cabo+San+Lucas&type=car&pickup=2026-03-30&dropoff=2026-04-06" target="_blank" rel="noopener noreferrer"
+                <a href="https://www.booking.com/airport/mx/sjd.html" target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-xs font-medium bg-[#f8f7f4]/10 text-[#f8f7f4]/70 border border-[#f8f7f4]/15 px-3 py-1.5 rounded-lg hover:border-amber-500/40 transition-colors">
-                  Google Travel <ExternalLink size={10} />
+                  Booking.com near SJD <ExternalLink size={10} />
                 </a>
               </div>
             </div>
 
-            {/* Accommodation */}
-            <div className="bg-[#0066FF]/10 border border-[#0066FF]/30 rounded-2xl p-4">
+            {/* Rental Car — OPTIONS FROM LAURA */}
+            <div className="bg-[#f8f7f4]/5 border border-amber-700/40 rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Home size={16} className="text-[#0066FF]" />
-                <span className="font-semibold text-[#f8f7f4]">Accommodation</span>
-                <span className="ml-auto text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full">Needed</span>
+                <Car size={16} className="text-amber-400" />
+                <span className="font-semibold text-[#f8f7f4]">Rental Car — Options from Laura</span>
+                <span className="ml-auto text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full">Choose One</span>
               </div>
-              <div className="space-y-2 text-sm text-[#f8f7f4]/60">
-                <p>📅 <span className="text-[#f8f7f4]/80">Mar 30 – Apr 5</span> (6 nights) — main stay, Cabo area</p>
-                <p>🏨 <span className="text-[#f8f7f4]/80">Apr 5 night</span> — airport hotel near SJD, shuttle for early morning</p>
+              <p className="text-[#f8f7f4]/40 text-xs mb-3">Mar 30 2:48 PM → Apr 6 by 9 AM · SJD pickup/dropoff · Reply to cars@justasklaura.com.mx</p>
+              <div className="space-y-2 mb-3">
+                <div className="flex items-center justify-between bg-[#f8f7f4]/5 rounded-xl px-3 py-2.5">
+                  <div>
+                    <p className="text-sm text-[#f8f7f4]/90 font-medium">2014 Jeep Compass <span className="text-[#f8f7f4]/40 font-normal">"Silver"</span></p>
+                    <p className="text-xs text-[#f8f7f4]/40">4x4 · ~12 years old</p>
+                  </div>
+                  <span className="text-amber-300 font-semibold text-sm">$275/wk</span>
+                </div>
+                <div className="flex items-center justify-between bg-[#f8f7f4]/5 rounded-xl px-3 py-2.5">
+                  <div>
+                    <p className="text-sm text-[#f8f7f4]/90 font-medium">2012 Jeep Wrangler <span className="text-[#f8f7f4]/40 font-normal">"Shadow"</span></p>
+                    <p className="text-xs text-[#f8f7f4]/40">4x4 · ~14 years old · Good for Cerritos</p>
+                  </div>
+                  <span className="text-amber-300 font-semibold text-sm">$350/wk</span>
+                </div>
+                <div className="flex items-center justify-between bg-[#f8f7f4]/5 rounded-xl px-3 py-2.5">
+                  <div>
+                    <p className="text-sm text-[#f8f7f4]/90 font-medium">2011 GMC Yukon <span className="text-[#f8f7f4]/40 font-normal">"Apple"</span></p>
+                    <p className="text-xs text-[#f8f7f4]/40">4x4 · ~15 years old · Spacious for 4</p>
+                  </div>
+                  <span className="text-amber-300 font-semibold text-sm">$350/wk</span>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2 mt-3">
-                <a href="https://www.homeexchange.com/s#search?destination=Cabo+San+Lucas&guests=4" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-xs font-medium bg-[#0066FF] text-white px-3 py-1.5 rounded-lg hover:bg-[#0066FF]/80 transition-colors">
-                  HomeExchange <ExternalLink size={10} />
-                </a>
-                <a href="https://www.airbnb.com/s/Cabo-San-Lucas/homes?checkin=2026-03-30&checkout=2026-04-05&adults=2&children=2" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-xs font-medium bg-[#f8f7f4]/10 text-[#f8f7f4]/70 border border-[#f8f7f4]/15 px-3 py-1.5 rounded-lg hover:border-[#0066FF]/40 transition-colors">
-                  Airbnb <ExternalLink size={10} />
-                </a>
-              </div>
+              <a href="mailto:cars@justasklaura.com.mx" className="inline-flex items-center gap-1.5 text-xs font-medium bg-amber-500 text-[#0a0a0a] px-3 py-1.5 rounded-lg hover:bg-amber-400 transition-colors">
+                Reply to Laura <ExternalLink size={10} />
+              </a>
             </div>
 
-            {/* Flight details */}
+            {/* Flights — Booked */}
             <div className="bg-[#f8f7f4]/5 border border-[#f8f7f4]/10 rounded-2xl p-4 text-sm">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle size={14} className="text-green-400" />
