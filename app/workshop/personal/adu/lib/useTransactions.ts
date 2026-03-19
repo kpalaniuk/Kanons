@@ -22,7 +22,9 @@ const dbToTransaction = (db: DbTransaction): Transaction => ({
 });
 
 // Map frontend Transaction (camelCase) to DB row (snake_case)
+// Always includes id to avoid auto-increment sequence conflicts
 const transactionToDb = (t: Partial<Transaction>): Partial<DbTransaction> => ({
+  ...(t.id !== undefined && { id: t.id }),
   ...(t.date !== undefined && { date: t.date }),
   ...(t.type !== undefined && { type: t.type }),
   ...(t.description !== undefined && { description: t.description }),
@@ -42,6 +44,18 @@ const dbToSettings = (db: DbSettings): Settings => ({
   managementFeePercentage: Number(db.management_fee_percentage) || 30,
   ownerName: db.owner_name || 'Mike',
 });
+
+// Get next safe id from DB (max id + 1), avoids sequence conflicts from manual inserts
+const getNextDbId = async (): Promise<number> => {
+  const { data, error } = await supabase
+    .from('adu_transactions')
+    .select('id')
+    .order('id', { ascending: false })
+    .limit(1)
+    .single();
+  if (error || !data) return 2000;
+  return (data as DbTransaction).id + 1;
+};
 
 export const useTransactions = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -108,7 +122,10 @@ export const useTransactions = () => {
 
   const addTransaction = async (transaction: Transaction) => {
     try {
-      const dbRow = transactionToDb(transaction);
+      // Always use DB max+1 as id to avoid sequence conflicts from manual inserts
+      const safeId = await getNextDbId();
+      const transactionWithId = { ...transaction, id: safeId };
+      const dbRow = transactionToDb(transactionWithId);
       const { data, error } = await supabase
         .from('adu_transactions')
         .insert([dbRow])
@@ -132,7 +149,10 @@ export const useTransactions = () => {
 
   const addTransactions = async (newTransactions: Transaction[]) => {
     try {
-      const dbRows = newTransactions.map(transactionToDb);
+      // Get starting id from DB
+      const startId = await getNextDbId();
+      const transactionsWithIds = newTransactions.map((t, i) => ({ ...t, id: startId + i }));
+      const dbRows = transactionsWithIds.map(transactionToDb);
       const { data, error } = await supabase
         .from('adu_transactions')
         .insert(dbRows)
