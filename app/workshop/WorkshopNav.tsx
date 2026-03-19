@@ -59,7 +59,7 @@ const personalLinks = [
   { href: '/workshop/personal/tasks',          label: 'Tasks',      icon: CheckSquare },
   { href: '/workshop/personal/music',          label: 'Music',      icon: Music },
   { href: '/workshop/personal/strongnome',     label: 'StronGnome', icon: Disc },
-  { href: '/workshop/personal/trip-july-2026', label: 'July Trip',  icon: Map },
+  { href: '/workshop/personal/trips',          label: 'Trips',      icon: Map },
   { href: '/workshop/personal/focus',          label: 'Focus',      icon: Sparkles },
   { href: '/workshop/personal/fc-balboa',      label: 'FC Balboa',  icon: Trophy },
   { href: '/workshop/personal/life',           label: 'Life',       icon: Leaf },
@@ -113,6 +113,7 @@ export default function WorkshopNav() {
     const active = pathname === href
       || (href !== '/workshop/pph/opportunities' && href !== '/workshop/pph/clients' && pathname?.startsWith(href + '/'))
       || (href === '/workshop/pph/clients' && (pathname?.startsWith('/workshop/pph/clients/')))
+      || (href === '/workshop/personal/trips' && (pathname?.startsWith('/workshop/personal/trip')))
     return `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
       active ? 'bg-midnight/10 text-midnight border border-midnight/20' : 'text-midnight/50 hover:text-midnight hover:bg-sand'
     }`
