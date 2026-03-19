@@ -15,8 +15,8 @@ export const articles: Article[] = [
 
   // ── Technology ────────────────────────────────────────────────────────────
   {
-    title: 'The Race to Build AI Agents for SMBs — Who\'s Winning, What\'s Missing, and Why We\'re Still Building',
-    description: 'A field report on Claude Code, NemoClaw, ShipClaw, and Hotclaw. Where the $52B AI agent market is going, what every platform is getting wrong for small business, and the strategic playbook for LO Buddy and Hotclaw.',
+    title: 'The Race to Put AI Agents Inside Small Businesses — Where the Market Is, Where It\'s Broken, and Where Hotclaw Fits',
+    description: 'A landscape audit of Claude Code, NemoClaw, ShipClaw, and the emerging AI agent deployment space. The two-layer model nobody else is running, the five gaps the entire market is missing, and the strategic playbook for Hotclaw Solutions.',
     href: '/artifacts/ai-agent-smb-race',
     category: 'Technology',
     tags: ['Technology', 'LO Buddy', 'AI Agents', 'Strategy'],

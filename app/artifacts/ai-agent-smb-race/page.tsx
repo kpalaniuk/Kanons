@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 export default function AIAgentSMBRacePage() {
   return (
@@ -17,292 +17,318 @@ export default function AIAgentSMBRacePage() {
         <div className="mb-14">
           <div className="flex items-center gap-3 mb-5">
             <span className="text-xs font-semibold px-3 py-1 rounded-full bg-ocean/10 text-ocean">Technology</span>
-            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-ocean/10 text-ocean">LO Buddy</span>
+            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[#FFB366]/15 text-amber-700">Strategy</span>
             <span className="text-xs text-midnight/30">Mar 18, 2026</span>
           </div>
           <h1 className="font-display text-4xl md:text-5xl text-midnight leading-tight mb-6">
-            The Race to Build AI Agents for SMBs — Who&apos;s Winning, What&apos;s Missing, and Why We&apos;re Still Building
+            The Race to Put AI Agents Inside Small Businesses — Where the Market Is, Where It&apos;s Broken, and Where Hotclaw Fits
           </h1>
           <p className="text-xl text-midnight/60 leading-relaxed">
-            A field report on Claude Code, NemoClaw, ShipClaw, Hotclaw, and the white space nobody else has figured out yet.
+            A landscape audit of Claude Code, NemoClaw, ShipClaw, and the emerging AI agent deployment space — and the strategic case for what Hotclaw Solutions is actually building.
           </p>
         </div>
 
-        {/* Article body */}
-        <div className="prose-custom space-y-10 text-midnight/80 leading-relaxed">
+        {/* Body */}
+        <div className="space-y-12 text-midnight/80 leading-relaxed">
 
-          {/* ── Section 1 */}
-          <section className="space-y-4">
+          {/* ── 1. The Market */}
+          <section className="space-y-5">
             <p className="text-lg text-midnight font-medium leading-relaxed">
-              The AI agent market is growing at 46% annually — from $7.8 billion in 2025 to a projected $52 billion by 2030. Every major tech company has a horse in this race. But here&apos;s what the press releases won&apos;t tell you: almost none of them are building for small business owners who actually run the world.
+              The AI agent market is growing at 46% annually — from $7.8 billion in 2025 to a projected $52 billion by 2030. Anthropic surveyed 500 technical leaders and found that 80% already report measurable economic returns from agents. 81% plan to deploy more complex use cases this year. By every measure, this is the infrastructure moment.
             </p>
             <p>
-              They&apos;re building for enterprise. For Thomson Reuters. For L&apos;Oréal. For companies with IT departments and six-figure implementation budgets. The rest of the market — the mortgage brokers, the interior designers, the contractors, the restaurants, the boutique agencies — is being handed generic chatbot wrappers and told to figure it out.
+              Here&apos;s the catch: all of that data comes from enterprise. From Thomson Reuters, L&apos;Oréal, Doctolib, eSentire. Companies with IT departments, six-figure implementation budgets, and dedicated AI teams. The conversation about AI agents — almost entirely — is a conversation happening between large organizations and the companies selling to them.
             </p>
             <p>
-              That gap is exactly why we&apos;re building what we&apos;re building. This article is both a landscape audit and a strategic brief. Read it as a map of where the battlefield is, what&apos;s been claimed, what&apos;s been missed, and what it means for Hotclaw, LO Buddy, and everything we&apos;re shipping next.
+              The other 33 million businesses in America aren&apos;t in the room. The mortgage broker. The contractor. The boutique insurance agency. The interior design firm. The independent real estate team. They&apos;re reading the same headlines about AI changing everything — and then going back to their CRM, their group text, and their manual follow-up reminders. Because nothing being built right now actually works for them out of the box.
+            </p>
+            <p className="font-medium text-midnight">
+              That gap is Hotclaw&apos;s entire reason for existing.
             </p>
           </section>
 
-          {/* Divider */}
           <div className="h-px bg-midnight/8" />
 
-          {/* ── Section 2: The Big Players */}
+          {/* ── 2. Two Very Different Problems */}
+          <section className="space-y-5">
+            <h2 className="font-display text-2xl text-midnight">Two Problems Most People Confuse for One</h2>
+            <p>
+              Before we look at the players, it helps to understand that &quot;AI agents for business&quot; is actually two separate problems being solved by two very different types of companies.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-white/80 rounded-2xl border border-midnight/5 p-6 space-y-2">
+                <p className="font-semibold text-midnight text-sm uppercase tracking-wider">Layer 1: The Platform</p>
+                <p className="text-sm leading-relaxed text-midnight/70">
+                  Infrastructure for building and deploying agents. Models, runtimes, orchestration frameworks, channel connectors. Tools for developers. Think Claude Code, Google ADK, OpenClaw, NemoClaw, ShipClaw.
+                </p>
+                <p className="text-xs text-midnight/40 italic mt-2">Audience: developers and technical teams who want to build agents.</p>
+              </div>
+              <div className="bg-white/80 rounded-2xl border border-midnight/5 p-6 space-y-2">
+                <p className="font-semibold text-midnight text-sm uppercase tracking-wider">Layer 2: The Product</p>
+                <p className="text-sm leading-relaxed text-midnight/70">
+                  Finished, deployed agents that already know a specific industry. Delivered to businesses who can&apos;t or don&apos;t want to build. Think &quot;AI teammate for mortgage&quot; or &quot;AI coordinator for insurance.&quot;
+                </p>
+                <p className="text-xs text-midnight/40 italic mt-2">Audience: business owners who want results, not a build project.</p>
+              </div>
+            </div>
+            <p>
+              Almost everyone in the market is building Layer 1. Nobody has seriously cracked Layer 2 for SMBs. That&apos;s the distinction that shapes everything about how Hotclaw should think about its positioning.
+            </p>
+          </section>
+
+          <div className="h-px bg-midnight/8" />
+
+          {/* ── 3. The Platform Players */}
           <section className="space-y-6">
-            <h2 className="font-display text-2xl text-midnight">The Players on the Field</h2>
+            <h2 className="font-display text-2xl text-midnight">The Platform Layer — Who&apos;s Building the Rails</h2>
 
             {/* Claude Code */}
-            <div className="bg-white/80 rounded-2xl border border-midnight/5 p-7 space-y-3">
+            <div className="bg-white/80 rounded-2xl border border-midnight/5 p-7 space-y-4">
               <div className="flex items-start justify-between gap-4">
-                <h3 className="font-display text-xl text-midnight">Claude Code (Anthropic)</h3>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 whitespace-nowrap flex-shrink-0">Best-in-Class for Devs</span>
+                <div>
+                  <h3 className="font-display text-xl text-midnight">Claude Code + Cowork</h3>
+                  <p className="text-xs text-midnight/40 mt-0.5">Anthropic · Developer tool + office assistant</p>
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 whitespace-nowrap flex-shrink-0">Best-in-Class Intelligence</span>
               </div>
               <p className="text-sm leading-relaxed">
-                Claude Code is a terminal-native agentic coding tool. It hits 80.9% on SWE-bench with Opus — the industry&apos;s hardest benchmark for software engineering tasks. It runs in VS Code, JetBrains, Slack, GitHub Actions, and GitLab CI/CD. It&apos;s the closest thing to a genuine autonomous developer on the market right now.
+                Claude Code is the most capable autonomous coding agent on the market — 80.9% on SWE-bench, runs in your terminal, IDE, Slack, or CI/CD pipeline. Anthropic&apos;s January 2026 addition, <strong>Claude Cowork</strong>, extends that to non-technical staff: local file access, document creation, parallel task coordination, folder-level permissions. Together they cover both developers and operations teams under one platform.
               </p>
               <p className="text-sm leading-relaxed">
-                Anthropic also shipped <strong>Claude Cowork</strong> in January 2026 — a desktop app that gives non-technical users the same agent capabilities: local file access, document creation, folder-level permissions, parallel task coordination. It&apos;s a smart play to cover both developers and operations staff under one roof.
+                The limitation for SMBs is fundamental: these are <em>tools</em>, not <em>deployments</em>. Claude Code requires a developer to operate it. Cowork requires someone comfortable with local desktop software and permission management. Neither one arrives at a small business already knowing the industry, the CRM, the workflow, or the team. That&apos;s not a criticism — it&apos;s a design choice. Anthropic is building the engine, not the car.
               </p>
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <div className="bg-emerald-50 rounded-xl p-3">
-                  <p className="text-xs font-semibold text-emerald-700 mb-1">Strengths</p>
-                  <ul className="text-xs text-emerald-700 space-y-0.5">
-                    <li>• Highest code intelligence on the market</li>
-                    <li>• Excellent safety + context management</li>
-                    <li>• Cowork bridges dev + ops gap</li>
-                    <li>• Multi-platform (macOS, Windows, Linux)</li>
-                  </ul>
-                </div>
-                <div className="bg-red-50 rounded-xl p-3">
-                  <p className="text-xs font-semibold text-red-600 mb-1">Gaps</p>
-                  <ul className="text-xs text-red-600 space-y-0.5">
-                    <li>• No industry-specific memory or training</li>
-                    <li>• No CRM, GHL, or vertical integrations</li>
-                    <li>• SMB owner can&apos;t set it up without help</li>
-                    <li>• Generic by design — no soul, no persona</li>
-                  </ul>
-                </div>
+              <div className="bg-ocean/5 rounded-xl p-4 text-sm text-ocean">
+                <span className="font-semibold">Hotclaw relationship:</span> Claude Code on Hearing-Aids is how we build. It&apos;s our construction tool, not our product. We use it to ship faster than any competitor could.
               </div>
-              <p className="text-xs text-midnight/40 italic">Our relationship: We use Claude Code on Hearing-Aids to build LO Buddy and Kanons. It&apos;s our builder, not our product.</p>
             </div>
 
             {/* NemoClaw */}
-            <div className="bg-white/80 rounded-2xl border border-midnight/5 p-7 space-y-3">
+            <div className="bg-white/80 rounded-2xl border border-midnight/5 p-7 space-y-4">
               <div className="flex items-start justify-between gap-4">
-                <h3 className="font-display text-xl text-midnight">NemoClaw</h3>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-violet-50 text-violet-600 whitespace-nowrap flex-shrink-0">Persona-Centric Agent</span>
+                <div>
+                  <h3 className="font-display text-xl text-midnight">NemoClaw</h3>
+                  <p className="text-xs text-midnight/40 mt-0.5">OpenClaw ecosystem · Persona-first agent runtime</p>
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-violet-50 text-violet-600 whitespace-nowrap flex-shrink-0">Soul-First Design</span>
               </div>
               <p className="text-sm leading-relaxed">
-                NemoClaw is a personality-forward AI agent framework in the OpenClaw ecosystem — designed to give agents a consistent identity, soul config, and behavioral baseline across sessions. Where most agent platforms treat the model as a blank slate, NemoClaw bakes the persona into the runtime. Think less &quot;GPT-4 with tools&quot; and more &quot;a specific character with memory, opinions, and a consistent way of engaging.&quot;
+                NemoClaw is philosophically the most interesting competitor in this space. Its premise: the identity of an agent matters as much as its capabilities. Rather than treating the model as a blank slate, NemoClaw bakes a soul config, behavioral baseline, and persistent persona into the runtime itself. An agent that feels like a specific character — consistent tone, consistent judgment, consistent way of engaging — rather than a fresh GPT instance every session.
               </p>
               <p className="text-sm leading-relaxed">
-                The approach is philosophically interesting: agents that feel like colleagues rather than tools. But the current implementation is primarily a configuration layer on top of existing LLMs — it doesn&apos;t yet own the intelligence, just the identity.
+                This is the right instinct. Where NemoClaw stops short is treating persona as a configuration layer rather than a capability layer. A well-named, consistently-voiced agent is still a generic intelligence. It knows how to sound like a colleague but doesn&apos;t know your industry, your clients, or your workflows. Persona ≠ expertise.
               </p>
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <div className="bg-emerald-50 rounded-xl p-3">
-                  <p className="text-xs font-semibold text-emerald-700 mb-1">Strengths</p>
-                  <ul className="text-xs text-emerald-700 space-y-0.5">
-                    <li>• Soul-first design philosophy</li>
-                    <li>• Consistent persona across sessions</li>
-                    <li>• OpenClaw ecosystem compatibility</li>
-                    <li>• Low hallucination surface area</li>
-                  </ul>
-                </div>
-                <div className="bg-red-50 rounded-xl p-3">
-                  <p className="text-xs font-semibold text-red-600 mb-1">Gaps</p>
-                  <ul className="text-xs text-red-600 space-y-0.5">
-                    <li>• No vertical market specialization</li>
-                    <li>• Thin tooling layer out of the box</li>
-                    <li>• Persona ≠ expertise (still generic intelligence)</li>
-                    <li>• Limited deployment docs for SMBs</li>
-                  </ul>
-                </div>
+              <div className="bg-violet-50 rounded-xl p-4 text-sm text-violet-700">
+                <span className="font-semibold">What this means for Hotclaw:</span> NemoClaw validates the soul-first thesis. The execution gap they haven&apos;t closed — turning persona into genuine domain expertise — is exactly what Hotclaw&apos;s vertical approach delivers.
               </div>
             </div>
 
             {/* ShipClaw */}
-            <div className="bg-white/80 rounded-2xl border border-midnight/5 p-7 space-y-3">
+            <div className="bg-white/80 rounded-2xl border border-midnight/5 p-7 space-y-4">
               <div className="flex items-start justify-between gap-4">
-                <h3 className="font-display text-xl text-midnight">ShipClaw</h3>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 whitespace-nowrap flex-shrink-0">Ship-Speed Deployment</span>
+                <div>
+                  <h3 className="font-display text-xl text-midnight">ShipClaw</h3>
+                  <p className="text-xs text-midnight/40 mt-0.5">OpenClaw ecosystem · Deployment speed play</p>
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 whitespace-nowrap flex-shrink-0">Fastest Deploy</span>
               </div>
               <p className="text-sm leading-relaxed">
-                ShipClaw focuses on the fastest path from idea to deployed agent. The thesis: most of the delay in getting AI agents into production isn&apos;t intelligence — it&apos;s infrastructure friction. ShipClaw strips that friction down to the studs: one-command deploy, instant webhook exposure, pre-built channel connectors for Discord, Telegram, Slack, and WhatsApp.
+                ShipClaw&apos;s thesis: the biggest barrier to AI agent adoption isn&apos;t intelligence, it&apos;s friction. One-command deploy. Pre-built channel connectors for Discord, Telegram, Slack, and WhatsApp. Instant webhook exposure. For a developer who needs to hand off an agent to a client fast, it&apos;s genuinely compelling.
               </p>
               <p className="text-sm leading-relaxed">
-                For developers who want to spin up an agent and hand it off to a client fast, it&apos;s genuinely compelling. The tradeoff is depth: ShipClaw agents are fast to deploy but shallow by default. You&apos;re on your own for domain training, memory architecture, and vertical integrations.
+                The tradeoff is depth and the accountability that comes with it. ShipClaw gets you deployed. Everything after deployment — domain knowledge, memory architecture, vertical integrations, ongoing tuning, onboarding the client, making it actually useful for that client&apos;s specific business — is your problem. ShipClaw is a starting line, not a finish line.
               </p>
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <div className="bg-emerald-50 rounded-xl p-3">
-                  <p className="text-xs font-semibold text-emerald-700 mb-1">Strengths</p>
-                  <ul className="text-xs text-emerald-700 space-y-0.5">
-                    <li>• Fastest deployment path</li>
-                    <li>• Multi-channel out of the box</li>
-                    <li>• Great for rapid prototyping</li>
-                    <li>• Low DevOps overhead</li>
-                  </ul>
-                </div>
-                <div className="bg-red-50 rounded-xl p-3">
-                  <p className="text-xs font-semibold text-red-600 mb-1">Gaps</p>
-                  <ul className="text-xs text-red-600 space-y-0.5">
-                    <li>• No industry memory or specialization</li>
-                    <li>• Productization burden falls on builder</li>
-                    <li>• Not end-to-end for real clients</li>
-                    <li>• Speed at the cost of depth</li>
-                  </ul>
-                </div>
+              <div className="bg-amber-50 rounded-xl p-4 text-sm text-amber-700">
+                <span className="font-semibold">What this means for Hotclaw:</span> ShipClaw solves deployment friction for developers. Hotclaw solves the entire journey for the business owner — including all the parts ShipClaw doesn&apos;t touch.
               </div>
             </div>
 
-            {/* Hotclaw */}
-            <div className="bg-white/80 rounded-2xl border border-[#FFB366]/30 p-7 space-y-3 ring-1 ring-[#FFB366]/20">
+            {/* Google ADK honorable mention */}
+            <div className="bg-white/60 rounded-2xl border border-midnight/5 p-6 space-y-3">
               <div className="flex items-start justify-between gap-4">
-                <h3 className="font-display text-xl text-midnight">Hotclaw Solutions <span className="text-[#FFB366]">← us</span></h3>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#FFB366]/10 text-amber-700 whitespace-nowrap flex-shrink-0">Vertical-First Agent Deployment</span>
+                <div>
+                  <h3 className="font-semibold text-midnight">Google Agent Development Kit (ADK)</h3>
+                  <p className="text-xs text-midnight/40 mt-0.5">Open-source · Multi-agent orchestration</p>
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-50 text-green-700 whitespace-nowrap flex-shrink-0">Enterprise Multi-Agent</span>
               </div>
               <p className="text-sm leading-relaxed">
-                Hotclaw is our productized AI agent service — the infrastructure, the soul architecture, and the deployment pipeline. The difference: we don&apos;t sell generic agents. We build agents with real vertical expertise baked in. LO Buddy is Exhibit A: a mortgage intelligence platform that understands GHL contact flows, DTI ratios, loan programs, Fannie Mae guidelines, and how a real LO thinks through a deal. Not because it was prompted to — because we trained it to.
+                Google&apos;s ADK is the most powerful framework for complex multi-agent systems — parent/child agent hierarchies, SequentialAgent, ParallelAgent, LoopAgent orchestration, model-agnostic. Extraordinary for enterprises building custom internal agent infrastructure. Almost completely irrelevant for SMBs without a dedicated engineering team. This is the Kubernetes of AI agents — essential at scale, overkill for a 12-person mortgage shop.
               </p>
-              <p className="text-sm leading-relaxed">
-                The Hotclaw architecture runs on a single Hostinger VPS with Docker containers and Caddy reverse proxy — low overhead, high isolation. Each agent gets its own workspace, soul config, Discord bot, and capability set. We can spin up a new industry vertical in days, not months.
-              </p>
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <div className="bg-emerald-50 rounded-xl p-3">
-                  <p className="text-xs font-semibold text-emerald-700 mb-1">Strengths</p>
-                  <ul className="text-xs text-emerald-700 space-y-0.5">
-                    <li>• Vertical expertise, not generic chat</li>
-                    <li>• Real-world GHL + CRM integration</li>
-                    <li>• Soul-first agent identity</li>
-                    <li>• Multi-agent per container architecture</li>
-                    <li>• Low infrastructure overhead</li>
-                    <li>• Built and tested in production by us</li>
-                  </ul>
-                </div>
-                <div className="bg-amber-50 rounded-xl p-3">
-                  <p className="text-xs font-semibold text-amber-700 mb-1">Honest Gaps (for now)</p>
-                  <ul className="text-xs text-amber-700 space-y-0.5">
-                    <li>• Onboarding is still manual</li>
-                    <li>• No self-serve wizard yet</li>
-                    <li>• Sales motion not productized</li>
-                    <li>• Needs more verticals beyond mortgage</li>
-                  </ul>
-                </div>
-              </div>
             </div>
           </section>
 
           <div className="h-px bg-midnight/8" />
 
-          {/* ── Section 3: What's Missing */}
+          {/* ── 4. The Real Gaps */}
           <section className="space-y-5">
-            <h2 className="font-display text-2xl text-midnight">What the Entire Market Is Getting Wrong</h2>
+            <h2 className="font-display text-2xl text-midnight">What the Whole Market Is Missing</h2>
             <p>
-              Anthropic surveyed 500 technical leaders and found that 80% report measurable economic returns from AI agents. But they also found the three top barriers are integration with existing systems, data access and quality, and change management. Every headline focuses on the first stat. Nobody is solving the barriers.
+              Here&apos;s what all these platforms — even the best ones — consistently fail to solve for the SMB owner who just wants their business to run smarter:
             </p>
 
-            <div className="space-y-4">
-              <div className="bg-white/80 rounded-xl border border-midnight/5 p-5">
-                <h3 className="font-semibold text-midnight text-base mb-2">1. Agents without domain memory are just expensive autocomplete</h3>
-                <p className="text-sm leading-relaxed">
-                  Every agent platform gives you access to GPT-4 or Claude. None of them remember that your client Jay Lin has an attorney blocking the deed of trust filing, or that Jeffrey Domenech&apos;s wife has variable income between $1,250 and $6,000 a month. That context is what separates a useful agent from a smart search bar. We&apos;re building toward Pinecone-backed persistent memory that makes LO Buddy genuinely recall deal history — not from a chat window, but from a structured memory layer built around the business.
-                </p>
-              </div>
-
-              <div className="bg-white/80 rounded-xl border border-midnight/5 p-5">
-                <h3 className="font-semibold text-midnight text-base mb-2">2. Horizontal tools don&apos;t understand vertical workflows</h3>
-                <p className="text-sm leading-relaxed">
-                  Cursor is incredible for code. Claude Code is outstanding for refactoring. But neither one knows what a 1003 is, or what the difference between a DSCR loan and a conventional purchase means for income qualification. Generic intelligence applied to specialized workflows creates confident hallucinations — which in mortgage is worse than no AI at all. The winning play isn&apos;t a smarter model. It&apos;s a deeply trained vertical agent that knows when to ask, when to flag, and when to act.
-                </p>
-              </div>
-
-              <div className="bg-white/80 rounded-xl border border-midnight/5 p-5">
-                <h3 className="font-semibold text-midnight text-base mb-2">3. SMB owners can&apos;t onboard themselves</h3>
-                <p className="text-sm leading-relaxed">
-                  The &quot;just sign up and configure your agent&quot; promise falls apart immediately for a mortgage broker or a contractor. They don&apos;t know what a system prompt is. They don&apos;t have a Supabase account. They&apos;ve never heard of OpenRouter. The barrier to getting real ROI from AI agents isn&apos;t intelligence — it&apos;s setup. The winner in the SMB agent race will be the company that eliminates setup entirely and delivers a working agent that already knows the client&apos;s industry on day one.
-                </p>
-              </div>
-
-              <div className="bg-white/80 rounded-xl border border-midnight/5 p-5">
-                <h3 className="font-semibold text-midnight text-base mb-2">4. Nobody has solved the team-first agent</h3>
-                <p className="text-sm leading-relaxed">
-                  Most AI tools are designed for individuals. Even the team-flavored ones are just shared chat windows. Real businesses run in teams — handoffs, accountability, shared context, role-specific views of the same deal. LO Buddy&apos;s team architecture (GH Group, shared pipeline, role-based access, PPH-Claw as a shared AI teammate in Discord) is one of the only implementations anywhere that treats the team as the unit of deployment, not the individual.
-                </p>
-              </div>
+            <div className="space-y-3">
+              {[
+                {
+                  n: '01',
+                  title: 'Setup requires a developer, not a business owner',
+                  body: 'Every agent platform assumes the person deploying it can write a system prompt, configure webhooks, manage environment variables, and debug a failing API call. The $500K/year LO doesn\'t know what any of that means — and shouldn\'t have to. The winner in the SMB AI agent race is whoever eliminates setup entirely. The client should receive a working agent the way they receive a hired employee: trained, introduced, ready on day one.',
+                },
+                {
+                  n: '02',
+                  title: 'Horizontal intelligence is dangerously wrong for vertical work',
+                  body: 'A generic Claude agent confidently answering mortgage questions is worse than no agent at all. It doesn\'t know what a 1003 is. It doesn\'t know the difference between a DSCR loan and a conventional purchase. It doesn\'t know that Fannie Mae\'s DTI limit is 45% back-end for DU approval, or that FHA MIP is calculated on the base loan amount. Generic intelligence + specialized workflow = confident hallucinations. The only safe play is domain expertise baked in from day one.',
+                },
+                {
+                  n: '03',
+                  title: 'Memory is missing — or fake',
+                  body: 'Chat context is not memory. An agent that remembers the last 20 messages is not the same as an agent that knows Jay Lin has had an attorney blocking his deed of trust filing for three weeks, that his rate lock expires in 12 days, and that the last time you called him was a Thursday. Real business memory is structured, persistent, and built around the actual entities in the business — clients, deals, properties, follow-up threads. Nobody has solved this for SMBs.',
+                },
+                {
+                  n: '04',
+                  title: 'Individual tools, not team deployments',
+                  body: 'Every AI tool is designed for one person. Even "teams" versions are just shared chat windows with billing. Real SMBs operate as teams — handoffs, accountability, shared pipeline context, role-specific views. The agent needs to know who Kyle is versus who Jim is versus who Anthony is, and respond accordingly. It needs to exist inside the team\'s communication layer, not outside it.',
+                },
+                {
+                  n: '05',
+                  title: 'No accountability after launch',
+                  body: 'SaaS AI tools sell you a subscription and wish you luck. When the agent starts giving wrong answers, or the workflow changes, or a new integration is needed, there\'s no one to call. For an SMB, that\'s a dealbreaker. The relationship model — where someone actually owns the outcome of the agent\'s performance — doesn\'t exist anywhere in this market.',
+                },
+              ].map(item => (
+                <div key={item.n} className="bg-white/80 rounded-xl border border-midnight/5 p-5 flex gap-4">
+                  <span className="text-[#FFB366] font-bold text-xl leading-none flex-shrink-0 mt-0.5">{item.n}</span>
+                  <div>
+                    <h3 className="font-semibold text-midnight text-sm mb-1.5">{item.title}</h3>
+                    <p className="text-sm leading-relaxed">{item.body}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
 
           <div className="h-px bg-midnight/8" />
 
-          {/* ── Section 4: The Playbook */}
-          <section className="space-y-5">
-            <h2 className="font-display text-2xl text-midnight">What This Means for What We&apos;re Building</h2>
+          {/* ── 5. Hotclaw's Position */}
+          <section className="space-y-6">
+            <h2 className="font-display text-2xl text-midnight">Where Hotclaw Solutions Fits</h2>
             <p>
-              The race isn&apos;t over. It hasn&apos;t really started for SMBs. Here&apos;s the positioning that matters:
+              Hotclaw is not a platform. It&apos;s not a developer tool. It&apos;s not a chatbot builder. Hotclaw is a <strong>done-for-you AI agent deployment service</strong> — the first company that actually takes responsibility for getting a working, industry-trained AI agent running inside a small business.
+            </p>
+            <p>
+              The architecture we&apos;ve built on our Hostinger VPS — OpenClaw, Docker containers, Caddy reverse proxy, per-client soul configs, multi-channel deployment (Discord, Telegram, WhatsApp) — is the infrastructure that makes this possible at a cost point an SMB can afford. Super Hot Claw proved it works. LO Buddy is proving it works for a real vertical with a real team.
             </p>
 
-            <div className="bg-midnight rounded-2xl p-8 space-y-5 text-cream">
-              <div className="space-y-2">
-                <div className="flex items-start gap-3">
-                  <span className="text-[#FFB366] font-bold text-lg leading-none mt-0.5">01</span>
-                  <div>
-                    <p className="font-semibold text-cream">Go deeper on one vertical before expanding</p>
-                    <p className="text-cream/60 text-sm mt-1">LO Buddy needs to be so obviously correct for mortgage that it sells itself to LOs. One vertical, done right, is worth more than five done generically. The mortgage industry has $200B+ in annual origination volume and is almost entirely underserved by real AI tooling.</p>
+            {/* Two-layer model visual */}
+            <div className="bg-midnight rounded-2xl p-8 space-y-6">
+              <p className="text-cream font-display text-xl">The Hotclaw Model</p>
+              <div className="space-y-4">
+                <div className="border border-[#FFB366]/30 rounded-xl p-5 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#FFB366]" />
+                    <p className="font-semibold text-cream text-sm">Platform Layer — Hotclaw Infrastructure</p>
+                  </div>
+                  <p className="text-cream/60 text-sm leading-relaxed pl-4">
+                    The deployment engine. OpenClaw runtime, VPS architecture, soul config system, multi-channel connectors, memory layer, Supabase integrations, GHL bridge. This is the toolkit we&apos;ve built and proven. Every client agent runs on it. We own and maintain it. Clients never see it.
+                  </p>
+                </div>
+                <div className="border border-white/10 rounded-xl p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-white/60" />
+                    <p className="font-semibold text-cream text-sm">Product Layer — Vertical Agents</p>
+                  </div>
+                  <p className="text-cream/60 text-sm leading-relaxed pl-4">
+                    The finished products deployed to specific industries. Trained on vertical workflows, integrated with the industry&apos;s tools, delivered as a named agent that feels like a hired team member.
+                  </p>
+                  <div className="pl-4 grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+                    <div className="bg-white/5 rounded-lg p-3">
+                      <p className="text-[#FFB366] font-semibold text-xs mb-1">LO Buddy</p>
+                      <p className="text-white/50 text-xs">Mortgage loan officers. GHL pipeline, income calc, scenario builder, team chat.</p>
+                      <p className="text-[#FFB366]/60 text-[10px] mt-1.5">🟢 In production</p>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-3">
+                      <p className="text-white/60 font-semibold text-xs mb-1">Next vertical</p>
+                      <p className="text-white/30 text-xs">Real estate? Insurance? Contractors? The infrastructure is already there.</p>
+                      <p className="text-white/20 text-[10px] mt-1.5">⚪ TBD</p>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-3">
+                      <p className="text-white/60 font-semibold text-xs mb-1">Custom deployments</p>
+                      <p className="text-white/30 text-xs">Bespoke agents for specific businesses who don&apos;t fit a vertical product.</p>
+                      <p className="text-white/20 text-[10px] mt-1.5">⚪ Future</p>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="flex items-start gap-3">
-                  <span className="text-[#FFB366] font-bold text-lg leading-none mt-0.5">02</span>
+            </div>
+
+            <p>
+              This two-layer structure is what makes Hotclaw defensible. We&apos;re not just a service agency that wires up Claude for clients — that&apos;s a commodity. We&apos;re building proprietary infrastructure that gets better with every deployment, and vertical products that are too deep to replicate quickly. The platform compounds. The vertical expertise compounds. The client data compounds.
+            </p>
+          </section>
+
+          <div className="h-px bg-midnight/8" />
+
+          {/* ── 6. The Playbook */}
+          <section className="space-y-5">
+            <h2 className="font-display text-2xl text-midnight">The Strategic Playbook</h2>
+
+            <div className="space-y-3">
+              {[
+                {
+                  n: '01',
+                  title: 'Win mortgage first. Completely.',
+                  body: 'LO Buddy needs to be so obviously correct for mortgage that it sells itself to every LO who sees it. Not "good for AI" — good, period. Better than their current stack. The mortgage origination market is $2T+ annually, has almost no real AI tooling, and is operated by tens of thousands of independent brokers who are desperate for leverage. Win this vertical deeply before expanding.',
+                },
+                {
+                  n: '02',
+                  title: 'Data is the moat, not features.',
+                  body: 'When a client\'s pipeline history, call logs, client memory, income scenarios, and deal context all live inside their Hotclaw-deployed agent, switching costs become prohibitive. The GHL sync and the import wizard aren\'t just onboarding — they\'re the moment the client\'s data starts working for us. Get it in early. That\'s the lock-in.',
+                },
+                {
+                  n: '03',
+                  title: 'The service model is the business model.',
+                  body: 'Pure SaaS in this space is a race to commoditization. The value isn\'t the software — it\'s the deployment, the tuning, the accountability, the relationship. Hotclaw\'s edge is that we actually own the outcome. Monthly retainer, ongoing improvement, someone to call when something needs to change. That\'s worth more to an SMB than any subscription tier.',
+                },
+                {
+                  n: '04',
+                  title: 'Kanons is the fastest R&D loop in the game.',
+                  body: 'We prototype features in Kanons, test them with a real mortgage team (us), validate them, then port them to LO Buddy and future Hotclaw products. No other team building in this space has a built-in production test environment where they are also the end user. This feedback loop is irreplaceable — protect it.',
+                },
+                {
+                  n: '05',
+                  title: 'The agent has to feel like someone.',
+                  body: 'Soul architecture isn\'t soft — it\'s the retention mechanism. An agent with a name, a consistent personality, proactive behavior, and real memory of the client\'s business feels like a colleague. An LLM wrapper feels like a search bar. Colleagues get kept. Search bars get replaced. Every Hotclaw deployment needs a real soul config, a real name, and a real relationship with the team it serves.',
+                },
+              ].map(item => (
+                <div key={item.n} className="flex gap-4 p-5 bg-white/80 rounded-xl border border-midnight/5">
+                  <span className="text-[#FFB366] font-bold text-xl leading-none flex-shrink-0 mt-0.5">{item.n}</span>
                   <div>
-                    <p className="font-semibold text-cream">The import wizard and GHL sync are the moat</p>
-                    <p className="text-cream/60 text-sm mt-1">Switching costs don&apos;t come from features — they come from data. When an LO&apos;s pipeline, call logs, client memory, and scenario history live in LO Buddy, they can&apos;t just &quot;try the other thing.&quot; Get the data in early. That&apos;s the moat.</p>
+                    <p className="font-semibold text-midnight text-sm mb-1.5">{item.title}</p>
+                    <p className="text-sm leading-relaxed text-midnight/70">{item.body}</p>
                   </div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-start gap-3">
-                  <span className="text-[#FFB366] font-bold text-lg leading-none mt-0.5">03</span>
-                  <div>
-                    <p className="font-semibold text-cream">Kanons is the fastest prototyping loop in the game</p>
-                    <p className="text-cream/60 text-sm mt-1">The Kanons → Hotclaw → LO Buddy pipeline means we can ship a new feature, test it with a real team of mortgage brokers, and port the validated version to production — all within a single sprint cycle. No other team building in this space has that feedback loop.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-start gap-3">
-                  <span className="text-[#FFB366] font-bold text-lg leading-none mt-0.5">04</span>
-                  <div>
-                    <p className="font-semibold text-cream">Soul architecture is a real differentiator</p>
-                    <p className="text-cream/60 text-sm mt-1">Every LLM wrapper feels the same after 10 minutes. An agent with a persistent identity, a defined personality, domain memory, and proactive behavior feels like a colleague. That&apos;s not marketing — it&apos;s the thing that drives retention. NemoClaw understood this. We need to execute it better than anyone.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-start gap-3">
-                  <span className="text-[#FFB366] font-bold text-lg leading-none mt-0.5">05</span>
-                  <div>
-                    <p className="font-semibold text-cream">The messaging layer is the interface</p>
-                    <p className="text-cream/60 text-sm mt-1">The reason we spent real time on LO Buddy&apos;s Slack-replacement messaging isn&apos;t feature completeness — it&apos;s that the team&apos;s communication layer is where the agent lives. If the agent is in the chat, it sees context. It can interject. It can log. The messaging system isn&apos;t a nice-to-have; it&apos;s the nervous system of the whole product.</p>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </section>
 
           <div className="h-px bg-midnight/8" />
 
           {/* ── Closing */}
-          <section className="space-y-4">
-            <h2 className="font-display text-2xl text-midnight">The Honest Conclusion</h2>
+          <section className="space-y-5">
+            <h2 className="font-display text-2xl text-midnight">The Honest Bottom Line</h2>
             <p>
-              We are not building against Anthropic. Claude is our engine. We are not competing with Cursor — it&apos;s our co-pilot. The companies we&apos;re actually competing with are the ones who might figure out vertical agent deployment for SMBs before we finish LO Buddy. They are currently nowhere. But they will exist, and they will be well-funded.
+              Anthropic will keep building better models. Google will keep building better infrastructure. Cursor will keep building better IDEs. None of them are coming for the 12-person mortgage team in San Diego, or the independent insurance agency in Phoenix, or the boutique real estate group that just wants their agent to do the follow-up so they can close more deals.
             </p>
             <p>
-              The 46% CAGR in AI agents doesn&apos;t go to the best model. It goes to the best distribution. The best onboarding. The best retention. The best &quot;this thing knows my business&quot; feeling. We have a head start on all of those — because we ARE the SMB. We&apos;re mortgage brokers building mortgage AI. We&apos;re creative businesses building tools for creative businesses. That authenticity is the only unfair advantage that can&apos;t be copied by a team of engineers in a San Francisco office.
+              That market is enormous, underserved, and waiting. The companies that will win it aren&apos;t the ones with the best models — they&apos;re the ones who show up with a working product, take responsibility for the outcome, and earn the trust of businesses who&apos;ve been burned by technology promises before.
             </p>
-            <p className="text-midnight font-medium">
-              The window is open. The question isn&apos;t whether this is worth building — it obviously is. The question is how fast we can get to the point where an LO sees LO Buddy for the first time and says &quot;where has this been my whole career.&quot; That&apos;s the finish line. Everything we ship should be aimed at that moment.
+            <p>
+              Hotclaw has the architecture. We have the proof point in LO Buddy. We have the build velocity that comes from being the customer. What we need now is a repeatable way to sell it, onboard it, and deliver it at a price point that makes sense for the market we&apos;re actually serving.
             </p>
+            <div className="bg-midnight rounded-2xl p-8">
+              <p className="text-cream font-display text-xl mb-4">The question isn&apos;t whether to build this.</p>
+              <p className="text-cream/70 leading-relaxed">
+                The question is what the onboarding looks like when someone says yes. What do they sign? What do they receive on day one? What does week one look like? What does month three look like? What does renewal look like? The product works. The pipeline works. The infrastructure works. The missing piece is the business motion — and that&apos;s a solvable problem we can build right now.
+              </p>
+            </div>
           </section>
 
           {/* Author */}
@@ -310,7 +336,7 @@ export default function AIAgentSMBRacePage() {
             <div className="w-12 h-12 rounded-full bg-midnight flex items-center justify-center text-cream font-bold text-sm flex-shrink-0">KP</div>
             <div>
               <p className="font-semibold text-midnight text-sm">Kyle Palaniuk</p>
-              <p className="text-xs text-midnight/40 mt-0.5">Founder, Granada House · Mortgage Broker · Builder</p>
+              <p className="text-xs text-midnight/40 mt-0.5">Founder, Granada House · Hotclaw Solutions · Mortgage Broker</p>
               <p className="text-xs text-midnight/40">Published from Kanons · Mar 18, 2026</p>
             </div>
           </div>
