@@ -130,7 +130,7 @@ export default function PurchaseClientPage() {
     </div>
   )
 
-  // HTML scenario — render iframe fullscreen
+  // HTML scenario — render via server proxy (avoids CORS, content-type, and sandbox issues)
   if (htmlScenario) return (
     <div className="min-h-screen bg-midnight flex flex-col">
       <div className="bg-midnight px-4 py-2.5 flex items-center justify-between border-b border-cream/10">
@@ -141,10 +141,11 @@ export default function PurchaseClientPage() {
         <span className="text-cream/20 text-xs">Plan Prepare Home</span>
       </div>
       <iframe
-        src={htmlScenario.htmlStoragePath}
+        src={`/api/pph/scenario-html?slug=${slug}`}
         className="flex-1 w-full border-0"
         style={{ minHeight: 'calc(100vh - 48px)' }}
         title={htmlScenario.label}
+        sandbox="allow-scripts allow-same-origin allow-forms"
       />
     </div>
   )
