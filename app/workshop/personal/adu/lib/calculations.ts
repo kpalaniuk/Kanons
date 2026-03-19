@@ -37,9 +37,9 @@ export const calculateFinancials = (
   
   const depositsHeld = depositsReceived - depositsReturned - depositsUsed;
 
-  // Total Income from operations (not deposits)
+  // Total Income from operations (not forfeited deposits — those stay with manager, not split with owner)
   const totalIncome = transactions
-    .filter(t => t.type === "Income")
+    .filter(t => t.type === "Income" && t.category !== "Forfeited Deposit")
     .reduce((sum, t) => sum + t.amountIn, 0);
 
   // Total Expenses (only operating account outflows)
@@ -56,6 +56,7 @@ export const calculateFinancials = (
     .reduce((sum, t) => sum + t.amountOut, 0);
 
   // Amount Owed to Owner - calculated per transaction with individual management fees
+  // Only rent income is split with owner — forfeited deposits stay with manager
   const rentTransactions = transactions.filter(t => t.type === "Income" && t.category === "Rent");
   
   let rentIncome = 0;
