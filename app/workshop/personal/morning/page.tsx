@@ -7,7 +7,7 @@ import {
   CheckSquare, AlertCircle, Clock, Trophy,
   Map, Music, Mic, ArrowRight, RefreshCw,
   Calendar, Zap, Heart, Plus, Check, ExternalLink, Plane,
-  Calculator, Home, BookOpen, Briefcase,
+  Calculator, Home, BookOpen, Briefcase, Mail,
 } from 'lucide-react'
 import { GH_COOP_TENANTS } from '@/lib/gh-coop-data'
 
@@ -332,6 +332,7 @@ export default function MorningBriefPage() {
   const [surf, setSurf] = useState<SurfData | null>(null)
   const [desertWeather, setDesertWeather] = useState<WeatherData | null>(null)
   const [musicStreak, setMusicStreak] = useState<number>(0)
+  const [emailDigest, setEmailDigest] = useState<{ unread: number; topMessages: Array<{ subject: string; from: string; preview: string; timestamp: string }> } | null>(null)
   const [reviewOpen, setReviewOpen] = useState(false)
   const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({})
   const [topThree, setTopThree] = useState('')
@@ -358,13 +359,14 @@ export default function MorningBriefPage() {
     setLoading(true)
     try {
       // Fetch tasks, weather, pipeline, and tides
-      const [tasksRes, weatherRes, pipelineRes, tidesRes, surfRes, desertRes] = await Promise.allSettled([
+      const [tasksRes, weatherRes, pipelineRes, tidesRes, surfRes, desertRes, emailRes] = await Promise.allSettled([
         fetch('/api/tasks?status=Not%20Started&status=In%20Progress&limit=20'),
         fetch('https://wttr.in/San+Diego?format=j1'),
         fetch('/api/pipeline'),
         fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&station=9410170&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&application=kanons_morning_brief&format=json&date=today'),
         fetch('https://marine-api.open-meteo.com/v1/marine?latitude=32.72&longitude=-117.16&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction&timezone=America%2FLos_Angeles&forecast_days=1'),
         fetch('https://wttr.in/Joshua+Tree+California?format=j1'),
+        fetch('/api/agentmail-digest'),
       ])
 
       if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
@@ -457,6 +459,10 @@ export default function MorningBriefPage() {
             sunset: null,
           })
         }
+      }
+      if (emailRes.status === 'fulfilled' && emailRes.value.ok) {
+        const data = await emailRes.value.json()
+        setEmailDigest({ unread: data.unread ?? 0, topMessages: data.topMessages ?? [] })
       }
     } catch (err) {
       console.error('Error fetching morning brief data:', err)
@@ -1179,6 +1185,55 @@ export default function MorningBriefPage() {
           {quickError && <p className="text-xs text-red-500">{quickError}</p>}
         </div>
       </div>
+
+      {/* ── Email Digest ── */}
+      {emailDigest !== null && (
+        <div className={`rounded-2xl p-6 border transition-all ${
+          emailDigest.unread > 0
+            ? 'bg-sky-50 border-sky-200'
+            : 'bg-cream border-midnight/5'
+        }`}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Mail className={`w-4 h-4 ${emailDigest.unread > 0 ? 'text-sky-600' : 'text-midnight/40'}`} />
+              <h2 className="font-display text-lg text-midnight">Jasper Inbox</h2>
+              <span className="text-xs text-midnight/30">jasperthedog@agentmail.to</span>
+            </div>
+            {emailDigest.unread > 0 && (
+              <span className="bg-sky-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                {emailDigest.unread} unread
+              </span>
+            )}
+          </div>
+          {emailDigest.unread === 0 ? (
+            <p className="text-sm text-midnight/40 italic">Inbox clear ✓</p>
+          ) : (
+            <div className="space-y-2">
+              {emailDigest.topMessages.map((msg, i) => (
+                <div key={i} className="bg-white/70 rounded-xl px-4 py-3 border border-sky-100">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-midnight truncate">{msg.subject}</div>
+                      <div className="text-xs text-midnight/50 mt-0.5 truncate">From: {msg.from}</div>
+                      {msg.preview && (
+                        <div className="text-xs text-midnight/40 mt-1 line-clamp-1">{msg.preview}</div>
+                      )}
+                    </div>
+                    <div className="text-xs text-midnight/30 shrink-0 mt-0.5">
+                      {new Date(msg.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {emailDigest.unread > 3 && (
+                <p className="text-xs text-midnight/40 text-center pt-1">
+                  +{emailDigest.unread - 3} more unread
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Quick Links ── */}
       <div>
