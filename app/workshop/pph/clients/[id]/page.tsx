@@ -487,6 +487,8 @@ export default function ClientProfilePage() {
   const [callLogs, setCallLogs] = useState<CallLog[]>([])
   const [loadingCalls, setLoadingCalls] = useState(false)
   const [scenarios, setScenarios] = useState<ClientScenario[]>([])
+  const [activityLog, setActivityLog] = useState<Array<{id:string;field:string;old_value:string|null;new_value:string|null;changed_by:string;ts:string}>>([])
+  const [loadingActivity, setLoadingActivity] = useState(false)
   const [loadingScenarios, setLoadingScenarios] = useState(false)
   const [scenarioViews, setScenarioViews] = useState<Record<string, ScenarioViewData>>({})
   const [showFinancials, setShowFinancials] = useState(false)
@@ -595,6 +597,7 @@ export default function ClientProfilePage() {
     }
   }, [client?.id]) // only fires once per client load
   useEffect(() => { if (tab === 'calls') fetchCalls() }, [tab, id])
+  useEffect(() => { if (tab === 'calls') fetchActivity() }, [tab, id])
   useEffect(() => {
     if (tab === 'scenarios') fetchScenarios()
   }, [tab, id])
@@ -720,6 +723,18 @@ export default function ClientProfilePage() {
       console.error(err)
     } finally {
       setLoadingCalls(false)
+    }
+
+  }
+  async function fetchActivity() {
+    try {
+      setLoadingActivity(true)
+      const res = await fetch(`/api/pph/activity?clientId=${id}`)
+      if (res.ok) setActivityLog(await res.json())
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoadingActivity(false)
     }
   }
 
@@ -1659,10 +1674,41 @@ export default function ClientProfilePage() {
               ))}
             </div>
           )}
+          {/* Activity History */}
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold text-midnight mb-3 flex items-center gap-2">
+              <span>📋</span> Field Change History
+            </h3>
+            {loadingActivity ? (
+              <p className="text-xs text-midnight/40">Loading...</p>
+            ) : activityLog.length === 0 ? (
+              <p className="text-xs text-midnight/40 italic">No field changes recorded yet. Changes to stage, follow-up date, income, and other fields will appear here.</p>
+            ) : (
+              <div className="space-y-1.5">
+                {activityLog.map(entry => (
+                  <div key={entry.id} className="flex items-start gap-3 py-2 border-b border-midnight/5 last:border-0">
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs font-medium text-midnight">{entry.field}</span>
+                      <span className="text-xs text-midnight/40 mx-1.5">·</span>
+                      {entry.old_value ? (
+                        <span className="text-xs text-midnight/40 line-through mr-1.5">{entry.old_value}</span>
+                      ) : null}
+                      <span className="text-xs text-midnight/80">{entry.new_value ?? '—'}</span>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-[10px] text-midnight/30">
+                        {new Date(entry.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{' '}
+                        {new Date(entry.ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
         </div>
       )}
-
-
 
       {/* ═══════ SCENARIOS TAB ═══════ */}
       {tab === 'scenarios' && (

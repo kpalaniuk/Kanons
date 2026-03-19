@@ -26,6 +26,58 @@ async function verifyUser(): Promise<{ email: string | null; error: NextResponse
   return { email, error: null }
 }
 
+// Tracked fields and their display labels for activity log
+const TRACKED_FIELDS: Record<string, string> = {
+  stage: 'Stage',
+  priority: 'Priority',
+  follow_up_date: 'Follow-up Date',
+  next_action: 'Next Action',
+  loan_type: 'Loan Type',
+  loan_amount: 'Loan Amount',
+  fico_score: 'FICO Score',
+  target_purchase_price: 'Target Price',
+  b1_monthly_income: 'B1 Monthly Income',
+  b2_monthly_income: 'B2 Monthly Income',
+  notes: 'Notes',
+  referral_type: 'Referral Type',
+  referral_name: 'Referral Name',
+  primary_lo: 'Primary LO',
+}
+
+async function logActivity(
+  clientId: string,
+  clientName: string,
+  changedBy: string,
+  oldData: Record<string, unknown>,
+  newMapped: Record<string, unknown>
+) {
+  const entries = []
+  for (const [col, label] of Object.entries(TRACKED_FIELDS)) {
+    if (col in newMapped) {
+      const oldVal = oldData[col]
+      const newVal = newMapped[col]
+      const oldStr = oldVal != null ? String(oldVal) : null
+      const newStr = newVal != null ? String(newVal) : null
+      if (oldStr !== newStr) {
+        entries.push({
+          client_id: clientId,
+          client_name: clientName,
+          field: label,
+          old_value: oldStr,
+          new_value: newStr,
+          changed_by: changedBy,
+        })
+      }
+    }
+  }
+  if (entries.length > 0) {
+    // Fire and forget — don't fail the main request if activity log fails
+    supabaseAdmin.from('pph_activity').insert(entries).then(({ error }) => {
+      if (error) console.error('Activity log error:', error.message)
+    })
+  }
+}
+
 // GET /api/pph/clients — list all clients
 export async function GET() {
   const { error } = await verifyUser()
@@ -76,12 +128,19 @@ export async function POST(request: NextRequest) {
 
 // PATCH /api/pph/clients — update a client
 export async function PATCH(request: NextRequest) {
-  const { error } = await verifyUser()
+  const { email, error } = await verifyUser()
   if (error) return error
 
   const body = await request.json()
   const { id, ...fields } = body
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+
+  // Fetch current data for diff comparison
+  const { data: currentData } = await supabaseAdmin
+    .from('pph_clients')
+    .select('*')
+    .eq('id', id)
+    .single()
 
   // Map camelCase → snake_case for any fields sent
   const mapped: Record<string, unknown> = {}
@@ -120,6 +179,11 @@ export async function PATCH(request: NextRequest) {
     .single()
 
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 })
+
+  // Log activity for tracked field changes (fire and forget)
+  if (currentData) {
+    logActivity(id, currentData.name || '', email || 'system', currentData, mapped)
+  }
 
   // Notify Kyle when follow-up date is set or changed
   if (mapped['follow_up_date'] && process.env.DISCORD_JASPER_BOT_TOKEN && process.env.DISCORD_JASPER_CHANNEL_ID) {
