@@ -52,7 +52,9 @@ export async function GET(request: NextRequest) {
     const downPct = Number(d.downPaymentPct || d.downPercent || 0)
     const type = String(d.type || 'purchase-grid')
     const isInteractive = type === 'interactive' || !!d.interactive_url
+    const isHtml = type === 'html'
     const interactiveUrl = d.interactive_url as string | undefined
+    const htmlStoragePath = d.htmlStoragePath as string | undefined
 
     // Auto-label
     let label = d.label as string | undefined
@@ -77,7 +79,7 @@ export async function GET(request: NextRequest) {
       description: (d.description as string) || null,
       data: d,
       createdAt: row.created_at,
-      publicUrl: isInteractive && interactiveUrl ? interactiveUrl : `/clients/purchase/${row.slug}`,
+      publicUrl: isInteractive && interactiveUrl ? interactiveUrl : isHtml && htmlStoragePath ? htmlStoragePath : `/clients/purchase/${row.slug}`,
     }
   })
 

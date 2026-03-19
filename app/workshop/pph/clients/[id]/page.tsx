@@ -1743,15 +1743,19 @@ export default function ClientProfilePage() {
           {scenarios.map(s => {
             const views = scenarioViews[s.slug]
             const isInteractive = s.isInteractive
+            const isHtml = s.type === 'html'
+            const htmlUrl = isHtml ? (s.data as Record<string,unknown>)?.htmlStoragePath as string | undefined : undefined
+            const openUrl = htmlUrl || (s.publicUrl.startsWith('http') ? s.publicUrl : `https://kyle.palaniuk.net${s.publicUrl}`)
             return (
-              <div key={s.slug} className={`bg-white rounded-xl border overflow-hidden ${isInteractive ? 'border-ocean/20' : 'border-midnight/10'}`}>
-                <div className={`px-5 py-4 ${isInteractive ? 'bg-ocean/5 border-b border-ocean/10' : ''}`}>
+              <div key={s.slug} className={`bg-white rounded-xl border overflow-hidden ${isInteractive ? 'border-ocean/20' : isHtml ? 'border-amber-200' : 'border-midnight/10'}`}>
+                <div className={`px-5 py-4 ${isInteractive ? 'bg-ocean/5 border-b border-ocean/10' : isHtml ? 'bg-amber-50/60 border-b border-amber-100' : ''}`}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         {isInteractive && <span className="text-xs font-bold text-ocean uppercase tracking-wider">Interactive</span>}
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${isInteractive ? 'bg-ocean/10 text-ocean' : 'bg-midnight/5 text-midnight/50'}`}>
-                          {s.type === 'interactive' ? 'Live' : s.type === 'purchase-grid' ? 'Purchase' : s.type}
+                        {isHtml && <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">Agent Built</span>}
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${isInteractive ? 'bg-ocean/10 text-ocean' : isHtml ? 'bg-amber-100 text-amber-700' : 'bg-midnight/5 text-midnight/50'}`}>
+                          {s.type === 'interactive' ? 'Live' : s.type === 'purchase-grid' ? 'Purchase' : s.type === 'html' ? 'HTML Tool' : s.type}
                         </span>
                         {views && views.viewCount > 0 && (
                           <span className="text-[10px] text-midnight/30">
@@ -1769,11 +1773,11 @@ export default function ClientProfilePage() {
                   </div>
                 </div>
                 <div className="px-5 py-3 flex items-center gap-2">
-                  <a href={s.publicUrl} target="_blank" rel="noopener noreferrer"
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-colors ${isInteractive ? 'bg-ocean text-white hover:bg-ocean/90' : 'bg-midnight/5 text-midnight/60 hover:bg-midnight/10'}`}>
-                    {isInteractive ? 'Open Page ↗' : 'View ↗'}
+                  <a href={openUrl} target="_blank" rel="noopener noreferrer"
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-colors ${isInteractive ? 'bg-ocean text-white hover:bg-ocean/90' : isHtml ? 'bg-amber-500 text-white hover:bg-amber-400' : 'bg-midnight/5 text-midnight/60 hover:bg-midnight/10'}`}>
+                    {isInteractive ? 'Open Page ↗' : isHtml ? 'Open Tool ↗' : 'View ↗'}
                   </a>
-                  <button onClick={() => navigator.clipboard.writeText(`https://kyle.palaniuk.net${s.publicUrl}`)}
+                  <button onClick={() => navigator.clipboard.writeText(openUrl)}
                     className="flex items-center gap-1.5 px-4 py-2 bg-midnight/5 text-midnight/60 rounded-lg text-xs font-medium hover:bg-midnight/10 transition-colors">
                     🔗 Copy Link
                   </button>

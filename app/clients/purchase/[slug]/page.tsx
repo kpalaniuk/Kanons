@@ -61,12 +61,20 @@ const DOWN_OPTIONS = [5, 10, 15, 20, 25]
 export default function PurchaseClientPage() {
   const { slug } = useParams() as { slug: string }
   const [data, setData] = useState<PurchaseScenarioData | null>(null)
+  const [htmlScenario, setHtmlScenario] = useState<{ htmlStoragePath: string; label: string; clientName: string; loanOfficer: string } | null>(null)
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
     fetch(`/api/scenarios/${slug}`)
       .then(r => { if (!r.ok) throw new Error(); return r.json() })
-      .then(setData)
+      .then(d => {
+        // Agent-deployed HTML scenarios — render as iframe
+        if (d.type === 'html' && d.htmlStoragePath) {
+          setHtmlScenario({ htmlStoragePath: d.htmlStoragePath, label: d.label || slug, clientName: d.clientName || '', loanOfficer: d.loanOfficer || '' })
+        } else {
+          setData(d)
+        }
+      })
       .catch(() => setNotFound(true))
   }, [slug])
 
@@ -119,6 +127,25 @@ export default function PurchaseClientPage() {
         <h1 className="font-display text-2xl text-midnight mb-2">Scenario not found</h1>
         <p className="text-midnight/50">This link may have expired or the scenario was removed.</p>
       </div>
+    </div>
+  )
+
+  // HTML scenario — render iframe fullscreen
+  if (htmlScenario) return (
+    <div className="min-h-screen bg-midnight flex flex-col">
+      <div className="bg-midnight px-4 py-2.5 flex items-center justify-between border-b border-cream/10">
+        <div>
+          <p className="text-cream font-semibold text-sm">{htmlScenario.label}</p>
+          {htmlScenario.clientName && <p className="text-cream/40 text-xs">{htmlScenario.clientName}{htmlScenario.loanOfficer ? ` · ${htmlScenario.loanOfficer}` : ''}</p>}
+        </div>
+        <span className="text-cream/20 text-xs">Plan Prepare Home</span>
+      </div>
+      <iframe
+        src={htmlScenario.htmlStoragePath}
+        className="flex-1 w-full border-0"
+        style={{ minHeight: 'calc(100vh - 48px)' }}
+        title={htmlScenario.label}
+      />
     </div>
   )
 
