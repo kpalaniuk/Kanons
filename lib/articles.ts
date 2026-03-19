@@ -15,6 +15,17 @@ export const articles: Article[] = [
 
   // ── Technology ────────────────────────────────────────────────────────────
   {
+    title: 'The Race to Build AI Agents for SMBs — Who\'s Winning, What\'s Missing, and Why We\'re Still Building',
+    description: 'A field report on Claude Code, NemoClaw, ShipClaw, and Hotclaw. Where the $52B AI agent market is going, what every platform is getting wrong for small business, and the strategic playbook for LO Buddy and Hotclaw.',
+    href: '/artifacts/ai-agent-smb-race',
+    category: 'Technology',
+    tags: ['Technology', 'LO Buddy', 'AI Agents', 'Strategy'],
+    section: 'work',
+    date: 'Mar 18, 2026',
+    published: true,
+    type: 'report',
+  },
+  {
     title: 'OpenClaw Messenger Comparison',
     description: 'Scored pros/cons breakdown of Telegram, Discord, WhatsApp, Slack, and Signal as OpenClaw channels. Covers setup, security, robustness, speed, features, privacy, and cost. Includes a recommendation for Kyle\'s setup.',
     href: '/artifacts/openclaw-messenger-comparison',
