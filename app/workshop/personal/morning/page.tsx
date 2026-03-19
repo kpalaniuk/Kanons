@@ -210,16 +210,44 @@ function getDayContext(): { greeting: string; dayNote: string; isCoachingDay: bo
 // Set to true once Kyle books the Inverness → Dublin flight (Jul 16)
 const INV_DUB_BOOKED = false
 
-function getTripCountdown(): { days: number; label: string; dest: string } {
+function getTripCountdown(): { days: number; label: string; dest: string; dateLabel: string; href: string; emoji: string } {
   const now = new Date()
-  // Iceland/Scotland/Ireland trip: June 27, 2026 (SAN→KEF departure)
-  const tripStart = new Date('2026-06-27')
-  const msLeft = tripStart.getTime() - now.getTime()
-  const days = Math.ceil(msLeft / (1000 * 60 * 60 * 24))
+
+  const trips = [
+    {
+      start: new Date('2026-03-30'),
+      end: new Date('2026-04-07'),
+      dest: 'Cabo San Lucas',
+      dateLabel: 'March 30 — SAN → SJD',
+      href: '',
+      emoji: '🌊',
+    },
+    {
+      start: new Date('2026-06-27'),
+      end: new Date('2026-08-04'),
+      dest: 'Iceland · Scotland · Ireland',
+      dateLabel: 'June 27, 2026 — SAN → KEF',
+      href: '/workshop/personal/trip-july-2026',
+      emoji: '🏴',
+    },
+  ]
+
+  const upcoming = trips.find(t => now < t.end)
+
+  if (!upcoming) {
+    return { days: 0, label: 'Next adventure TBD', dest: '', dateLabel: '', href: '', emoji: '✈️' }
+  }
+
+  const msLeft = upcoming.start.getTime() - now.getTime()
+  const days = Math.max(0, Math.ceil(msLeft / (1000 * 60 * 60 * 24)))
+
   return {
     days,
-    label: days > 0 ? `${days} days` : 'IT\'S TIME!',
-    dest: 'Iceland · Scotland · Ireland',
+    label: days > 0 ? `${days} days` : "IT'S TIME!",
+    dest: upcoming.dest,
+    dateLabel: upcoming.dateLabel,
+    href: upcoming.href,
+    emoji: upcoming.emoji,
   }
 }
 
@@ -606,22 +634,27 @@ export default function MorningBriefPage() {
         {/* Trip Countdown */}
         <div className="bg-gradient-to-br from-ocean/10 to-cyan-500/10 rounded-2xl p-6 border border-ocean/20">
           <div className="flex items-center gap-2 mb-4">
+            <span className="text-base">{trip.emoji}</span>
             <Map className="w-4 h-4 text-ocean" />
             <h2 className="font-display text-lg text-midnight">{trip.dest}</h2>
           </div>
           <div className="text-4xl font-display text-ocean">{trip.label}</div>
-          <div className="text-sm text-midnight/50 mt-1">June 27, 2026 — SAN → KEF</div>
-          <Link
-            href="/workshop/personal/trip-july-2026"
-            className="inline-flex items-center gap-1.5 mt-4 text-xs font-medium text-ocean hover:underline"
-          >
-            View itinerary <ArrowRight className="w-3 h-3" />
-          </Link>
+          {trip.dateLabel && (
+            <div className="text-sm text-midnight/50 mt-1">{trip.dateLabel}</div>
+          )}
+          {trip.href && (
+            <Link
+              href={trip.href}
+              className="inline-flex items-center gap-1.5 mt-4 text-xs font-medium text-ocean hover:underline"
+            >
+              View itinerary <ArrowRight className="w-3 h-3" />
+            </Link>
+          )}
         </div>
       </div>
 
       {/* ── Scotland/Ireland Trip — Open Bookings Alert ── */}
-      {trip.days > 0 && trip.days < 200 && (
+      {trip.dest.includes('Iceland') && trip.days > 0 && trip.days < 200 && (
         <Link
           href="/workshop/personal/trip-july-2026"
           className="block bg-gradient-to-r from-sky-50 to-indigo-50 rounded-2xl p-5 border border-sky-200 hover:border-sky-400 transition-colors group"
@@ -647,7 +680,7 @@ export default function MorningBriefPage() {
       )}
 
       {/* ── INV→DUB Flight Alert ── */}
-      {!INV_DUB_BOOKED && trip.days > 0 && trip.days < 200 && (
+      {!INV_DUB_BOOKED && trip.dest.includes('Iceland') && trip.days > 0 && trip.days < 200 && (
         <div className="bg-sky-50 border-2 border-sky-300 rounded-2xl p-5">
           <div className="flex items-start gap-3">
             <Plane className="w-5 h-5 text-sky-600 shrink-0 mt-0.5" />
