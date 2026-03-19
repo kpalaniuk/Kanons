@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
       description: (d.description as string) || null,
       data: d,
       createdAt: row.created_at,
-      publicUrl: isInteractive && interactiveUrl ? interactiveUrl : isHtml && htmlStoragePath ? htmlStoragePath : `/clients/purchase/${row.slug}`,
+      publicUrl: isInteractive && interactiveUrl ? interactiveUrl : `/clients/purchase/${row.slug}`,
     }
   })
 

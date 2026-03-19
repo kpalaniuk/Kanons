@@ -1744,8 +1744,8 @@ export default function ClientProfilePage() {
             const views = scenarioViews[s.slug]
             const isInteractive = s.isInteractive
             const isHtml = s.type === 'html'
-            const htmlUrl = isHtml ? (s.data as Record<string,unknown>)?.htmlStoragePath as string | undefined : undefined
-            const openUrl = htmlUrl || (s.publicUrl.startsWith('http') ? s.publicUrl : `https://kyle.palaniuk.net${s.publicUrl}`)
+            // Always use the Kanons /clients/purchase/[slug] wrapper — it handles iframe rendering internally
+            const openUrl = s.publicUrl.startsWith('http') ? s.publicUrl : `https://kyle.palaniuk.net${s.publicUrl}`
             return (
               <div key={s.slug} className={`bg-white rounded-xl border overflow-hidden ${isInteractive ? 'border-ocean/20' : isHtml ? 'border-amber-200' : 'border-midnight/10'}`}>
                 <div className={`px-5 py-4 ${isInteractive ? 'bg-ocean/5 border-b border-ocean/10' : isHtml ? 'bg-amber-50/60 border-b border-amber-100' : ''}`}>
