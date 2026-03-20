@@ -27,6 +27,7 @@ import {
   BarChart3,
   DollarSign,
   Database,
+  FileText,
 } from 'lucide-react'
 
 // PPH — mortgage team tools
@@ -39,6 +40,7 @@ const pphLinks = [
   { href: '/workshop/pph/scenarios',        label: 'Scenarios', icon: BarChart3 },
   { href: '/workshop/pph/calculator',       label: 'Calculator', icon: Calculator },
   { href: '/workshop/pph/import',           label: 'Import',    icon: Database },
+  { href: '/workshop/pph/specs',            label: 'Specs',     icon: FileText },
 ]
 
 const hotDogLinks = [
