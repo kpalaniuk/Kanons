@@ -474,6 +474,21 @@ function EditableText({ field, value, label, editingField, editValue, saving, on
   )
 }
 
+
+function getLoanTypeBadge(lt: string): string {
+  const map: Record<string, string> = {
+    "Conventional": "bg-blue-50 text-blue-700 border-blue-200",
+    "Conv":         "bg-blue-50 text-blue-700 border-blue-200",
+    "FHA":          "bg-emerald-50 text-emerald-700 border-emerald-200",
+    "VA":           "bg-violet-50 text-violet-700 border-violet-200",
+    "DSCR":         "bg-amber-50 text-amber-700 border-amber-200",
+    "Jumbo":        "bg-rose-50 text-rose-700 border-rose-200",
+    "Non-QM":       "bg-orange-50 text-orange-700 border-orange-200",
+    "Bridge":       "bg-slate-50 text-slate-700 border-slate-200",
+  }
+  return map[lt] ?? "bg-slate-50 text-slate-600 border-slate-200"
+}
+
 export default function ClientProfilePage() {
   const { id } = useParams<{ id: string }>()
   const searchParams = useSearchParams()
@@ -1044,7 +1059,7 @@ export default function ClientProfilePage() {
             {client.targetPurchasePrice && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-midnight/5 text-midnight/60">${(client.targetPurchasePrice/1000).toFixed(0)}k</span>}
           </div>
           <div className="flex items-center gap-3 text-xs text-midnight/40 mt-1 flex-wrap">
-            {client.loanType && <span className="font-medium">{client.loanType}</span>}
+            {client.loanType && <span className={"px-2 py-0.5 rounded-full text-xs font-semibold border " + getLoanTypeBadge(client.loanType!)}>{client.loanType}</span>}
             {client.targetArea && <span>📍 {client.targetArea}</span>}
             {client.primaryLo && <span>👤 {client.primaryLo}</span>}
             {client.phone && <a href={`tel:${client.phone}`} className="hover:text-ocean transition-colors">📞 {client.phone}</a>}

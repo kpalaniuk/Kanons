@@ -109,6 +109,22 @@ function relativeDate(dateStr: string | null): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+
+function getLoanTypeBadge(loanType: string) {
+  const map: Record<string, { bg: string; text: string; border: string }> = {
+    'Conventional': { bg: 'bg-blue-50',    text: 'text-blue-700',    border: 'border-blue-200' },
+    'Conv':         { bg: 'bg-blue-50',    text: 'text-blue-700',    border: 'border-blue-200' },
+    'FHA':          { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
+    'VA':           { bg: 'bg-violet-50',  text: 'text-violet-700',  border: 'border-violet-200' },
+    'DSCR':         { bg: 'bg-amber-50',   text: 'text-amber-700',   border: 'border-amber-200' },
+    'Jumbo':        { bg: 'bg-rose-50',    text: 'text-rose-700',    border: 'border-rose-200' },
+    'Non-QM':       { bg: 'bg-orange-50',  text: 'text-orange-700',  border: 'border-orange-200' },
+    'Bridge':       { bg: 'bg-slate-50',   text: 'text-slate-700',   border: 'border-slate-200' },
+  }
+  const style = map[loanType] ?? { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' }
+  return style
+}
+
 export default function OpportunitiesPage() {
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
@@ -540,7 +556,7 @@ export default function OpportunitiesPage() {
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-midnight/50">
-                    {client.loanType && <span>{client.loanType}</span>}
+                    {client.loanType && <span className={"px-2 py-0.5 rounded-full text-xs font-semibold border " + getLoanTypeBadge(client.loanType!)}>{client.loanType}</span>}
                     {client.targetPurchasePrice && <span className="font-medium text-midnight/70">${(client.targetPurchasePrice/1000).toFixed(0)}k</span>}
                     {client.loanAmount && !client.targetPurchasePrice && <span>${(client.loanAmount / 1000).toFixed(0)}k</span>}
                     {client.ficoScore && <span className={`font-medium ${client.ficoScore >= 740 ? 'text-emerald-600' : client.ficoScore >= 680 ? 'text-amber-600' : 'text-red-500'}`}>FICO {client.ficoScore}</span>}
