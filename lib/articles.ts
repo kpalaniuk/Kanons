@@ -13,6 +13,19 @@ export interface Article {
 export const articles: Article[] = [
   // === NEWEST FIRST ===
 
+  // ── LO Buddy ──────────────────────────────────────────────────────────────
+  {
+    title: 'LO Buddy — SMS Inbox Redesign Spec',
+    description: 'Full technical spec for rebuilding the LO Buddy inbox into a threaded conversation hub. Split-pane layout, unread tracking, auto-draft improvements, spam detection, name reconciliation, and 8-phase implementation plan.',
+    href: '/artifacts/lo-buddy-sms-inbox-spec',
+    category: 'LO Buddy',
+    tags: ['LO Buddy'],
+    section: 'work',
+    date: 'Mar 19, 2026',
+    published: true,
+    type: 'report',
+  },
+
   // ── Technology ────────────────────────────────────────────────────────────
   {
     title: 'The Race to Put AI Agents Inside Small Businesses — Where the Market Is, Where It\'s Broken, and Where Hotclaw Fits',
