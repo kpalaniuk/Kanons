@@ -1130,15 +1130,21 @@ export default function MorningBriefPage() {
       })()}
 
       {/* ── Quick Task Add ── */}
-      <div className="bg-cream rounded-2xl p-6 border border-midnight/5">
+      <div className="relative bg-cream rounded-2xl p-6 border border-midnight/5 overflow-hidden">
+        {quickSuccess && (
+          <div
+            className="absolute inset-0 bg-emerald-50 flex flex-col items-center justify-center gap-2 z-10 rounded-2xl"
+            style={{ animation: 'fadeIn 0.15s ease-out' }}
+          >
+            <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
+              <Check className="w-7 h-7 text-emerald-600" />
+            </div>
+            <span className="text-sm font-semibold text-emerald-700">Task added to Notion</span>
+          </div>
+        )}
         <div className="flex items-center gap-2 mb-4">
           <Plus className="w-4 h-4 text-ocean" />
           <h2 className="font-display text-lg text-midnight">Quick Add Task</h2>
-          {quickSuccess && (
-            <span className="ml-auto flex items-center gap-1 text-xs font-medium text-emerald-600">
-              <Check className="w-3.5 h-3.5" /> Added to Notion
-            </span>
-          )}
         </div>
         <div className="space-y-3">
           <input
