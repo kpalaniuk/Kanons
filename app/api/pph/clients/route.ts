@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
   if (error) return error
 
   const body = await request.json()
-  const { name, stage, priority, loanType, loanAmount, nextAction, notes, referralSource, primaryLo, primaryContact, phone, followUpDate } = body
+  const { name, stage, priority, loanType, loanAmount, nextAction, notes, referralSource, primaryLo, primaryContact, phone, email, followUpDate } = body
 
   if (!name?.trim()) return NextResponse.json({ error: 'name is required' }, { status: 400 })
 
@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
       primary_lo: primaryLo || null,
       primary_contact: primaryContact || null,
       phone: phone || null,
+      email: email || null,
       follow_up_date: followUpDate || null,
     })
     .select()

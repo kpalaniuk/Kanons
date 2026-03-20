@@ -82,13 +82,15 @@ export interface LOBScenario {
 /** Search LO Buddy contacts — SCOPED TO GH GROUP ONLY */
 export async function searchLOBContacts(query: string, limit = 8): Promise<LOBContact[]> {
   const sb = getLOBSupabase()
-  // Get GH Group member user IDs for scope filter
   const memberIds = Object.values(GH_GROUP_MEMBERS)
+
+  // Name/email search within GH Group scope (team_id OR assigned to a GH member)
+  // Use two-step: first get GH-scoped contacts, then filter by name
   const { data } = await sb
     .from('contacts')
     .select('id,first_name,last_name,email,phone,assigned_to,created_at,updated_at,team_id')
-    .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
     .or(`team_id.eq.${GH_GROUP_TEAM_ID},assigned_to.in.(${memberIds.join(',')})`)
+    .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%`)
     .order('updated_at', { ascending: false })
     .limit(limit)
   return data || []

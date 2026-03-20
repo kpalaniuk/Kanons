@@ -51,6 +51,7 @@ interface Client {
   primaryLo: string | null
   primaryContact: string | null
   phone: string | null
+  email: string | null
   // Borrowers
   married: boolean
   b1Name: string | null
@@ -640,6 +641,7 @@ export default function ClientProfilePage() {
       primaryLo: (row.primary_lo as string) || null,
       primaryContact: (row.primary_contact as string) || null,
       phone: (row.phone as string) || null,
+      email: (row.email as string) || null,
       married: !!(row.married),
       b1Name: (row.b1_name as string) || null,
       b1IncomeType: (row.b1_income_type as string) || null,
@@ -1063,6 +1065,7 @@ export default function ClientProfilePage() {
             {client.targetArea && <span>📍 {client.targetArea}</span>}
             {client.primaryLo && <span>👤 {client.primaryLo}</span>}
             {client.phone && <a href={`tel:${client.phone}`} className="hover:text-ocean transition-colors">📞 {client.phone}</a>}
+            {client.email && <a href={`mailto:${client.email}`} className="hover:text-ocean transition-colors">✉️ {client.email}</a>}
           </div>
         </div>
         <div className="flex gap-1 flex-shrink-0">
@@ -1083,7 +1086,9 @@ export default function ClientProfilePage() {
           <EditableSelect field="stage" value={client.stage} options={STAGES} label="Stage" onChange={saveField} />
           <EditableSelect field="priority" value={client.priority} options={PRIORITIES} label="Priority" onChange={saveField} />
           <EditableText field="followUpDate" value={client.followUpDate} label="Follow-up" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
-          <EditableText field="phone" value={client.phone} label="Phone" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+          <div>
+            <EditableText field="phone" value={client.phone} label="Phone" editingField={editingField} editValue={editValue} saving={saving} onStartEdit={(f,v) => { setEditingField(f); setEditValue(v) }} onSave={saveField} onCancel={() => setEditingField(null)} onEditChange={setEditValue} />
+          </div>
         </div>
       </div>
 

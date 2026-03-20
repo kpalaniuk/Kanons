@@ -32,12 +32,12 @@ import {
 // PPH — mortgage team tools
 const pphLinks = [
   { href: '/workshop/pph/opportunities',    label: 'Pipeline',  icon: ClipboardList },
-  { href: '/workshop/pph/clients',          label: 'Clients',   icon: Users },
   { href: '/workshop/pph/purchase-builder', label: 'Purchase',  icon: Building2 },
   { href: '/workshop/pph/refi-builder',     label: 'Refi',      icon: RefreshCw },
   { href: '/workshop/pph/dscr-calculator',  label: 'DSCR',      icon: BarChart3 },
-  { href: '/workshop/pph/income-qualifier',label: 'Income',    icon: DollarSign },
-  { href: '/workshop/pph/scenarios',        label: 'Scenarios', icon: ClipboardList },
+  { href: '/workshop/pph/income-qualifier', label: 'Income',    icon: DollarSign },
+  { href: '/workshop/pph/scenarios',        label: 'Scenarios', icon: BarChart3 },
+  { href: '/workshop/pph/calculator',       label: 'Calculator', icon: Calculator },
   { href: '/workshop/pph/import',           label: 'Import',    icon: Database },
 ]
 

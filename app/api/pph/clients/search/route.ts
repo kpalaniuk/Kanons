@@ -17,8 +17,8 @@ export async function GET(request: NextRequest) {
 
   const { data } = await supabase
     .from('pph_clients')
-    .select('id, name, stage, phone, primary_lo, fico_score, target_purchase_price')
-    .ilike('name', `%${q}%`)
+    .select('id, name, stage, phone, email, primary_lo, fico_score, target_purchase_price')
+    .or(`name.ilike.%${q}%,email.ilike.%${q}%,phone.ilike.%${q}%`)
     .order('updated_at', { ascending: false })
     .limit(8)
 
