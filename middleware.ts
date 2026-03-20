@@ -5,6 +5,7 @@ const isProtectedRoute = createRouteMatcher(['/workshop(.*)', '/family(.*)'])
 const isPPHRoute = createRouteMatcher(['/workshop/pph(.*)'])
 const isHotDogRoute = createRouteMatcher(['/workshop/operation-hot-dog(.*)'])
 const isPersonalRoute = createRouteMatcher(['/workshop/personal(.*)'])
+const isFCBaloaRoute = createRouteMatcher(['/workshop/personal/fc-balboa(.*)'])
 const isLOBuddyRoute = createRouteMatcher(['/workshop/lo-buddy(.*)'])
 
 export default clerkMiddleware((auth, req) => {
@@ -31,8 +32,11 @@ export default clerkMiddleware((auth, req) => {
       return NextResponse.redirect(new URL('/workshop', req.url))
     }
 
-    // Personal section: admin only (Kyle)
+    // Personal section: admin only, EXCEPT fc-balboa users can access fc-balboa routes
     if (isPersonalRoute(req) && !isAdmin) {
+      if (isFCBaloaRoute(req) && roles.includes('fc-balboa')) {
+        return // allow fc-balboa users through to fc-balboa routes
+      }
       return NextResponse.redirect(new URL('/workshop', req.url))
     }
 

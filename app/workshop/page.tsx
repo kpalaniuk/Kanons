@@ -35,9 +35,10 @@ function useRoles(): string[] {
   return (meta?.roles as string[]) ?? []
 }
 
-function hasAccess(roles: string[], section: 'pph' | 'hot-dog' | 'personal') {
+function hasAccess(roles: string[], section: 'pph' | 'hot-dog' | 'personal' | 'fc-balboa') {
   if (roles.length === 0) return true
   if (roles.includes('admin')) return true
+  if (section === 'fc-balboa') return roles.includes('fc-balboa')
   if (section === 'personal') return false
   return roles.includes(section)
 }
@@ -107,6 +108,7 @@ export default function WorkshopPage() {
   const canPPH      = hasAccess(roles, 'pph')
   const canHotDog   = hasAccess(roles, 'hot-dog')
   const canPersonal = hasAccess(roles, 'personal')
+  const canFCBalboa = hasAccess(roles, 'fc-balboa')
 
   // Redirect pph-only users straight to /workshop/pph — they have no reason to be here
   useEffect(() => {
@@ -167,6 +169,34 @@ export default function WorkshopPage() {
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {personalTools.map(tool => <SectionCard key={tool.href} tool={tool} color="terracotta" />)}
+          </div>
+        </section>
+      )}
+
+
+      {/* FC Balboa Section — visible to fc-balboa role and admin */}
+      {canFCBalboa && !canPersonal && (
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-1 h-8 bg-emerald-500 rounded-full" />
+            <span className="text-xl">⚽</span>
+            <h2 className="font-display text-2xl text-midnight">FC Balboa</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Link
+              href="/workshop/personal/fc-balboa"
+              className="group bg-cream rounded-xl p-6 border border-midnight/5 hover:border-emerald-500/30 transition-all hover:shadow-lg"
+            >
+              <div className="flex items-start gap-4">
+                <Trophy className="w-8 h-8 text-emerald-500" />
+                <div className="flex-1">
+                  <h3 className="font-display text-lg text-midnight mb-1 group-hover:text-emerald-500 transition-colors">
+                    FC Balboa
+                  </h3>
+                  <p className="text-sm text-midnight/60">Roster · Attendance · Practice Plans</p>
+                </div>
+              </div>
+            </Link>
           </div>
         </section>
       )}
