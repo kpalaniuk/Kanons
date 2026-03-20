@@ -133,6 +133,7 @@ export default function OpportunitiesPage() {
   const [filterLo, setFilterLo] = useState('all')
   const [filterPriority, setFilterPriority] = useState('all')
   const [filterReferral, setFilterReferral] = useState('all')
+  const [filterLoanType, setFilterLoanType] = useState('all')
   const [showAddForm, setShowAddForm] = useState(false)
   const [logCallClient, setLogCallClient] = useState<Client | null>(null)
   const [logCallType, setLogCallType] = useState('Call')
@@ -350,6 +351,17 @@ export default function OpportunitiesPage() {
 
   const referralTypes = useMemo(() => Object.keys(referralCounts).sort(), [referralCounts])
 
+  // Loan type counts (active clients only)
+  const loanTypeCounts = useMemo(() => {
+    const active = clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost')
+    const counts: Record<string, number> = {}
+    active.forEach(c => {
+      if (c.loanType) counts[c.loanType] = (counts[c.loanType] || 0) + 1
+    })
+    return counts
+  }, [clients])
+  const loanTypes = useMemo(() => Object.keys(loanTypeCounts).sort(), [loanTypeCounts])
+
   // Filtered + searched
   const filtered = useMemo(() => {
     let list = clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost')
@@ -361,6 +373,7 @@ export default function OpportunitiesPage() {
     if (filterLo !== 'all') list = list.filter(c => c.primaryLo === filterLo)
     if (filterPriority !== 'all') list = list.filter(c => c.priority === filterPriority)
     if (filterReferral !== 'all') list = list.filter(c => (c.referralType || 'Unknown') === filterReferral)
+    if (filterLoanType !== 'all') list = list.filter(c => c.loanType === filterLoanType)
     // Sort: Hot first, then by follow-up date (overdue first)
     const priorityOrder: Record<string, number> = { Hot: 0, Active: 1, Warm: 2, Monitoring: 3 }
     list.sort((a, b) => {
@@ -372,7 +385,7 @@ export default function OpportunitiesPage() {
       return fa - fb
     })
     return list
-  }, [clients, search, filterStage, filterLo, filterPriority])
+  }, [clients, search, filterStage, filterLo, filterPriority, filterReferral, filterLoanType])
 
   if (loading) {
     return (
@@ -502,6 +515,35 @@ export default function OpportunitiesPage() {
           ))}
         </div>
       )}
+
+      {loanTypes.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          <button
+            onClick={() => setFilterLoanType('all')}
+            className={"px-3 py-1 rounded-full text-xs font-medium border transition-colors " + (
+              filterLoanType === 'all'
+                ? 'bg-ocean text-white border-ocean'
+                : 'bg-cream text-midnight/60 border-midnight/10 hover:border-ocean/30'
+            )}
+          >
+            All Types
+          </button>
+          {loanTypes.map(type => (
+            <button
+              key={type}
+              onClick={() => setFilterLoanType(filterLoanType === type ? 'all' : type)}
+              className={"px-3 py-1 rounded-full text-xs font-medium border transition-colors " + (
+                filterLoanType === type
+                  ? 'bg-ocean text-white border-ocean'
+                  : 'bg-cream text-midnight/60 border-midnight/10 hover:border-ocean/30'
+              )}
+            >
+              {type} ({loanTypeCounts[type]})
+            </button>
+          ))}
+        </div>
+      )}
+
 
       {/* Client Cards */}
       <div className="grid gap-3">
