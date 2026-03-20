@@ -211,8 +211,11 @@ export default function FCBalboaPage() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-midnight/30">Spring 2026 · 16 players</span>
+            <Link href="/workshop/personal/fc-balboa/attendance" className="text-xs font-medium text-terracotta hover:underline">
+              Attendance →
+            </Link>
             <Link href="/workshop/personal/fc-balboa/roster" className="text-xs font-medium text-ocean hover:underline">
-              Full view →
+              Full roster →
             </Link>
           </div>
         </div>
