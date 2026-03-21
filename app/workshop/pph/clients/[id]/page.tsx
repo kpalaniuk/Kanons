@@ -612,7 +612,7 @@ export default function ClientProfilePage() {
       generateNextAction(true)
     }
   }, [client?.id]) // only fires once per client load
-  useEffect(() => { if (tab === 'calls') fetchCalls() }, [tab, id])
+  useEffect(() => { fetchCalls() }, [id]) // fetch on mount for last-contact card
   useEffect(() => { if (tab === 'calls') fetchActivity() }, [tab, id])
   useEffect(() => {
     if (tab === 'scenarios') fetchScenarios()
@@ -1210,6 +1210,37 @@ export default function ClientProfilePage() {
       {/* ═══════ OVERVIEW TAB ═══════ */}
       {tab === 'overview' && (
         <div className="space-y-4">
+
+          {/* Last Contact summary card */}
+          {(() => {
+            const lastLog = callLogs[0] ?? null
+            const lastTouchedDate = client.lastTouched ? new Date(client.lastTouched + 'T12:00:00') : null
+            const daysSince = lastTouchedDate ? Math.floor((Date.now() - lastTouchedDate.getTime()) / 86400000) : null
+            const isStale = daysSince !== null && daysSince > 7
+            const neverTouched = daysSince === null
+            return (
+              <div
+                className={`rounded-xl border px-4 py-3 cursor-pointer transition-all hover:shadow-sm ${isStale || neverTouched ? 'bg-amber-50 border-amber-200' : 'bg-cream border-midnight/5'}`}
+                onClick={() => setTab('calls')}
+                title="View all call logs"
+              >
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="text-xs font-semibold text-midnight/60 uppercase tracking-wider">Last Contact</span>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isStale || neverTouched ? 'bg-amber-100 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                    {neverTouched ? 'Never touched' : daysSince === 0 ? 'Today' : daysSince === 1 ? 'Yesterday' : `${daysSince}d ago`}
+                  </span>
+                </div>
+                {lastLog ? (
+                  <div>
+                    <p className="text-sm text-midnight/80 line-clamp-2">{lastLog.notes || '(no notes)'}</p>
+                    <p className="text-xs text-midnight/40 mt-1">{lastLog.call_type} · {new Date(lastLog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-midnight/40 italic">No activity logged yet — tap to add a note.</p>
+                )}
+              </div>
+            )
+          })()}
 
           {/* Notes — inline click-to-edit, same style as Next Action */}
           <div className="bg-cream rounded-xl px-4 py-3 border border-midnight/5">
