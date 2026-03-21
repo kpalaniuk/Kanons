@@ -654,7 +654,16 @@ export default function OpportunitiesPage() {
                         {client.followUpDate ? relativeDate(client.followUpDate) : 'Set date'}
                       </button>
                     )}
-                    {client.lastTouched && <span>Touched {relativeDate(client.lastTouched)}</span>}
+                    {client.lastTouched && (() => {
+                      const daysSince = Math.floor((Date.now() - new Date(client.lastTouched!).getTime()) / (1000 * 60 * 60 * 24))
+                      const colorClass = daysSince <= 6 ? 'text-emerald-600 bg-emerald-50' : daysSince <= 13 ? 'text-amber-500 bg-amber-50' : 'text-red-500 bg-red-50'
+                      const label = daysSince <= 0 ? 'Today' : daysSince === 1 ? '1d ago' : `${daysSince}d ago`
+                      return (
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${colorClass}`} title={`Last touched: ${client.lastTouched}`}>
+                          <span className="opacity-60">touched</span> {label}
+                        </span>
+                      )
+                    })()}
                     {(client.referralType || client.referralName) ? (
                       <span className="flex items-center gap-1 text-midnight/40 italic">
                         via {[client.referralType, client.referralName].filter(Boolean).join(' · ')}
