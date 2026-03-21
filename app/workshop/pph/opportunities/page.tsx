@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import FollowUpCalendarStrip from './FollowUpCalendarStrip'
 import {
   AlertTriangle, Clock, Phone, MessageSquare, FileText,
   ChevronDown, ChevronUp, Plus, Search, User, Calendar,
@@ -134,6 +135,7 @@ export default function OpportunitiesPage() {
   const [filterPriority, setFilterPriority] = useState('all')
   const [filterReferral, setFilterReferral] = useState('all')
   const [filterLoanType, setFilterLoanType] = useState('all')
+  const [filterCalendarDay, setFilterCalendarDay] = useState<string | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [logCallClient, setLogCallClient] = useState<Client | null>(null)
   const [logCallType, setLogCallType] = useState('Call')
@@ -374,6 +376,7 @@ export default function OpportunitiesPage() {
     if (filterPriority !== 'all') list = list.filter(c => c.priority === filterPriority)
     if (filterReferral !== 'all') list = list.filter(c => (c.referralType || 'Unknown') === filterReferral)
     if (filterLoanType !== 'all') list = list.filter(c => c.loanType === filterLoanType)
+    if (filterCalendarDay) list = list.filter(c => c.followUpDate && c.followUpDate.slice(0, 10) === filterCalendarDay)
     // Sort: Hot first, then by follow-up date (overdue first)
     const priorityOrder: Record<string, number> = { Hot: 0, Active: 1, Warm: 2, Monitoring: 3 }
     list.sort((a, b) => {
@@ -385,7 +388,7 @@ export default function OpportunitiesPage() {
       return fa - fb
     })
     return list
-  }, [clients, search, filterStage, filterLo, filterPriority, filterReferral, filterLoanType])
+  }, [clients, search, filterStage, filterLo, filterPriority, filterReferral, filterLoanType, filterCalendarDay])
 
   if (loading) {
     return (
@@ -456,6 +459,13 @@ export default function OpportunitiesPage() {
           </div>
         </div>
       )}
+
+      {/* Follow-Up Calendar Strip */}
+      <FollowUpCalendarStrip
+        clients={clients}
+        activeDay={filterCalendarDay}
+        onDayClick={setFilterCalendarDay}
+      />
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
