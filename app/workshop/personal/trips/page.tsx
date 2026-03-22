@@ -25,6 +25,25 @@ const TRIPS = [
     note: 'Family of 4 · SAN → SJD nonstop',
   },
   {
+    href: '/workshop/personal/trip-columbus-2026',
+    emoji: '🎓',
+    name: "Columbus — Janey's Graduation",
+    dates: 'May 22 – 26, 2026',
+    status: 'upcoming',
+    daysUntil: () => {
+      const now = new Date()
+      const departure = new Date('2026-05-22')
+      const diff = Math.ceil((departure.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      return diff > 0 ? diff : null
+    },
+    tags: [
+      { label: '✈️ Southwest BQ4KS8', done: true },
+      { label: '🏨 Hotel', done: false },
+      { label: '✈️ Return May 26', done: false, urgent: true },
+    ],
+    note: 'Family of 4 · SAN→DEN→CMH · Nick & Janey',
+  },
+  {
     href: '/workshop/personal/trip-july-2026',
     emoji: '🏴',
     name: 'Iceland · Scotland · Ireland',
