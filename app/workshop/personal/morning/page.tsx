@@ -209,6 +209,8 @@ function getDayContext(): { greeting: string; dayNote: string; isCoachingDay: bo
 
 // Set to true once Kyle books the Inverness → Dublin flight (Jul 16)
 const INV_DUB_BOOKED = false
+// Set to true once Kyle books the Columbus return flight (CMH→SAN, May 26)
+const COLUMBUS_RETURN_BOOKED = false
 
 function getTripCountdown(): { days: number; label: string; dest: string; dateLabel: string; href: string; emoji: string } {
   const now = new Date()
@@ -695,6 +697,34 @@ export default function MorningBriefPage() {
             className="mt-3 flex items-center gap-1 text-xs font-semibold text-amber-700 hover:underline">
             Book rental car → justasklaura.com.mx
           </a>
+        </div>
+      )}
+
+      {/* ── Columbus Return Flight Alert ── */}
+      {!COLUMBUS_RETURN_BOOKED && trip.dest.includes('Columbus') && trip.days > 0 && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5">
+          <div className="flex items-start gap-3">
+            <Plane className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <p className="text-sm font-bold text-midnight">Book: CMH → SAN — May 26</p>
+                <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">Return not booked</span>
+              </div>
+              <p className="text-xs text-midnight/60 leading-snug">
+                Columbus return flight for the graduation trip. Book before fares change.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-3">
+            <a
+              href="https://www.southwest.com/air/booking/select.html?originationAirportCode=CMH&destinationAirportCode=SAN"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-1.5 bg-amber-600 text-white text-xs font-semibold py-2 rounded-xl hover:bg-amber-700 transition-colors"
+            >
+              Search Southwest <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
         </div>
       )}
 
