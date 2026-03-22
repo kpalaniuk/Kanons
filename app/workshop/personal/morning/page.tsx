@@ -211,6 +211,8 @@ function getDayContext(): { greeting: string; dayNote: string; isCoachingDay: bo
 const INV_DUB_BOOKED = false
 // Set to true once Kyle books the Columbus return flight (CMH→SAN, May 26)
 const COLUMBUS_RETURN_BOOKED = false
+// Set to true once the Eagle Brae balance has been paid (£1,161.20 due May 4, 2026)
+const EAGLE_BRAE_PAID = false
 
 function getTripCountdown(): { days: number; label: string; dest: string; dateLabel: string; href: string; emoji: string } {
   const now = new Date()
@@ -791,6 +793,34 @@ export default function MorningBriefPage() {
         </div>
       )}
 
+
+      {/* ── Eagle Brae Balance Alert ── */}
+      {!EAGLE_BRAE_PAID && (() => {
+        const dueDate = new Date('2026-05-04T00:00:00')
+        const now = new Date()
+        now.setHours(0, 0, 0, 0)
+        const msLeft = dueDate.getTime() - now.getTime()
+        const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24))
+        if (daysLeft <= 0) return null
+        return (
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5">
+            <div className="flex items-start gap-3">
+              <span className="text-xl shrink-0">🏴󠁧󠁢󠁳󠁣󠁴󠁿</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <p className="text-sm font-bold text-midnight">Eagle Brae balance due — £1,161.20</p>
+                  <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">
+                    {daysLeft === 1 ? '1 day left' : `${daysLeft} days left`}
+                  </span>
+                </div>
+                <p className="text-xs text-midnight/60 leading-snug">
+                  Due <strong className="text-midnight/80">May 4, 2026</strong> · Scotland Highland lodge balance. Set <code className="text-xs bg-amber-100 px-1 rounded">EAGLE_BRAE_PAID = true</code> once paid.
+                </p>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
       {/* ── Joshua Tree Departure Banner ── */}
       {(() => {
         const now = new Date()
