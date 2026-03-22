@@ -1125,6 +1125,56 @@ export default function MorningBriefPage() {
                 })}
               </div>
             )}
+
+            {/* This week's follow-ups (forward-looking, not overdue) */}
+            {(() => {
+              const todayDate = new Date(); todayDate.setHours(0,0,0,0)
+              const dayOfWeek = todayDate.getDay()
+              const monday = new Date(todayDate); monday.setDate(todayDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
+              const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6)
+              const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+              const thisWeek = active
+                .filter(c => {
+                  if (!c.followUpDate) return false
+                  const d = new Date(c.followUpDate); d.setHours(0,0,0,0)
+                  return d >= todayDate && d <= sunday
+                })
+                .sort((a, b) => new Date(a.followUpDate!).getTime() - new Date(b.followUpDate!).getTime())
+              if (thisWeek.length === 0) return null
+              const byDay: Record<string, typeof thisWeek> = {}
+              thisWeek.forEach(c => {
+                const key = c.followUpDate!.slice(0, 10)
+                if (!byDay[key]) byDay[key] = []
+                byDay[key].push(c)
+              })
+              const todayKey = todayDate.toISOString().slice(0, 10)
+              return (
+                <div className="space-y-2 mt-3">
+                  <p className="text-[10px] font-semibold text-ocean uppercase tracking-wider flex items-center gap-1">
+                    📅 This Week — {thisWeek.length} follow-up{thisWeek.length !== 1 ? 's' : ''}
+                  </p>
+                  {Object.entries(byDay).map(([dateKey, clients]) => {
+                    const d = new Date(dateKey + 'T00:00:00')
+                    const isToday = dateKey === todayKey
+                    const label = isToday ? 'Today' : DAY_LABELS[d.getDay()]
+                    return (
+                      <div key={dateKey} className={`flex items-start gap-3 rounded-xl px-3 py-2.5 border ${isToday ? 'bg-ocean/5 border-ocean/20' : 'bg-white/70 border-midnight/5'}`}>
+                        <span className={`text-xs font-bold w-10 shrink-0 pt-0.5 ${isToday ? 'text-ocean' : 'text-midnight/40'}`}>{label}</span>
+                        <div className="flex-1 min-w-0 space-y-1">
+                          {clients.map(c => (
+                            <Link key={c.id} href={`/workshop/pph/clients/${c.id}`} className="flex items-center gap-2 hover:opacity-70 transition-opacity">
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${c.priority === 'Hot' ? 'bg-red-500' : c.priority === 'Active' ? 'bg-orange-400' : 'bg-amber-400'}`} />
+                              <span className="text-sm text-midnight truncate">{c.name}</span>
+                              {c.nextAction && <span className="text-xs text-midnight/35 truncate hidden sm:inline">· {c.nextAction}</span>}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })()}
           </div>
         )
       })()}
