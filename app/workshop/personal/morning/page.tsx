@@ -223,7 +223,15 @@ function getTripCountdown(): { days: number; label: string; dest: string; dateLa
       emoji: '🌊',
     },
     {
-      start: new Date('2026-06-27'),
+          start: new Date('2026-05-22'),
+      end: new Date('2026-05-27'),
+      dest: "Columbus — Janey's Graduation",
+      dateLabel: 'May 22 — SAN → DEN → CMH',
+      href: '/workshop/personal/trip-columbus-2026',
+      emoji: '🎓',
+    },
+    {
+            start: new Date('2026-06-27'),
       end: new Date('2026-08-04'),
       dest: 'Iceland · Scotland · Ireland',
       dateLabel: 'June 27, 2026 — SAN → KEF',
@@ -658,6 +666,37 @@ export default function MorningBriefPage() {
           )}
         </div>
       </div>
+
+
+      {/* -- Cabo Prep Checklist -- */}
+      {trip.dest === 'Cabo San Lucas' && trip.days > 0 && trip.days <= 14 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xl">🌊</span>
+            <h3 className="text-sm font-bold text-midnight">Cabo Prep — {trip.days} days out</h3>
+          </div>
+          <ul className="space-y-2">
+            {[
+              { label: 'Book rental car (justasklaura.com.mx)', done: false, urgent: true },
+              { label: 'Flights booked (Alaska YAKQHZ)', done: true },
+              { label: 'HomeExchange confirmed (Destrie Long)', done: true },
+              { label: 'Royal Solaris Apr 4–6 (BOOQ34929)', done: true },
+              { label: 'Pack snorkel gear + sunscreen', done: false },
+              { label: 'Download offline maps for BCS', done: false },
+              { label: 'Notify bank of international travel', done: false },
+            ].map((item, i) => (
+              <li key={i} className={"flex items-start gap-2 text-xs " + (item.done ? "text-midnight/40 line-through" : (item as {urgent?:boolean}).urgent ? "text-red-700 font-semibold" : "text-midnight/70")}>
+                <span className="mt-0.5 shrink-0">{item.done ? "✅" : (item as {urgent?:boolean}).urgent ? "🔴" : "⬜"}</span>
+                {item.label}
+              </li>
+            ))}
+          </ul>
+          <a href="https://justasklaura.com.mx" target="_blank" rel="noopener noreferrer"
+            className="mt-3 flex items-center gap-1 text-xs font-semibold text-amber-700 hover:underline">
+            Book rental car → justasklaura.com.mx
+          </a>
+        </div>
+      )}
 
       {/* ── Scotland/Ireland Trip — Open Bookings Alert ── */}
       {trip.dest.includes('Iceland') && trip.days > 0 && trip.days < 200 && (
