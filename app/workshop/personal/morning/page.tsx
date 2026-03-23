@@ -348,6 +348,7 @@ export default function MorningBriefPage() {
   const [surf, setSurf] = useState<SurfData | null>(null)
   const [desertWeather, setDesertWeather] = useState<WeatherData | null>(null)
   const [musicStreak, setMusicStreak] = useState<number>(0)
+  const [hasMusicToday, setHasMusicToday] = useState<boolean>(false)
   const [emailDigest, setEmailDigest] = useState<{ unread: number; topMessages: Array<{ subject: string; from: string; preview: string; timestamp: string }> } | null>(null)
   const [reviewOpen, setReviewOpen] = useState(false)
   const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({})
@@ -496,6 +497,8 @@ export default function MorningBriefPage() {
       if (raw) {
         const data = JSON.parse(raw) as { sessions: MusicSession[] }
         setMusicStreak(calcMusicStreak(data.sessions || []))
+        const todayStr = new Date().toISOString().slice(0, 10)
+        setHasMusicToday((data.sessions || []).some((s) => s.date === todayStr))
       }
     } catch {
       // localStorage unavailable or malformed
@@ -1340,6 +1343,23 @@ export default function MorningBriefPage() {
               <p className="text-sm font-bold text-midnight">Call Tareck El Khoury — Refi lead · Follow up on refinance conversation</p>
               <p className="text-xs text-midnight/50 mt-1">
                 Flip <code className="text-xs bg-amber-100 px-1 rounded">TARECK_CALL_DONE = true</code> once called
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Music Habit Nudge ── */}
+      {!hasMusicToday && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5">
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0">🎺</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-midnight">No music yet today — 30 min before 9?</p>
+              <p className="text-xs text-midnight/50 mt-1">
+                Log a session in{' '}
+                <a href="/workshop/personal/music" className="underline text-amber-700 hover:text-amber-900">Music Habit</a>{' '}
+                to clear this card.
               </p>
             </div>
           </div>
