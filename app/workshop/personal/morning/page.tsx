@@ -215,6 +215,8 @@ const INV_DUB_BOOKED = false
 const COLUMBUS_RETURN_BOOKED = false
 // Set to true once the Eagle Brae balance has been paid (£1,161.20 due May 4, 2026)
 const EAGLE_BRAE_PAID = false
+// Set to true once Kyle calls Tareck El Khoury (refi lead, Mar 22)
+const TARECK_CALL_DONE = false
 
 function getTripCountdown(): { days: number; label: string; dest: string; dateLabel: string; href: string; emoji: string } {
   const now = new Date()
@@ -1327,6 +1329,22 @@ export default function MorningBriefPage() {
           </div>
         )
       })()}
+
+
+      {/* ── Tareck El Khoury — Refi Call Reminder ── */}
+      {!TARECK_CALL_DONE && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5">
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0">📞</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-midnight">Call Tareck El Khoury — Refi lead · Follow up on refinance conversation</p>
+              <p className="text-xs text-midnight/50 mt-1">
+                Flip <code className="text-xs bg-amber-100 px-1 rounded">TARECK_CALL_DONE = true</code> once called
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Quick Task Add ── */}
       <div className="relative bg-cream rounded-2xl p-6 border border-midnight/5 overflow-hidden">
