@@ -606,6 +606,21 @@ export default function OpportunitiesPage() {
                         {client.stage}
                       </button>
                     )}
+                    {/* Stale Deal Alert — >21 days in same stage */}
+                    {client.stage !== 'Closed' && client.stage !== 'Lost' && client.stageUpdatedAt && (() => {
+                      const days = Math.floor((Date.now() - new Date(client.stageUpdatedAt).getTime()) / (1000 * 60 * 60 * 24))
+                      if (days < 21) return null
+                      const isVeryStale = days >= 35
+                      return (
+                        <span
+                          className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${isVeryStale ? 'bg-red-100 text-red-600 border-red-300' : 'bg-amber-100 text-amber-700 border-amber-300'}`}
+                          title={`Stage unchanged for ${days} days`}
+                        >
+                          <AlertTriangle className="w-3 h-3" />
+                          {days}d stale
+                        </span>
+                      )
+                    })()}
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-midnight/50">
                     {client.loanType && <span className={"px-2 py-0.5 rounded-full text-xs font-semibold border " + getLoanTypeBadge(client.loanType!)}>{client.loanType}</span>}
