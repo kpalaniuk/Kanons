@@ -1350,7 +1350,7 @@ export default function MorningBriefPage() {
       )}
 
       {/* ── Music Habit Nudge ── */}
-      {!hasMusicToday && (
+      {!hasMusicToday && new Date().getHours() >= 18 && (
         <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5">
           <div className="flex items-start gap-3">
             <span className="text-xl shrink-0">🎺</span>
