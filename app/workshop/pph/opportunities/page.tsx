@@ -619,7 +619,25 @@ export default function OpportunitiesPage() {
                       </span>
                     )}
                     {editingFollowUp === client.id ? (
-                      <span className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                      <span className="flex flex-wrap items-center gap-1" onClick={e => e.stopPropagation()}>
+                        {[
+                          { label: 'Today', days: 0 },
+                          { label: '+1d', days: 1 },
+                          { label: '+3d', days: 3 },
+                          { label: '+7d', days: 7 },
+                        ].map(({ label, days }) => {
+                          const d = new Date(); d.setDate(d.getDate() + days)
+                          const val = d.toISOString().split('T')[0]
+                          return (
+                            <button
+                              key={label}
+                              onClick={() => saveFollowUp(client.id, val)}
+                              className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-ocean/10 text-ocean hover:bg-ocean/20 transition-colors border border-ocean/20"
+                            >
+                              {label}
+                            </button>
+                          )
+                        })}
                         <input
                           type="date"
                           value={followUpDraft}
