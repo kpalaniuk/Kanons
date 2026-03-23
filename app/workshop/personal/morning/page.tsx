@@ -207,6 +207,8 @@ function getDayContext(): { greeting: string; dayNote: string; isCoachingDay: bo
   }
 }
 
+// Set to true once Kyle books the Cabo rental car (trip Mar 30 – Apr 6)
+const CABO_RENTAL_CAR_BOOKED = false
 // Set to true once Kyle books the Inverness → Dublin flight (Jul 16)
 const INV_DUB_BOOKED = false
 // Set to true once Kyle books the Columbus return flight (CMH→SAN, May 26)
@@ -701,6 +703,45 @@ export default function MorningBriefPage() {
           </a>
         </div>
       )}
+
+      {/* ── Cabo Rental Car Alert ── */}
+      {!CABO_RENTAL_CAR_BOOKED && (() => {
+        const caboDate = new Date('2026-03-30T00:00:00')
+        const nowDate = new Date()
+        nowDate.setHours(0, 0, 0, 0)
+        const msLeft = caboDate.getTime() - nowDate.getTime()
+        const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24))
+        if (daysLeft <= 0) return null
+        return (
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5">
+            <div className="flex items-start gap-3">
+              <span className="text-xl shrink-0">&#x1F697;</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <p className="text-sm font-bold text-midnight">Cabo rental car unbooked &#x2014; Mar 30 &#xB7; Laura @ justasklaura.com.mx</p>
+                  <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">
+                    {daysLeft === 1 ? '1 day left' : `${daysLeft} days left`}
+                  </span>
+                </div>
+                <p className="text-xs text-midnight/60 leading-snug mb-2">
+                  Options: Jeep Compass $275/wk &#xB7; Wrangler $350/wk &#xB7; Yukon $350/wk
+                </p>
+                <p className="text-xs text-midnight/40">
+                  Set <code className="text-xs bg-amber-100 px-1 rounded">CABO_RENTAL_CAR_BOOKED = true</code> once booked.
+                </p>
+              </div>
+            </div>
+            <div className="mt-3">
+              <a
+                href="mailto:cars@justasklaura.com.mx"
+                className="inline-flex items-center gap-1.5 bg-amber-600 text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-amber-700 transition-colors"
+              >
+                Email Laura &#x2192;
+              </a>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ── Columbus Return Flight Alert ── */}
       {!COLUMBUS_RETURN_BOOKED && trip.dest.includes('Columbus') && trip.days > 0 && (
