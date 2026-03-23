@@ -640,18 +640,27 @@ export default function OpportunitiesPage() {
                           >✕</button>
                         )}
                       </span>
-                    ) : (
+                    ) : client.followUpDate ? (
                       <button
                         onClick={e => { e.preventDefault(); openFollowUpPicker(client) }}
                         className={`flex items-center gap-1 hover:opacity-70 transition-opacity ${
                           followUp === 'overdue' ? 'text-red-600 font-semibold' :
                           followUp === 'today' ? 'text-amber-600 font-semibold' :
-                          client.followUpDate ? 'text-emerald-600' : 'text-midnight/25 hover:text-midnight/50'
+                          'text-emerald-600'
                         }`}
                         title="Set follow-up date"
                       >
                         <Calendar className="w-3 h-3" />
-                        {client.followUpDate ? relativeDate(client.followUpDate) : 'Set date'}
+                        {relativeDate(client.followUpDate)}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={e => { e.preventDefault(); openFollowUpPicker(client) }}
+                        className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5 hover:bg-amber-100 transition-colors"
+                        title="No follow-up date set — click to add one"
+                      >
+                        <AlertTriangle className="w-3 h-3" />
+                        No follow-up set
                       </button>
                     )}
                     {client.lastTouched && (() => {
