@@ -795,6 +795,16 @@ export default function OpportunitiesPage() {
 
                 {/* Right: Quick Actions */}
                 <div className="flex items-center gap-1 flex-shrink-0">
+                  {client.phone && (
+                    <a
+                      href={`tel:${client.phone}`}
+                      className="p-2 rounded-lg hover:bg-emerald-50 transition-colors"
+                      title={`Call ${client.phone}`}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <Phone className="w-4 h-4 text-emerald-500" />
+                    </a>
+                  )}
                   <button
                     onClick={() => setLogCallClient(client)}
                     className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-midnight/8 transition-colors text-xs text-midnight/50 hover:text-midnight"
