@@ -3,10 +3,11 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import FollowUpCalendarStrip from './FollowUpCalendarStrip'
+import KanbanBoard from './KanbanBoard'
 import {
   AlertTriangle, Clock, Phone, MessageSquare, FileText,
   ChevronDown, ChevronUp, Plus, Search, User, Calendar,
-  Filter, RefreshCw, StickyNote
+  Filter, RefreshCw, StickyNote, LayoutGrid, List
 } from 'lucide-react'
 
 interface Client {
@@ -136,6 +137,7 @@ export default function OpportunitiesPage() {
   const [filterReferral, setFilterReferral] = useState('all')
   const [filterLoanType, setFilterLoanType] = useState('all')
   const [filterCalendarDay, setFilterCalendarDay] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
   const [showAddForm, setShowAddForm] = useState(false)
   const [logCallClient, setLogCallClient] = useState<Client | null>(null)
   const [logCallType, setLogCallType] = useState('Call')
@@ -407,12 +409,30 @@ export default function OpportunitiesPage() {
           <h1 className="font-display text-3xl text-midnight">Opportunities</h1>
           <p className="text-midnight/50 text-sm mt-1">{clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost').length} active deals</p>
         </div>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-ocean text-white rounded-lg text-sm font-medium hover:bg-ocean/90 transition-colors"
-        >
-          <Plus className="w-4 h-4" /> New Client
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-midnight/5 rounded-lg p-0.5">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-midnight' : 'text-midnight/40 hover:text-midnight'}`}
+              title="List view"
+            >
+              <List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-white shadow-sm text-midnight' : 'text-midnight/40 hover:text-midnight'}`}
+              title="Kanban view"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-ocean text-white rounded-lg text-sm font-medium hover:bg-ocean/90 transition-colors"
+          >
+            <Plus className="w-4 h-4" /> New Client
+          </button>
+        </div>
       </div>
 
       {/* Alert Banners */}
@@ -555,8 +575,13 @@ export default function OpportunitiesPage() {
       )}
 
 
-      {/* Client Cards */}
-      <div className="grid gap-3">
+      {/* Kanban View */}
+      {viewMode === 'kanban' && (
+        <KanbanBoard clients={filtered} onLogCall={setLogCallClient} />
+      )}
+
+      {/* Client Cards (List View) */}
+      {viewMode === 'list' && <div className="grid gap-3">
         {filtered.map(client => {
           const followUp = getFollowUpStatus(client.followUpDate)
           const notesExpanded = expandedNotes.has(client.id)
@@ -634,25 +659,7 @@ export default function OpportunitiesPage() {
                       </span>
                     )}
                     {editingFollowUp === client.id ? (
-                      <span className="flex flex-wrap items-center gap-1" onClick={e => e.stopPropagation()}>
-                        {[
-                          { label: 'Today', days: 0 },
-                          { label: '+1d', days: 1 },
-                          { label: '+3d', days: 3 },
-                          { label: '+7d', days: 7 },
-                        ].map(({ label, days }) => {
-                          const d = new Date(); d.setDate(d.getDate() + days)
-                          const val = d.toISOString().split('T')[0]
-                          return (
-                            <button
-                              key={label}
-                              onClick={() => saveFollowUp(client.id, val)}
-                              className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-ocean/10 text-ocean hover:bg-ocean/20 transition-colors border border-ocean/20"
-                            >
-                              {label}
-                            </button>
-                          )
-                        })}
+                      <span className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                         <input
                           type="date"
                           value={followUpDraft}
@@ -794,7 +801,7 @@ export default function OpportunitiesPage() {
             </div>
           )
         })}
-      </div>
+      </div>}
 
       {filtered.length === 0 && !loading && clients.length === 0 && (
         <div className="text-center py-16 space-y-3">
