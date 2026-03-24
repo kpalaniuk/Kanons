@@ -675,20 +675,42 @@ export default function MorningBriefPage() {
         </div>
 
         {/* Trip Countdown */}
-        <div className="bg-gradient-to-br from-ocean/10 to-cyan-500/10 rounded-2xl p-6 border border-ocean/20">
+        <div className={`rounded-2xl p-6 border transition-all ${
+          trip.days > 0 && trip.days <= 7
+            ? 'bg-gradient-to-br from-red-50 to-orange-50 border-red-300 shadow-md'
+            : 'bg-gradient-to-br from-ocean/10 to-cyan-500/10 border-ocean/20'
+        }`}>
           <div className="flex items-center gap-2 mb-4">
             <span className="text-base">{trip.emoji}</span>
-            <Map className="w-4 h-4 text-ocean" />
+            <Map className={`w-4 h-4 ${trip.days > 0 && trip.days <= 7 ? 'text-red-500' : 'text-ocean'}`} />
             <h2 className="font-display text-lg text-midnight">{trip.dest}</h2>
+            {trip.days > 0 && trip.days <= 7 && (
+              <span className="ml-auto text-[10px] font-bold uppercase tracking-widest text-red-500 animate-pulse">
+                🚨 Soon
+              </span>
+            )}
           </div>
-          <div className="text-4xl font-display text-ocean">{trip.label}</div>
+          <div className={`font-display transition-all ${
+            trip.days > 0 && trip.days <= 3
+              ? 'text-5xl text-red-600 animate-pulse'
+              : trip.days > 0 && trip.days <= 7
+              ? 'text-5xl text-orange-500'
+              : 'text-4xl text-ocean'
+          }`}>{trip.label}</div>
+          {trip.days > 0 && trip.days <= 7 && (
+            <div className="mt-2 text-xs font-semibold text-red-500">
+              Pack. Book what&apos;s open. Go time.
+            </div>
+          )}
           {trip.dateLabel && (
             <div className="text-sm text-midnight/50 mt-1">{trip.dateLabel}</div>
           )}
           {trip.href && (
             <Link
               href={trip.href}
-              className="inline-flex items-center gap-1.5 mt-4 text-xs font-medium text-ocean hover:underline"
+              className={`inline-flex items-center gap-1.5 mt-4 text-xs font-medium hover:underline ${
+                trip.days > 0 && trip.days <= 7 ? 'text-red-500' : 'text-ocean'
+              }`}
             >
               View itinerary <ArrowRight className="w-3 h-3" />
             </Link>
