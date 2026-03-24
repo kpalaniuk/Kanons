@@ -342,6 +342,17 @@ export default function OpportunitiesPage() {
     [clients]
   )
 
+  // This-week follow-ups (after today, within 7 days)
+  const thisWeekClients = useMemo(() => {
+    const today = new Date(); today.setHours(0,0,0,0)
+    const week = new Date(today); week.setDate(today.getDate() + 7)
+    return clients.filter(c => {
+      if (c.stage === 'Closed' || c.stage === 'Lost' || !c.followUpDate) return false
+      const d = new Date(c.followUpDate); d.setHours(0,0,0,0)
+      return d > today && d <= week
+    })
+  }, [clients])
+
   // Referral type counts (active clients only)
   const referralCounts = useMemo(() => {
     const active = clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost')
@@ -434,6 +445,23 @@ export default function OpportunitiesPage() {
           </button>
         </div>
       </div>
+
+      {/* Stats Bar */}
+      {!loading && clients.length > 0 && (
+        <div className="grid grid-cols-4 gap-3">
+          {[
+            { label: 'Active', value: clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost').length, color: 'text-midnight', bg: 'bg-midnight/5' },
+            { label: 'Overdue', value: overdueClients.length, color: overdueClients.length > 0 ? 'text-red-600' : 'text-midnight/30', bg: overdueClients.length > 0 ? 'bg-red-50' : 'bg-midnight/5' },
+            { label: 'Today', value: todayClients.length, color: todayClients.length > 0 ? 'text-amber-600' : 'text-midnight/30', bg: todayClients.length > 0 ? 'bg-amber-50' : 'bg-midnight/5' },
+            { label: 'This week', value: thisWeekClients.length, color: thisWeekClients.length > 0 ? 'text-emerald-600' : 'text-midnight/30', bg: thisWeekClients.length > 0 ? 'bg-emerald-50' : 'bg-midnight/5' },
+          ].map(({ label, value, color, bg }) => (
+            <div key={label} className={`${bg} rounded-xl p-3 text-center`}>
+              <div className={`text-2xl font-display font-bold ${color}`}>{value}</div>
+              <div className="text-xs text-midnight/40 mt-0.5">{label}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Alert Banners */}
       {overdueClients.length > 0 && (
