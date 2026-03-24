@@ -351,6 +351,7 @@ export default function MorningBriefPage() {
   const [tides, setTides] = useState<TideEntry[]>([])
   const [surf, setSurf] = useState<SurfData | null>(null)
   const [desertWeather, setDesertWeather] = useState<WeatherData | null>(null)
+  const [caboForecast, setCaboForecast] = useState<Array<{ date: string; maxC: number; minC: number; code: number }> | null>(null)
   const [musicStreak, setMusicStreak] = useState<number>(0)
   const [hasMusicToday, setHasMusicToday] = useState<boolean>(false)
   const [emailDigest, setEmailDigest] = useState<{ unread: number; topMessages: Array<{ subject: string; from: string; preview: string; timestamp: string }> } | null>(null)
@@ -380,7 +381,7 @@ export default function MorningBriefPage() {
     setLoading(true)
     try {
       // Fetch tasks, weather, pipeline, and tides
-      const [tasksRes, weatherRes, pipelineRes, tidesRes, surfRes, desertRes, emailRes] = await Promise.allSettled([
+      const [tasksRes, weatherRes, pipelineRes, tidesRes, surfRes, desertRes, emailRes, caboRes] = await Promise.allSettled([
         fetch('/api/tasks?status=Not%20Started&status=In%20Progress&limit=20'),
         fetch('https://wttr.in/San+Diego?format=j1'),
         fetch('/api/pipeline'),
@@ -388,6 +389,7 @@ export default function MorningBriefPage() {
         fetch('https://marine-api.open-meteo.com/v1/marine?latitude=32.72&longitude=-117.16&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction&timezone=America%2FLos_Angeles&forecast_days=1'),
         fetch('https://wttr.in/Joshua+Tree+California?format=j1'),
         fetch('/api/agentmail-digest'),
+        fetch('https://api.open-meteo.com/v1/forecast?latitude=22.89&longitude=-109.92&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=America%2FDenver&start_date=2026-03-30&end_date=2026-04-06'),
       ])
 
       if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
@@ -484,6 +486,18 @@ export default function MorningBriefPage() {
       if (emailRes.status === 'fulfilled' && emailRes.value.ok) {
         const data = await emailRes.value.json()
         setEmailDigest({ unread: data.unread ?? 0, topMessages: data.topMessages ?? [] })
+      }
+      if (caboRes.status === 'fulfilled' && caboRes.value.ok) {
+        const data = await caboRes.value.json()
+        if (data.daily && data.daily.time) {
+          const forecast = data.daily.time.map((date: string, i: number) => ({
+            date,
+            maxC: Math.round(data.daily.temperature_2m_max[i]),
+            minC: Math.round(data.daily.temperature_2m_min[i]),
+            code: data.daily.weather_code[i],
+          }))
+          setCaboForecast(forecast)
+        }
       }
     } catch (err) {
       console.error('Error fetching morning brief data:', err)
@@ -712,6 +726,45 @@ export default function MorningBriefPage() {
           </a>
         </div>
       )}
+
+      {/* ── Cabo Trip Weather Forecast ── */}
+      {trip.dest === 'Cabo San Lucas' && trip.days > 0 && trip.days <= 14 && caboForecast && caboForecast.length > 0 && (() => {
+        const wmoEmoji = (code: number) => {
+          if (code === 0) return '☀️'
+          if (code <= 2) return '🌤️'
+          if (code <= 3) return '☁️'
+          if (code <= 49) return '🌫️'
+          if (code <= 67) return '🌧️'
+          if (code <= 77) return '🌨️'
+          if (code <= 82) return '🌦️'
+          if (code <= 99) return '⛈️'
+          return '🌡️'
+        }
+        const toF = (c: number) => Math.round(c * 9 / 5 + 32)
+        return (
+          <div className="bg-sky-50 border border-sky-200 rounded-2xl p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">🌊</span>
+              <h3 className="text-sm font-bold text-midnight">Cabo Weather — Mar 30–Apr 6</h3>
+              <span className="text-xs text-midnight/40 ml-auto">Los Cabos, BCS</span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {caboForecast.map((day, i) => {
+                const d = new Date(day.date + 'T12:00:00')
+                const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' })
+                return (
+                  <div key={i} className="flex flex-col items-center gap-0.5 min-w-[52px] bg-white/70 rounded-xl px-2 py-2 text-center">
+                    <span className="text-[10px] text-midnight/50 font-medium">{label}</span>
+                    <span className="text-base leading-none">{wmoEmoji(day.code)}</span>
+                    <span className="text-xs font-bold text-midnight">{toF(day.maxC)}°</span>
+                    <span className="text-[10px] text-midnight/40">{toF(day.minC)}°</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ── Cabo Rental Car Alert ── */}
       {!CABO_RENTAL_CAR_BOOKED && (() => {
