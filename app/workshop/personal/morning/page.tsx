@@ -217,6 +217,10 @@ const COLUMBUS_RETURN_BOOKED = false
 const EAGLE_BRAE_PAID = false
 // Set to true once Kyle calls Tareck El Khoury (refi lead, Mar 22)
 const TARECK_CALL_DONE = false
+// Jeffrey & Hannah Domenech — UW conditions (3642 Arizona St deal, Mar 22 2026)
+const DOMENECH_ML_STATEMENTS_RECEIVED = false  // Updated Merrill Lynch statements (full, not first page only)
+const DOMENECH_GIFT_LETTER_RECEIVED = false     // Gift letter for $565k gift funds
+const DOMENECH_APPRAISAL_ORDERED = false        // New appraisal ordered
 
 function getTripCountdown(): { days: number; label: string; dest: string; dateLabel: string; href: string; emoji: string } {
   const now = new Date()
@@ -1333,6 +1337,50 @@ export default function MorningBriefPage() {
         )
       })()}
 
+
+      {/* ── Jeffrey & Hannah Domenech — Active Deal Conditions ── */}
+      {(!DOMENECH_ML_STATEMENTS_RECEIVED || !DOMENECH_GIFT_LETTER_RECEIVED || !DOMENECH_APPRAISAL_ORDERED) && (
+        <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-5">
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0">🏠</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-2">
+                <p className="text-sm font-bold text-midnight">Jeffrey & Hannah Domenech — Open UW Conditions</p>
+                <span className="text-xs bg-red-100 text-red-700 border border-red-200 px-2 py-0.5 rounded-full font-medium">3642 Arizona St</span>
+              </div>
+              <ul className="space-y-1.5">
+                <li className="flex items-center gap-2 text-xs">
+                  {DOMENECH_ML_STATEMENTS_RECEIVED
+                    ? <span className="text-emerald-600 font-bold">✅</span>
+                    : <span className="text-red-500 font-bold">🔴</span>}
+                  <span className={DOMENECH_ML_STATEMENTS_RECEIVED ? 'line-through text-midnight/40' : 'text-midnight/80 font-medium'}>
+                    Updated Merrill Lynch statements (full — not first page only)
+                  </span>
+                </li>
+                <li className="flex items-center gap-2 text-xs">
+                  {DOMENECH_GIFT_LETTER_RECEIVED
+                    ? <span className="text-emerald-600 font-bold">✅</span>
+                    : <span className="text-red-500 font-bold">🔴</span>}
+                  <span className={DOMENECH_GIFT_LETTER_RECEIVED ? 'line-through text-midnight/40' : 'text-midnight/80 font-medium'}>
+                    Gift letter for $565k gift funds (Merrill Lynch Jan 27)
+                  </span>
+                </li>
+                <li className="flex items-center gap-2 text-xs">
+                  {DOMENECH_APPRAISAL_ORDERED
+                    ? <span className="text-emerald-600 font-bold">✅</span>
+                    : <span className="text-red-500 font-bold">🔴</span>}
+                  <span className={DOMENECH_APPRAISAL_ORDERED ? 'line-through text-midnight/40' : 'text-midnight/80 font-medium'}>
+                    New appraisal ordered
+                  </span>
+                </li>
+              </ul>
+              <p className="text-[10px] text-midnight/40 mt-2">
+                Flip flags in morning/page.tsx once each item is received. Card auto-hides when all done.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Tareck El Khoury — Refi Call Reminder ── */}
       {!TARECK_CALL_DONE && (
