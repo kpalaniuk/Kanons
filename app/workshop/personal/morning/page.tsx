@@ -340,6 +340,113 @@ function getSurfBadgeClass(rating: string): string {
   }
 }
 
+// ── Cabo Packing List Component ───────────────────────────────────────────────
+
+const CABO_PACKING_ITEMS = [
+  { id: 'passports', label: 'Passports (all 4)', category: '📋 Documents & Money' },
+  { id: 'insurance', label: 'Travel insurance cards', category: '📋 Documents & Money' },
+  { id: 'flights', label: 'Alaska confirmation (YAKQHZ)', category: '📋 Documents & Money' },
+  { id: 'homeexchange', label: 'HomeExchange info (Destrie Long — +18016648906)', category: '📋 Documents & Money' },
+  { id: 'solaris', label: 'Royal Solaris confirmation (BOOQ34929)', category: '📋 Documents & Money' },
+  { id: 'rental', label: 'Rental car info (justasklaura.com.mx)', category: '📋 Documents & Money' },
+  { id: 'cash', label: 'Cash (pesos + USD)', category: '📋 Documents & Money' },
+  { id: 'carseats', label: 'Car seats / boosters', category: '👶 Kids' },
+  { id: 'snacks', label: 'Snacks for plane', category: '👶 Kids' },
+  { id: 'ipads', label: 'iPad + headphones (×2)', category: '👶 Kids' },
+  { id: 'kidsun', label: 'Sunscreen SPF 50+ (kids)', category: '👶 Kids' },
+  { id: 'watershoes', label: 'Water shoes', category: '👶 Kids' },
+  { id: 'swimgear', label: 'Swim gear', category: '👶 Kids' },
+  { id: 'swimsuits', label: 'Swimsuits', category: '🧴 Adults' },
+  { id: 'sunscreen', label: 'Sunscreen', category: '🧴 Adults' },
+  { id: 'reefsafe', label: 'Reef-safe sunscreen (HomeExchange stay)', category: '🧴 Adults' },
+  { id: 'layers', label: 'Light layers (evenings)', category: '🧴 Adults' },
+  { id: 'meds', label: 'Meds (prescriptions + OTC)', category: '🧴 Adults' },
+  { id: 'chargers', label: 'Phone chargers + adapters', category: '🧴 Adults' },
+  { id: 'snorkel', label: 'Snorkel gear (or rent there?)', category: '🏄 Activities' },
+  { id: 'beachbag', label: 'Beach bag', category: '🏄 Activities' },
+  { id: 'bottles', label: 'Reusable water bottles', category: '🏄 Activities' },
+]
+
+function CaboPackingList({ daysLeft }: { daysLeft: number }) {
+  const [expanded, setExpanded] = useState(false)
+  const [checked, setChecked] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('cabo-packing-2026')
+      if (stored) setChecked(JSON.parse(stored))
+    } catch {}
+  }, [])
+
+  const toggle = (id: string) => {
+    const next = { ...checked, [id]: !checked[id] }
+    setChecked(next)
+    try { localStorage.setItem('cabo-packing-2026', JSON.stringify(next)) } catch {}
+  }
+
+  const totalCount = CABO_PACKING_ITEMS.length
+  const checkedCount = CABO_PACKING_ITEMS.filter(i => checked[i.id]).length
+  const allDone = checkedCount === totalCount
+
+  const categories = Array.from(new Set(CABO_PACKING_ITEMS.map(i => i.category)))
+
+  return (
+    <div className={`rounded-2xl p-5 border-2 ${allDone ? 'bg-emerald-50 border-emerald-300' : 'bg-amber-50 border-amber-200'}`}>
+      <button
+        onClick={() => setExpanded(e => !e)}
+        className="w-full flex items-center gap-2 text-left"
+      >
+        <span className="text-xl">🌊</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-bold text-midnight">Cabo Packing List</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${daysLeft <= 3 ? 'bg-red-100 text-red-700 border-red-200' : 'bg-amber-100 text-amber-700 border-amber-200'}`}>
+              {daysLeft === 1 ? '1 day left!' : `${daysLeft} days`}
+            </span>
+            <span className="text-xs text-midnight/50 ml-auto">{checkedCount}/{totalCount}</span>
+          </div>
+          {allDone && (
+            <div className="text-xs font-semibold text-emerald-600 mt-0.5">✅ You&apos;re ready for Cabo!</div>
+          )}
+        </div>
+        <span className="text-midnight/40 text-sm ml-2">{expanded ? '▲' : '▼'}</span>
+      </button>
+
+      {expanded && (
+        <div className="mt-4 space-y-4">
+          {categories.map(cat => (
+            <div key={cat}>
+              <div className="text-xs font-bold text-midnight/60 uppercase tracking-wide mb-2">{cat}</div>
+              <ul className="space-y-1.5">
+                {CABO_PACKING_ITEMS.filter(i => i.category === cat).map(item => (
+                  <li key={item.id}>
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={!!checked[item.id]}
+                        onChange={() => toggle(item.id)}
+                        className="w-4 h-4 rounded accent-amber-500 cursor-pointer"
+                      />
+                      <span className={`text-xs ${checked[item.id] ? 'line-through text-midnight/30' : 'text-midnight/80 group-hover:text-midnight'}`}>
+                        {item.label}
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          {allDone && (
+            <div className="mt-3 text-center text-sm font-bold text-emerald-600 bg-emerald-100 rounded-xl py-2">
+              ✅ You&apos;re ready for Cabo! Have an amazing trip. 🌊
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function MorningBriefPage() {
@@ -787,6 +894,11 @@ export default function MorningBriefPage() {
           </div>
         )
       })()}
+
+      {/* ── Cabo Packing List ── */}
+      {trip.dest === 'Cabo San Lucas' && trip.days > 0 && trip.days <= 14 && (
+        <CaboPackingList daysLeft={trip.days} />
+      )}
 
       {/* ── Cabo Rental Car Alert ── */}
       {!CABO_RENTAL_CAR_BOOKED && (() => {
