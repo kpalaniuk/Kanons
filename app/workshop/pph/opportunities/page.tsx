@@ -7,7 +7,7 @@ import KanbanBoard from './KanbanBoard'
 import {
   AlertTriangle, Clock, Phone, MessageSquare, FileText,
   ChevronDown, ChevronUp, Plus, Search, User, Calendar,
-  Filter, RefreshCw, StickyNote, LayoutGrid, List
+  Filter, RefreshCw, StickyNote, LayoutGrid, List, Ghost
 } from 'lucide-react'
 
 interface Client {
@@ -526,6 +526,28 @@ export default function OpportunitiesPage() {
                 className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium hover:bg-amber-200 transition-colors"
               >
                 {c.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {staleClients.length > 0 && (
+        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Ghost className="w-4 h-4 text-purple-600" />
+            <span className="text-sm font-semibold text-purple-700">
+              {staleClients.length} stale deal{staleClients.length > 1 ? 's' : ''} — 21+ days in same stage
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {staleClients.map(c => (
+              <Link
+                key={c.id}
+                href={`/workshop/pph/clients/${c.id}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium hover:bg-purple-200 transition-colors"
+              >
+                {c.name} · {c.stage}
               </Link>
             ))}
           </div>
