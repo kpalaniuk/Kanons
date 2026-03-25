@@ -138,6 +138,7 @@ export default function OpportunitiesPage() {
   const [filterLoanType, setFilterLoanType] = useState('all')
   const [filterCalendarDay, setFilterCalendarDay] = useState<string | null>(null)
   const [filterNoFollowUp, setFilterNoFollowUp] = useState(false)
+  const [filterStale, setFilterStale] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
   const [showAddForm, setShowAddForm] = useState(false)
   const [logCallClient, setLogCallClient] = useState<Client | null>(null)
@@ -359,6 +360,15 @@ export default function OpportunitiesPage() {
     [clients]
   )
 
+  const staleClients = useMemo(() =>
+    clients.filter(c => {
+      if (c.stage === 'Closed' || c.stage === 'Lost' || !c.stageUpdatedAt) return false
+      const days = Math.floor((Date.now() - new Date(c.stageUpdatedAt).getTime()) / (1000 * 60 * 60 * 24))
+      return days >= 21
+    }),
+    [clients]
+  )
+
   // Referral type counts (active clients only)
   const referralCounts = useMemo(() => {
     const active = clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost')
@@ -397,6 +407,11 @@ export default function OpportunitiesPage() {
     if (filterLoanType !== 'all') list = list.filter(c => c.loanType === filterLoanType)
     if (filterCalendarDay) list = list.filter(c => c.followUpDate && c.followUpDate.slice(0, 10) === filterCalendarDay)
     if (filterNoFollowUp) list = list.filter(c => !c.followUpDate)
+    if (filterStale) list = list.filter(c => {
+      if (!c.stageUpdatedAt) return false
+      const days = Math.floor((Date.now() - new Date(c.stageUpdatedAt).getTime()) / (1000 * 60 * 60 * 24))
+      return days >= 21
+    })
     // Sort: Hot first, then by follow-up date (overdue first)
     const priorityOrder: Record<string, number> = { Hot: 0, Active: 1, Warm: 2, Monitoring: 3 }
     list.sort((a, b) => {
@@ -408,7 +423,7 @@ export default function OpportunitiesPage() {
       return fa - fb
     })
     return list
-  }, [clients, search, filterStage, filterLo, filterPriority, filterReferral, filterLoanType, filterCalendarDay, filterNoFollowUp])
+  }, [clients, search, filterStage, filterLo, filterPriority, filterReferral, filterLoanType, filterCalendarDay, filterNoFollowUp, filterStale])
 
   if (loading) {
     return (
@@ -455,17 +470,18 @@ export default function OpportunitiesPage() {
 
       {/* Stats Bar */}
       {!loading && clients.length > 0 && (
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
           {[
-            { label: 'Active', value: clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost').length, color: 'text-midnight', bg: 'bg-midnight/5', onClick: undefined },
-            { label: 'Overdue', value: overdueClients.length, color: overdueClients.length > 0 ? 'text-red-600' : 'text-midnight/30', bg: overdueClients.length > 0 ? 'bg-red-50' : 'bg-midnight/5', onClick: undefined },
-            { label: 'Today', value: todayClients.length, color: todayClients.length > 0 ? 'text-amber-600' : 'text-midnight/30', bg: todayClients.length > 0 ? 'bg-amber-50' : 'bg-midnight/5', onClick: undefined },
-            { label: 'This week', value: thisWeekClients.length, color: thisWeekClients.length > 0 ? 'text-emerald-600' : 'text-midnight/30', bg: thisWeekClients.length > 0 ? 'bg-emerald-50' : 'bg-midnight/5', onClick: undefined },
-            { label: 'No date', value: noFollowUpClients.length, color: noFollowUpClients.length > 0 ? (filterNoFollowUp ? 'text-white' : 'text-amber-600') : 'text-midnight/30', bg: filterNoFollowUp ? 'bg-amber-500' : noFollowUpClients.length > 0 ? 'bg-amber-50' : 'bg-midnight/5', onClick: noFollowUpClients.length > 0 ? () => setFilterNoFollowUp(f => !f) : undefined },
-          ].map(({ label, value, color, bg, onClick }) => (
+            { label: 'Active', value: clients.filter(c => c.stage !== 'Closed' && c.stage !== 'Lost').length, color: 'text-midnight', bg: 'bg-midnight/5', active: false, onClick: undefined },
+            { label: 'Overdue', value: overdueClients.length, color: overdueClients.length > 0 ? 'text-red-600' : 'text-midnight/30', bg: overdueClients.length > 0 ? 'bg-red-50' : 'bg-midnight/5', active: false, onClick: undefined },
+            { label: 'Today', value: todayClients.length, color: todayClients.length > 0 ? 'text-amber-600' : 'text-midnight/30', bg: todayClients.length > 0 ? 'bg-amber-50' : 'bg-midnight/5', active: false, onClick: undefined },
+            { label: 'This week', value: thisWeekClients.length, color: thisWeekClients.length > 0 ? 'text-emerald-600' : 'text-midnight/30', bg: thisWeekClients.length > 0 ? 'bg-emerald-50' : 'bg-midnight/5', active: false, onClick: undefined },
+            { label: 'No date', value: noFollowUpClients.length, color: noFollowUpClients.length > 0 ? (filterNoFollowUp ? 'text-white' : 'text-amber-600') : 'text-midnight/30', bg: filterNoFollowUp ? 'bg-amber-500' : noFollowUpClients.length > 0 ? 'bg-amber-50' : 'bg-midnight/5', active: filterNoFollowUp, onClick: noFollowUpClients.length > 0 ? () => setFilterNoFollowUp(f => !f) : undefined },
+            { label: 'Stale', value: staleClients.length, color: staleClients.length > 0 ? (filterStale ? 'text-white' : 'text-purple-600') : 'text-midnight/30', bg: filterStale ? 'bg-purple-500' : staleClients.length > 0 ? 'bg-purple-50' : 'bg-midnight/5', active: filterStale, onClick: staleClients.length > 0 ? () => setFilterStale(f => !f) : undefined },
+          ].map(({ label, value, color, bg, active, onClick }) => (
             <div key={label} className={`${bg} rounded-xl p-3 text-center transition-colors ${onClick ? 'cursor-pointer hover:opacity-80' : ''}`} onClick={onClick}>
               <div className={`text-2xl font-display font-bold ${color}`}>{value}</div>
-              <div className={`text-xs mt-0.5 ${filterNoFollowUp && label === 'No date' ? 'text-white/70' : 'text-midnight/40'}`}>{label}</div>
+              <div className={`text-xs mt-0.5 ${active ? 'text-white/70' : 'text-midnight/40'}`}>{label}</div>
             </div>
           ))}
         </div>
