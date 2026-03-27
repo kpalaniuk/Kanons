@@ -1067,6 +1067,48 @@ export default function MorningBriefPage() {
           </div>
         )
       })()}
+      {/* ── Parents Visit — April 22–26 ── */}
+      {(() => {
+        const arrivalDate = new Date('2026-04-22T00:00:00')
+        const hideAfter = new Date('2026-04-27T00:00:00')
+        const nowDate = new Date()
+        nowDate.setHours(0, 0, 0, 0)
+        const daysToArrival = Math.ceil((arrivalDate.getTime() - nowDate.getTime()) / (1000 * 60 * 60 * 24))
+        if (daysToArrival > 35 || nowDate >= hideAfter) return null
+        const isVeryUrgent = daysToArrival <= 3
+        const isUrgent = daysToArrival <= 7
+        const isArrived = daysToArrival <= 0
+        return (
+          <div className={`rounded-2xl p-5 border-2 ${isVeryUrgent ? 'bg-red-50 border-red-300' : isUrgent ? 'bg-orange-50 border-orange-300' : 'bg-amber-50 border-amber-300'}`}>
+            <div className="flex items-start gap-3">
+              <span className="text-xl shrink-0">🏡</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  <p className="text-sm font-bold text-midnight">Mom &amp; Dad visiting — April 22–26</p>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${isVeryUrgent ? 'bg-red-100 text-red-700 border-red-200' : isUrgent ? 'bg-orange-100 text-orange-700 border-orange-200' : 'bg-amber-100 text-amber-700 border-amber-200'}`}>
+                    {isArrived ? 'They are here!' : daysToArrival === 1 ? 'Tomorrow!' : `${daysToArrival} days to arrival`}
+                  </span>
+                </div>
+                <ul className="space-y-1.5 text-xs text-midnight/70">
+                  <li className="flex items-start gap-1.5">
+                    <span className="shrink-0">✈️</span>
+                    <span><strong className="text-midnight">Arrival:</strong> Apr 22 @ 7:34pm · AS 3421 (EUG → SAN) · Conf: UJZZFW</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="shrink-0">🚗</span>
+                    <span>Pick up at SAN airport</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="shrink-0">✈️</span>
+                    <span><strong className="text-midnight">Departure:</strong> Apr 26 @ 8:14pm · SAN → EUG · Same conf</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
       {/* ── Joshua Tree Departure Banner ── */}
       {(() => {
         const now = new Date()
