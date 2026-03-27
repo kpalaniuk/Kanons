@@ -10,6 +10,7 @@ import {
   Calculator, Home, BookOpen, Briefcase, Mail,
 } from 'lucide-react'
 import { GH_COOP_TENANTS } from '@/lib/gh-coop-data'
+import SanDiegoWeatherCard from './SanDiegoWeatherCard'
 
 // ── Gratitude Prompts ─────────────────────────────────────────────────────────
 
@@ -825,6 +826,9 @@ export default function MorningBriefPage() {
         </div>
       </div>
 
+
+      {/* ── San Diego Weather (Open-Meteo) ── */}
+      <SanDiegoWeatherCard />
 
       {/* -- Cabo Prep Checklist -- */}
       {trip.dest === 'Cabo San Lucas' && trip.days > 0 && trip.days <= 14 && (
