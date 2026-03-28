@@ -12,6 +12,7 @@ import {
 import { GH_COOP_TENANTS } from '@/lib/gh-coop-data'
 import SanDiegoWeatherCard from './SanDiegoWeatherCard'
 import BirthdayCountdownCard from './BirthdayCountdownCard'
+import CaboDeparturePlan from './CaboDeparturePlan'
 
 // ── Gratitude Prompts ─────────────────────────────────────────────────────────
 
@@ -907,6 +908,9 @@ export default function MorningBriefPage() {
       {trip.dest === 'Cabo San Lucas' && trip.days > 0 && trip.days <= 14 && (
         <CaboPackingList daysLeft={trip.days} />
       )}
+
+      {/* ── Cabo Departure Plan ── */}
+      <CaboDeparturePlan />
 
       {/* ── Cabo Rental Car Alert ── */}
       {!CABO_RENTAL_CAR_BOOKED && (() => {
