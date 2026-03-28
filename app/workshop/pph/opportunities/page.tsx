@@ -279,10 +279,10 @@ export default function OpportunitiesPage() {
     try {
       await fetch('/api/pph/clients', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: clientId, followUpDate: date || null }),
-      })
-      await fetchClients()
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: clientId, followUpDate: date || null }),
+    })
+    await fetchClients()
     } catch (err) {
       console.error(err)
     } finally {
