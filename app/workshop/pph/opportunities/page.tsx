@@ -282,7 +282,7 @@ export default function OpportunitiesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: clientId, followUpDate: date || null }),
       })
-      setClients(prev => prev.map(c => c.id === clientId ? { ...c, followUpDate: date || null } : c))
+      await fetchClients()
     } catch (err) {
       console.error(err)
     } finally {
