@@ -14,6 +14,7 @@ import SanDiegoWeatherCard from './SanDiegoWeatherCard'
 import BirthdayCountdownCard from './BirthdayCountdownCard'
 import CaboDeparturePlan from './CaboDeparturePlan'
 import CaboVacationCard from './CaboVacationCard'
+import WelcomeBackCard from './WelcomeBackCard'
 
 // ── Gratitude Prompts ─────────────────────────────────────────────────────────
 
@@ -915,6 +916,9 @@ export default function MorningBriefPage() {
 
       {/* ── Cabo Departure Plan ── */}
       <CaboDeparturePlan />
+
+      {/* ── Post-Cabo Welcome Back Card (Apr 7-14) ── */}
+      <WelcomeBackCard />
 
       {/* ── Cabo Rental Car Alert ── */}
       {!CABO_RENTAL_CAR_BOOKED && (() => {
