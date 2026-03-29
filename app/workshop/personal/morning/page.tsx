@@ -13,6 +13,7 @@ import { GH_COOP_TENANTS } from '@/lib/gh-coop-data'
 import SanDiegoWeatherCard from './SanDiegoWeatherCard'
 import BirthdayCountdownCard from './BirthdayCountdownCard'
 import CaboDeparturePlan from './CaboDeparturePlan'
+import CaboVacationCard from './CaboVacationCard'
 
 // ── Gratitude Prompts ─────────────────────────────────────────────────────────
 
@@ -908,6 +909,9 @@ export default function MorningBriefPage() {
       {trip.dest === 'Cabo San Lucas' && trip.days > 0 && trip.days <= 14 && (
         <CaboPackingList daysLeft={trip.days} />
       )}
+
+      {/* ── Cabo Vacation Card (shows Mar 30 - Apr 6 in-trip) ── */}
+      <CaboVacationCard />
 
       {/* ── Cabo Departure Plan ── */}
       <CaboDeparturePlan />
