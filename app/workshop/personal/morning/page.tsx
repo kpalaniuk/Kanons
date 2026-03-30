@@ -15,6 +15,7 @@ import BirthdayCountdownCard from './BirthdayCountdownCard'
 import CaboDeparturePlan from './CaboDeparturePlan'
 import CaboVacationCard from './CaboVacationCard'
 import WelcomeBackCard from './WelcomeBackCard'
+import WeeklyCallGoalCard from './WeeklyCallGoalCard'
 
 // ── Gratitude Prompts ─────────────────────────────────────────────────────────
 
@@ -1586,6 +1587,9 @@ export default function MorningBriefPage() {
         )
       })()}
 
+
+      {/* ── Weekly Call Goal Tracker ── */}
+      <WeeklyCallGoalCard />
 
       {/* ── Jeffrey & Hannah Domenech — Active Deal Conditions ── */}
       {(!DOMENECH_ML_STATEMENTS_RECEIVED || !DOMENECH_GIFT_LETTER_RECEIVED || !DOMENECH_APPRAISAL_ORDERED) && (
