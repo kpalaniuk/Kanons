@@ -381,6 +381,110 @@ function History({ sessions }: { sessions: MusicSession[] }) {
   )
 }
 
+// ── Practice Heatmap ─────────────────────────────────────────────────────────
+
+function PracticeHeatmap({ sessions }: { sessions: MusicSession[] }) {
+  const WEEKS = 12
+  const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const DAY_LABELS = ['M', '', 'W', '', 'F', '', '']
+
+  // Build a map of date → total minutes
+  const minutesByDate: Record<string, number> = {}
+  sessions.forEach(s => {
+    minutesByDate[s.date] = (minutesByDate[s.date] || 0) + s.durationMin
+  })
+
+  // Today at midnight for comparisons
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  // Monday-based day of week (0=Mon, 6=Sun)
+  const todayDow = (today.getDay() + 6) % 7
+
+  // Start on the Monday 11 weeks before current week's Monday
+  const startDate = new Date(today)
+  startDate.setDate(startDate.getDate() - todayDow - (WEEKS - 1) * 7)
+
+  // Build weeks: weeks[w][d] = { dateStr, date, minutes }
+  const weeks: Array<Array<{ dateStr: string; date: Date; minutes: number }>> = []
+  for (let w = 0; w < WEEKS; w++) {
+    const week: Array<{ dateStr: string; date: Date; minutes: number }> = []
+    for (let d = 0; d < 7; d++) {
+      const cellDate = new Date(startDate)
+      cellDate.setDate(startDate.getDate() + w * 7 + d)
+      const ds = `${cellDate.getFullYear()}-${String(cellDate.getMonth() + 1).padStart(2, '0')}-${String(cellDate.getDate()).padStart(2, '0')}`
+      week.push({ dateStr: ds, date: cellDate, minutes: minutesByDate[ds] || 0 })
+    }
+    weeks.push(week)
+  }
+
+  // Month labels: show at the first week whose Monday starts a new month
+  const monthLabels: Array<{ label: string; weekIdx: number }> = []
+  let lastMonth = -1
+  for (let w = 0; w < WEEKS; w++) {
+    const month = weeks[w][0].date.getMonth()
+    if (month !== lastMonth) {
+      monthLabels.push({ label: MONTH_LABELS[month], weekIdx: w })
+      lastMonth = month
+    }
+  }
+
+  function getCellColor(minutes: number): string {
+    if (minutes === 0) return 'bg-midnight/8'
+    if (minutes < 15) return 'bg-amber-100'
+    if (minutes < 30) return 'bg-amber-300'
+    if (minutes < 60) return 'bg-terracotta'
+    return 'bg-orange-500'
+  }
+
+  return (
+    <div className="bg-cream rounded-xl p-4 border border-midnight/8">
+      <div className="flex items-center gap-2 mb-3">
+        <Calendar size={14} className="text-midnight/70" />
+        <span className="text-sm font-semibold text-midnight">Practice calendar</span>
+      </div>
+      <div className="overflow-x-auto">
+        <div className="inline-flex gap-[2px]">
+          {/* Day-of-week labels */}
+          <div className="flex flex-col gap-[2px] pr-1" style={{ marginTop: 16 }}>
+            {DAY_LABELS.map((label, i) => (
+              <div
+                key={i}
+                className="text-[9px] text-midnight/40 flex items-center justify-end"
+                style={{ width: 14, height: 12 }}
+              >
+                {label}
+              </div>
+            ))}
+          </div>
+          {/* Week columns */}
+          {weeks.map((week, w) => {
+            const ml = monthLabels.find(m => m.weekIdx === w)
+            return (
+              <div key={w} className="flex flex-col gap-[2px]">
+                <div className="text-[9px] text-midnight/40 leading-none" style={{ height: 14 }}>
+                  {ml?.label ?? ''}
+                </div>
+                {week.map((cell, d) => {
+                  const isFuture = cell.date > today
+                  return (
+                    <div
+                      key={d}
+                      className={`rounded-sm ${isFuture ? 'bg-midnight/4' : getCellColor(cell.minutes)}`}
+                      style={{ width: 12, height: 12 }}
+                      title={isFuture ? undefined : `${formatDate(cell.dateStr)} · ${cell.minutes} min`}
+                    />
+                  )
+                })}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function MusicHabitPage() {
@@ -513,6 +617,9 @@ export default function MusicHabitPage() {
           </div>
         </div>
       )}
+
+      {/* Practice Heatmap */}
+      <PracticeHeatmap sessions={data.sessions} />
 
       {/* Instrument Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
