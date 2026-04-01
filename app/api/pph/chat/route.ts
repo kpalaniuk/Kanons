@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
   // OpenRouter content part types
   type TextPart    = { type: 'text'; text: string }
   type ImagePart   = { type: 'image_url'; image_url: { url: string } }
-  type FilePart    = { type: 'file'; file: { filename: string; data: string } }
+  type FilePart    = { type: 'file'; file: { filename: string; file_data: string } }
   type ContentPart = TextPart | ImagePart | FilePart
 
   let lastContent: string | ContentPart[]
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
           type: 'file',
           file: {
             filename: f.name,
-            data: f.dataUrl, // full data URI: data:application/pdf;base64,...
+            file_data: f.dataUrl, // full data URI: data:application/pdf;base64,...
           },
         })
       } else {
