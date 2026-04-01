@@ -18,6 +18,7 @@ TONE — CRITICAL:
 - Talk like a sharp colleague texting, not a report writer. No markdown tables. No ## headers. No bold everywhere.
 - Short and direct. 2-4 sentences for simple answers. Bullets only when listing 3+ items.
 - When you analyze a document or image: pull the key numbers, flag the risks, give a recommendation. No preamble, no "here's what I found", just lead with the insight.
+- When analyzing bank statements or financial PDFs: extract deposits by month, flag large/irregular deposits, calculate average monthly deposits (excluding outliers), and apply SE/bank-statement income guidelines.
 - Max response length: fit on a phone screen. If it's longer than that, you're over-explaining.
 
 CORE UW:
@@ -27,6 +28,7 @@ VA: 0% down, residual income test, VA funding fee
 DSCR: NOI/PITIA ≥ 1.0 (prefer 1.25), no personal income, 20-25% down
 Jumbo: 43% DTI, 10-20% down, 12mo reserves
 Income: W2 = Box1/12. SE = 2yr avg net + depreciation + depletion. OT/bonus = 2yr avg. Rental = 75% gross minus PITIA or 75% net. YTD paystub = YTD ÷ months worked.
+Bank statement income: 12-month avg deposits (personal 50% expense factor, business 25-50%). Flag NSF, large deposits, transfers.
 ARM qualifying rate: note rate +2% or fully indexed, whichever higher.
 
 CLIENT RECORD UPDATES — emit this block silently when any field changes, then confirm in one line:
@@ -61,14 +63,19 @@ export async function POST(request: NextRequest) {
     ? '\n\n[MODE: CUSTOM SCENARIO] The user wants a custom scenario tailored to this client. Ask focused questions to gather income, down payment, rate, and any UW flags before generating.'
     : ''
 
-  // Build the last user message — with files as vision content if present
+  // Build the last user message — with files as vision/document content if present
   const historyMessages = messages.slice(0, -1).map((m: { role: string; content: string }) => ({
     role: m.role,
     content: m.content,
   }))
 
   const lastMsg = messages[messages.length - 1]
-  type ContentPart = { type: string; text?: string; image_url?: { url: string } }
+
+  type ImageUrlPart = { type: 'image_url'; image_url: { url: string } }
+  type DocumentPart = { type: 'document'; source: { type: 'base64'; media_type: 'application/pdf'; data: string } }
+  type TextPart = { type: 'text'; text: string }
+  type ContentPart = TextPart | ImageUrlPart | DocumentPart
+
   let lastContent: string | ContentPart[]
 
   if (attachedFiles && attachedFiles.length > 0) {
@@ -76,8 +83,21 @@ export async function POST(request: NextRequest) {
       { type: 'text', text: lastMsg.content || '(analyze the attached files in the context of this client)' },
     ]
     for (const f of attachedFiles as { dataUrl: string; mimeType: string; name: string }[]) {
-      // Claude supports image/* and application/pdf via image_url with data URI
-      parts.push({ type: 'image_url', image_url: { url: f.dataUrl } })
+      if (f.mimeType === 'application/pdf') {
+        // PDFs must be sent as document blocks with raw base64 (not a data URI)
+        const base64Data = f.dataUrl.replace(/^data:application\/pdf;base64,/, '')
+        parts.push({
+          type: 'document',
+          source: {
+            type: 'base64',
+            media_type: 'application/pdf',
+            data: base64Data,
+          },
+        })
+      } else {
+        // Images: send as image_url with full data URI
+        parts.push({ type: 'image_url', image_url: { url: f.dataUrl } })
+      }
     }
     lastContent = parts
   } else {
