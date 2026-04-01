@@ -873,32 +873,22 @@ export default function ClientProfilePage() {
 
   // Convert each PDF page to a JPEG image using pdfjs (browser-side)
   // This handles scanned/image-based PDFs that have no text layer
+  // Convert PDF pages to JPEG images via server-side API (handles scanned PDFs)
   async function pdfToImages(file: File): Promise<{ dataUrl: string; name: string; mimeType: string }[]> {
     const arrayBuffer = await file.arrayBuffer()
-    // Use legacy build — no worker needed, works in all browser/bundler combos
-    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
-    pdfjsLib.GlobalWorkerOptions.workerSrc = ''
-    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise
-    const images: { dataUrl: string; name: string; mimeType: string }[] = []
-    const baseName = file.name.replace(/\.pdf$/i, '')
-    // Cap at 20 pages total to avoid payload blowout
-    const maxPages = Math.min(pdf.numPages, 20)
-    for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-      const page = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise.then(p => p.getPage(pageNum))
-      const scale = 1.5
-      const viewport = page.getViewport({ scale })
-      const canvas = document.createElement('canvas')
-      canvas.width = viewport.width
-      canvas.height = viewport.height
-      const ctx = canvas.getContext('2d')!
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await page.render({ canvasContext: ctx as any, viewport, canvas } as any).promise
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.80)
-      images.push({ dataUrl, name: `${baseName}-p${pageNum}.jpg`, mimeType: 'image/jpeg' })
+    const pdfBase64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+    const res = await fetch('/api/pph/pdf-to-images', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pdfBase64, fileName: file.name }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error || `PDF API error ${res.status}`)
     }
-    return images
+    const { images } = await res.json()
+    return images as { dataUrl: string; name: string; mimeType: string }[]
   }
-
   function handleChatPaste(e: React.ClipboardEvent) {
     const items = e.clipboardData?.items
     if (!items) return
