@@ -875,15 +875,17 @@ export default function ClientProfilePage() {
   // This handles scanned/image-based PDFs that have no text layer
   async function pdfToImages(file: File): Promise<{ dataUrl: string; name: string; mimeType: string }[]> {
     const arrayBuffer = await file.arrayBuffer()
-    const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist')
-    // Use CDN worker to avoid bundler issues in browser
-    GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`
-    const pdf = await getDocument({ data: new Uint8Array(arrayBuffer) }).promise
+    // Use legacy build — no worker needed, works in all browser/bundler combos
+    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
+    pdfjsLib.GlobalWorkerOptions.workerSrc = ''
+    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise
     const images: { dataUrl: string; name: string; mimeType: string }[] = []
     const baseName = file.name.replace(/\.pdf$/i, '')
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum)
-      const scale = 2.0 // 2x for legibility
+    // Cap at 20 pages total to avoid payload blowout
+    const maxPages = Math.min(pdf.numPages, 20)
+    for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+      const page = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise.then(p => p.getPage(pageNum))
+      const scale = 1.5
       const viewport = page.getViewport({ scale })
       const canvas = document.createElement('canvas')
       canvas.width = viewport.width
@@ -891,7 +893,7 @@ export default function ClientProfilePage() {
       const ctx = canvas.getContext('2d')!
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await page.render({ canvasContext: ctx as any, viewport, canvas } as any).promise
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.80)
       images.push({ dataUrl, name: `${baseName}-p${pageNum}.jpg`, mimeType: 'image/jpeg' })
     }
     return images
@@ -925,11 +927,12 @@ export default function ClientProfilePage() {
         // Convert PDF pages to images for vision analysis (handles scanned/image PDFs)
         try {
           const pages = await pdfToImages(file)
+          if (pages.length === 0) throw new Error('No pages rendered')
           allResults.push(...pages)
-        } catch {
-          // Fallback: send as raw data URL and let server handle it
-          const dataUrl = await readFileAsDataUrl(file)
-          allResults.push({ dataUrl, name: file.name, mimeType: file.type })
+        } catch (err) {
+          console.error('PDF→image conversion failed:', err)
+          // Surface the error visibly rather than silent fallback
+          allResults.push({ dataUrl: '', name: `[PDF conversion failed: ${file.name}]`, mimeType: 'text/plain' })
         }
       } else {
         const dataUrl = await readFileAsDataUrl(file)
