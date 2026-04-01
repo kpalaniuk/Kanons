@@ -467,6 +467,7 @@ export default function MorningBriefPage() {
   const [caboForecast, setCaboForecast] = useState<Array<{ date: string; maxC: number; minC: number; code: number }> | null>(null)
   const [musicStreak, setMusicStreak] = useState<number>(0)
   const [hasMusicToday, setHasMusicToday] = useState<boolean>(false)
+  const [musicSessions, setMusicSessions] = useState<MusicSession[]>([])
   const [emailDigest, setEmailDigest] = useState<{ unread: number; topMessages: Array<{ subject: string; from: string; preview: string; timestamp: string }> } | null>(null)
   const [reviewOpen, setReviewOpen] = useState(false)
   const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({})
@@ -630,6 +631,7 @@ export default function MorningBriefPage() {
         setMusicStreak(calcMusicStreak(data.sessions || []))
         const todayStr = new Date().toISOString().slice(0, 10)
         setHasMusicToday((data.sessions || []).some((s) => s.date === todayStr))
+        setMusicSessions(data.sessions || [])
       }
     } catch {
       // localStorage unavailable or malformed
@@ -1650,24 +1652,65 @@ export default function MorningBriefPage() {
         </div>
       )}
 
-      {/* ── Music Habit Nudge ── */}
-      {!hasMusicToday && new Date().getHours() >= 18 && (
-        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5">
-          <div className="flex items-start gap-3">
-            <span className="text-xl shrink-0">🎺</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-midnight">No music yet today — 30 min before 9?</p>
-              <p className="text-xs text-midnight/50 mt-1">
-                Log a session in{' '}
-                <a href="/workshop/personal/music" className="underline text-amber-700 hover:text-amber-900">Music Habit</a>{' '}
-                to clear this card.
-              </p>
+            {/* ── Music Weekly Snapshot ── */}
+      {(() => {
+        const now = new Date()
+        const hour = now.getHours()
+        const isLateNoMusic = !hasMusicToday && hour >= 18
+        const pad2 = (n: number) => String(n).padStart(2, '0')
+        const fmtD = (d: Date) => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate())
+        const todayBase = new Date(now); todayBase.setHours(0, 0, 0, 0)
+        const dow = todayBase.getDay()
+        const monday = new Date(todayBase)
+        monday.setDate(todayBase.getDate() - (dow === 0 ? 6 : dow - 1))
+        const weekDays = Array.from({ length: 7 }, (_, i) => { const d = new Date(monday); d.setDate(monday.getDate() + i); return fmtD(d) })
+        const todayStr = fmtD(todayBase)
+        const sessionDates = new Set(musicSessions.map(s => s.date))
+        const weekMinutes = musicSessions.filter(s => s.date >= weekDays[0] && s.date <= weekDays[6]).reduce((sum, s) => sum + s.durationMin, 0)
+        const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+        const cardCls = isLateNoMusic ? 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-5' : 'bg-cream border border-midnight/10 rounded-2xl p-5'
+        return (
+          <div className={cardCls}>
+            <div className='flex items-center justify-between mb-3'>
+              <div className='flex items-center gap-2'>
+                <span className='text-base'>🎺</span>
+                <span className='text-sm font-bold text-midnight'>Music this week</span>
+                {musicStreak > 0 && (
+                  <span className='inline-flex items-center gap-1 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full'>
+                    🔥 {musicStreak}d
+                  </span>
+                )}
+              </div>
+              <a href='/workshop/personal/music' className='text-xs text-ocean hover:underline font-medium'>
+                Log session →
+              </a>
             </div>
+            <div className='flex gap-2 items-end mb-1'>
+              {weekDays.map((d, i) => {
+                const isFuture = d > todayStr
+                const played = sessionDates.has(d)
+                const isToday2 = d === todayStr
+                const dotCls = played ? 'w-6 h-6 rounded-md bg-terracotta' : isFuture ? 'w-6 h-6 rounded-md bg-midnight/5' : isToday2 ? (isLateNoMusic ? 'w-6 h-6 rounded-md bg-amber-200 ring-2 ring-amber-400' : 'w-6 h-6 rounded-md bg-midnight/15 ring-2 ring-midnight/20') : 'w-6 h-6 rounded-md bg-midnight/10'
+                return (
+                  <div key={d} className='flex flex-col items-center gap-1'>
+                    <div className={dotCls} />
+                    <span className='text-[9px] text-midnight/40 font-medium'>{DAY_LABELS[i]}</span>
+                  </div>
+                )
+              })}
+              <div className='ml-auto flex flex-col items-end justify-center pb-4'>
+                <span className='text-sm font-bold text-midnight'>{weekMinutes}m</span>
+                <span className='text-[10px] text-midnight/40'>this week</span>
+              </div>
+            </div>
+            {isLateNoMusic && (
+              <p className='text-xs text-amber-700 mt-1'>No music yet today — 30 min keeps the streak alive 🎺</p>
+            )}
           </div>
-        </div>
-      )}
+        )
+      })()}
 
-      {/* ── Quick Task Add ── */}
+            {/* ── Quick Task Add ── */}
       <div className="relative bg-cream rounded-2xl p-6 border border-midnight/5 overflow-hidden">
         {quickSuccess && (
           <div
