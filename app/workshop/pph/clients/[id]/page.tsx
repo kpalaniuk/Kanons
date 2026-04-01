@@ -601,6 +601,8 @@ export default function ClientProfilePage() {
   const [attachedFiles, setAttachedFiles] = useState<{ dataUrl: string; name: string; mimeType: string }[]>([])
   const [scenarioMode, setScenarioMode] = useState<'none' | 'quick' | 'custom'>('none')
   const [pendingScenario, setPendingScenario] = useState<Record<string, unknown> | null>(null)
+  const [pendingReport, setPendingReport] = useState<Record<string, unknown> | null>(null)
+  const [showReport, setShowReport] = useState(false)
   const [savingScenario, setSavingScenario] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -964,6 +966,14 @@ export default function ClientProfilePage() {
           try {
             const parsed = JSON.parse(scenarioMatch[1])
             setPendingScenario({ ...parsed, notionClientId: client.id, clientName: client.name })
+          } catch { /* ignore */ }
+        }
+
+        const reportMatch = assistantContent.match(/```bank-statement-report\n([\s\S]*?)```/)
+        if (reportMatch) {
+          try {
+            const parsed = JSON.parse(reportMatch[1])
+            setPendingReport({ ...parsed, clientName: client.name, generatedAt: new Date().toISOString() })
           } catch { /* ignore */ }
         }
 
@@ -1989,6 +1999,22 @@ export default function ClientProfilePage() {
                 )}
               </div>
 
+              {/* Pending report banner */}
+              {pendingReport && (
+                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-indigo-700">📋 Bank Statement Report Ready</p>
+                      <p className="text-xs text-indigo-600 mt-0.5">{String(pendingReport.accountName ?? '')} · {String(pendingReport.period ?? '')} · {String(pendingReport.statementCount ?? '')} statements</p>
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button onClick={() => setPendingReport(null)} className="px-2 py-1 text-xs text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors">Dismiss</button>
+                      <button onClick={() => setShowReport(true)} className="px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">View Report</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Pending scenario banner */}
               {pendingScenario && (
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
@@ -2072,6 +2098,86 @@ export default function ClientProfilePage() {
                 </button>
               </div>
               <p className="text-xs text-midnight/30">Paste or attach images/PDFs · Enter to send · Shift+Enter for new line</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bank Statement Report Modal */}
+      {showReport && pendingReport && (
+        <div className="fixed inset-0 z-50 bg-midnight/60 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto" onClick={() => setShowReport(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-midnight/10">
+              <div>
+                <h2 className="text-lg font-bold text-midnight">Bank Statement Analysis</h2>
+                <p className="text-xs text-midnight/40 mt-0.5">{String(pendingReport.accountName ?? '')} · {String(pendingReport.period ?? '')}</p>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => window.print()} className="px-3 py-1.5 text-xs bg-midnight/5 text-midnight/60 rounded-lg hover:bg-midnight/10 transition-colors">🖨 Print</button>
+                <button onClick={() => setShowReport(false)} className="p-1.5 text-midnight/30 hover:text-midnight rounded-lg hover:bg-midnight/5 transition-colors"><X className="w-4 h-4" /></button>
+              </div>
+            </div>
+            <div className="px-6 py-5 space-y-5">
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: 'Gross Avg/mo', value: '$' + Number(pendingReport.grossMonthlyAvg ?? 0).toLocaleString() },
+                  { label: 'Countable Avg/mo', value: '$' + Number(pendingReport.countableMonthlyAvg ?? 0).toLocaleString() },
+                  { label: 'Qualifying Income', value: '$' + Number(pendingReport.qualifyingIncome ?? 0).toLocaleString() + '/mo' },
+                ].map(({ label, value }) => (
+                  <div key={label} className="bg-cream rounded-xl p-3 text-center border border-midnight/5">
+                    <p className="text-[10px] text-midnight/40 uppercase tracking-wider mb-1">{label}</p>
+                    <p className="text-base font-bold text-midnight">{value}</p>
+                  </div>
+                ))}
+              </div>
+              {Array.isArray(pendingReport.months) && (pendingReport.months as Record<string, unknown>[]).length > 0 && (
+                <div>
+                  <h3 className="text-xs font-semibold text-midnight/50 uppercase tracking-wider mb-2">Monthly Breakdown</h3>
+                  <div className="rounded-xl border border-midnight/8 overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-midnight/3 text-xs text-midnight/50">
+                        <tr>
+                          <th className="text-left px-3 py-2">Month</th>
+                          <th className="text-right px-3 py-2">Gross</th>
+                          <th className="text-right px-3 py-2">Excluded</th>
+                          <th className="text-right px-3 py-2">Countable</th>
+                          <th className="text-left px-3 py-2 hidden sm:table-cell">Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(pendingReport.months as Record<string, unknown>[]).map((m, i) => (
+                          <tr key={i} className={'border-t border-midnight/5 ' + (Number(m.countable ?? 0) < 2000 ? 'bg-amber-50/40' : '')}>
+                            <td className="px-3 py-2 font-medium text-midnight">{String(m.month ?? '')}</td>
+                            <td className="px-3 py-2 text-right text-midnight/70">${'{'}Number(m.gross ?? 0).toLocaleString(){'}'}</td>
+                            <td className="px-3 py-2 text-right text-red-400">{Number(m.excluded ?? 0) > 0 ? '-$' + Number(m.excluded).toLocaleString() : '—'}</td>
+                            <td className="px-3 py-2 text-right font-semibold text-midnight">${'{'}Number(m.countable ?? 0).toLocaleString(){'}'}</td>
+                            <td className="px-3 py-2 text-xs text-midnight/40 hidden sm:table-cell">{String(m.notes ?? '')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+              {Array.isArray(pendingReport.flags) && (pendingReport.flags as string[]).length > 0 && (
+                <div>
+                  <h3 className="text-xs font-semibold text-midnight/50 uppercase tracking-wider mb-2">⚠️ Underwriter Flags</h3>
+                  <div className="space-y-1.5">
+                    {(pendingReport.flags as string[]).map((flag, i) => (
+                      <div key={i} className="flex gap-2 bg-amber-50 rounded-lg px-3 py-2 border border-amber-100">
+                        <span className="text-amber-500 flex-shrink-0">⚠</span>
+                        <p className="text-xs text-amber-800">{String(flag)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {!!pendingReport.recommendation && (
+                <div className="bg-ocean/5 rounded-xl p-4 border border-ocean/15">
+                  <h3 className="text-xs font-semibold text-ocean/70 uppercase tracking-wider mb-1.5">Recommendation</h3>
+                  <p className="text-sm text-midnight/80">{String(pendingReport.recommendation)}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

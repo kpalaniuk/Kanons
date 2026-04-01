@@ -41,7 +41,12 @@ SCENARIO OUTPUT — emit this block after any full PITIA calc. This creates a sh
 \`\`\`scenario
 { "type": "purchase", "clientName": "Name", "purchasePrice": 850000, "downPaymentPct": 10, "interestRate": 6.75, "loanTerm": 30, "propertyTax": 779, "homeInsurance": 100, "hoaDues": 0, "miOverrides": {}, "notes": "", "qualifyingIncome": 0, "estimatedDTI": 0 }
 \`\`\`
-Quick mode: run immediately from given numbers. Custom mode: ask focused questions first.`
+Quick mode: run immediately from given numbers. Custom mode: ask focused questions first.
+
+BANK STATEMENT REPORT — after any full bank statement analysis, ALWAYS emit this block with real numbers. This renders a printable report in the UI:
+\`\`\`bank-statement-report
+{ "accountName": "Name — Bank ...1234", "period": "Jan 2025–Jan 2026", "statementCount": 12, "grossMonthlyAvg": 5000, "countableMonthlyAvg": 4500, "qualifyingIncome": 2250, "months": [{"month": "Jan 2025", "gross": 5000, "excluded": 500, "countable": 4500, "notes": "Excluded transfer"}], "flags": ["Flag 1", "Flag 2"], "recommendation": "Summary and next steps." }
+\`\`\``
 
 export async function POST(request: NextRequest) {
   const { userId } = auth()
