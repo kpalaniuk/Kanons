@@ -874,21 +874,7 @@ export default function ClientProfilePage() {
   // Convert each PDF page to a JPEG image using pdfjs (browser-side)
   // This handles scanned/image-based PDFs that have no text layer
   // Convert PDF pages to JPEG images via server-side API (handles scanned PDFs)
-  async function pdfToImages(file: File): Promise<{ dataUrl: string; name: string; mimeType: string }[]> {
-    const arrayBuffer = await file.arrayBuffer()
-    const pdfBase64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
-    const res = await fetch('/api/pph/pdf-to-images', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pdfBase64, fileName: file.name }),
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.error || `PDF API error ${res.status}`)
-    }
-    const { images } = await res.json()
-    return images as { dataUrl: string; name: string; mimeType: string }[]
-  }
+
   function handleChatPaste(e: React.ClipboardEvent) {
     const items = e.clipboardData?.items
     if (!items) return
@@ -914,16 +900,9 @@ export default function ClientProfilePage() {
     const allResults: { dataUrl: string; name: string; mimeType: string }[] = []
     for (const file of files) {
       if (file.type === 'application/pdf') {
-        // Convert PDF pages to images for vision analysis (handles scanned/image PDFs)
-        try {
-          const pages = await pdfToImages(file)
-          if (pages.length === 0) throw new Error('No pages rendered')
-          allResults.push(...pages)
-        } catch (err) {
-          console.error('PDF→image conversion failed:', err)
-          // Surface the error visibly rather than silent fallback
-          allResults.push({ dataUrl: '', name: `[PDF conversion failed: ${file.name}]`, mimeType: 'text/plain' })
-        }
+        // Send raw PDF — OpenRouter file-parser (mistral-ocr) handles scanned PDFs
+        const dataUrl = await readFileAsDataUrl(file)
+        allResults.push({ dataUrl, name: file.name, mimeType: file.type })
       } else {
         const dataUrl = await readFileAsDataUrl(file)
         allResults.push({ dataUrl, name: file.name, mimeType: file.type })

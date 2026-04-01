@@ -12,31 +12,6 @@ async function getCallerEmail(userId: string): Promise<string | null> {
   } catch { return null }
 }
 
-async function extractPdfText(base64Data: string): Promise<string> {
-  try {
-    const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist')
-    // Disable worker in Node.js environment
-    GlobalWorkerOptions.workerSrc = ''
-    const buffer = Buffer.from(base64Data, 'base64')
-    const uint8 = new Uint8Array(buffer)
-    const pdf = await getDocument({ data: uint8, useWorkerFetch: false, isEvalSupported: false, useSystemFonts: true }).promise
-    const textParts: string[] = []
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i)
-      const content = await page.getTextContent()
-      const pageText = content.items
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((item: any) => item.str ?? '')
-        .join(' ')
-      textParts.push(`--- Page ${i} ---\n${pageText}`)
-    }
-    return textParts.join('\n\n')
-  } catch (err) {
-    console.error('PDF extraction error:', err)
-    return '[PDF text extraction failed — ask user to paste the text or screenshot the pages]'
-  }
-}
-
 const SYSTEM_PROMPT = `You are PPH-Claw, AI assistant for Plan Prepare Home (Kyle Palaniuk NMLS 984138, Jim Sakrison NMLS 244905, Anthony Cafiso NMLS 2104568).
 
 TONE — CRITICAL:
@@ -94,9 +69,11 @@ export async function POST(request: NextRequest) {
 
   const lastMsg = messages[messages.length - 1]
 
-  type ImageUrlPart = { type: 'image_url'; image_url: { url: string } }
-  type TextPart = { type: 'text'; text: string }
-  type ContentPart = TextPart | ImageUrlPart
+  // OpenRouter content part types
+  type TextPart    = { type: 'text'; text: string }
+  type ImagePart   = { type: 'image_url'; image_url: { url: string } }
+  type FilePart    = { type: 'file'; file: { filename: string; data: string } }
+  type ContentPart = TextPart | ImagePart | FilePart
 
   let lastContent: string | ContentPart[]
 
@@ -104,18 +81,17 @@ export async function POST(request: NextRequest) {
     const parts: ContentPart[] = [
       { type: 'text', text: lastMsg.content || '(analyze the attached files in the context of this client)' },
     ]
-
     for (const f of attachedFiles as { dataUrl: string; mimeType: string; name: string }[]) {
       if (f.mimeType === 'application/pdf') {
-        // Extract text from PDF server-side, inject as text block
-        const base64Data = f.dataUrl.replace(/^data:application\/pdf;base64,/, '')
-        const pdfText = await extractPdfText(base64Data)
+        // OpenRouter file block — works with any model, uses mistral-ocr for scanned PDFs
         parts.push({
-          type: 'text',
-          text: `\n\n[PDF: ${f.name}]\n${pdfText}`,
+          type: 'file',
+          file: {
+            filename: f.name,
+            data: f.dataUrl, // full data URI: data:application/pdf;base64,...
+          },
         })
       } else {
-        // Images: send as image_url with full data URI
         parts.push({ type: 'image_url', image_url: { url: f.dataUrl } })
       }
     }
@@ -143,6 +119,12 @@ export async function POST(request: NextRequest) {
       model: 'anthropic/claude-sonnet-4-6',
       messages: apiMessages,
       max_tokens: 4096,
+      plugins: [
+        {
+          id: 'file-parser',
+          pdf: { engine: 'mistral-ocr' }, // best for scanned/image-based PDFs
+        },
+      ],
     }),
   })
 
