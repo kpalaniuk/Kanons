@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 
-export const maxDuration = 60 // Vercel max for hobby/pro
+export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
   const { userId } = auth()
@@ -11,8 +11,15 @@ export async function POST(request: NextRequest) {
   if (!pdfBase64) return NextResponse.json({ error: 'pdfBase64 required' }, { status: 400 })
 
   try {
-    // Dynamic imports — these are Node.js only, not available in edge runtime
-    const { createCanvas } = await import('canvas')
+    // node-canvas exports the DOM globals pdfjs needs in a Node environment
+    const canvasModule = await import('canvas')
+    const { DOMMatrix, DOMPoint, ImageData, createCanvas } = canvasModule
+
+    // Polyfill browser globals pdfjs expects
+    if (!global.DOMMatrix) (global as Record<string, unknown>).DOMMatrix = DOMMatrix
+    if (!global.DOMPoint)  (global as Record<string, unknown>).DOMPoint  = DOMPoint
+    if (!global.ImageData) (global as Record<string, unknown>).ImageData = ImageData
+
     const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs' as string)
     pdfjsLib.GlobalWorkerOptions.workerSrc = ''
 
@@ -28,7 +35,7 @@ export async function POST(request: NextRequest) {
       const scale = 1.5
       const viewport = page.getViewport({ scale })
 
-      const canvas = createCanvas(viewport.width, viewport.height)
+      const canvas = createCanvas(Math.round(viewport.width), Math.round(viewport.height))
       const ctx = canvas.getContext('2d')
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
