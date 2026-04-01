@@ -2148,9 +2148,9 @@ export default function ClientProfilePage() {
                         {(pendingReport.months as Record<string, unknown>[]).map((m, i) => (
                           <tr key={i} className={'border-t border-midnight/5 ' + (Number(m.countable ?? 0) < 2000 ? 'bg-amber-50/40' : '')}>
                             <td className="px-3 py-2 font-medium text-midnight">{String(m.month ?? '')}</td>
-                            <td className="px-3 py-2 text-right text-midnight/70">${'{'}Number(m.gross ?? 0).toLocaleString(){'}'}</td>
+                            <td className="px-3 py-2 text-right text-midnight/70">{'$' + Number(m.gross ?? 0).toLocaleString()}</td>
                             <td className="px-3 py-2 text-right text-red-400">{Number(m.excluded ?? 0) > 0 ? '-$' + Number(m.excluded).toLocaleString() : '—'}</td>
-                            <td className="px-3 py-2 text-right font-semibold text-midnight">${'{'}Number(m.countable ?? 0).toLocaleString(){'}'}</td>
+                            <td className="px-3 py-2 text-right font-semibold text-midnight">{'$' + Number(m.countable ?? 0).toLocaleString()}</td>
                             <td className="px-3 py-2 text-xs text-midnight/40 hidden sm:table-cell">{String(m.notes ?? '')}</td>
                           </tr>
                         ))}
