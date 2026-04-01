@@ -12,6 +12,31 @@ async function getCallerEmail(userId: string): Promise<string | null> {
   } catch { return null }
 }
 
+async function extractPdfText(base64Data: string): Promise<string> {
+  try {
+    const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist')
+    // Disable worker in Node.js environment
+    GlobalWorkerOptions.workerSrc = ''
+    const buffer = Buffer.from(base64Data, 'base64')
+    const uint8 = new Uint8Array(buffer)
+    const pdf = await getDocument({ data: uint8, useWorkerFetch: false, isEvalSupported: false, useSystemFonts: true }).promise
+    const textParts: string[] = []
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i)
+      const content = await page.getTextContent()
+      const pageText = content.items
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((item: any) => item.str ?? '')
+        .join(' ')
+      textParts.push(`--- Page ${i} ---\n${pageText}`)
+    }
+    return textParts.join('\n\n')
+  } catch (err) {
+    console.error('PDF extraction error:', err)
+    return '[PDF text extraction failed — ask user to paste the text or screenshot the pages]'
+  }
+}
+
 const SYSTEM_PROMPT = `You are PPH-Claw, AI assistant for Plan Prepare Home (Kyle Palaniuk NMLS 984138, Jim Sakrison NMLS 244905, Anthony Cafiso NMLS 2104568).
 
 TONE — CRITICAL:
@@ -56,14 +81,12 @@ export async function POST(request: NextRequest) {
     ? `\n\nCurrent client context:\n${JSON.stringify(clientContext, null, 2)}`
     : ''
 
-  // Inject scenario mode instruction if set
   const modeInstruction = scenarioMode === 'quick'
     ? '\n\n[MODE: QUICK SCENARIO] The user wants a quick scenario. Run the PITIA immediately from the numbers given. No clarifying questions unless a number is completely missing.'
     : scenarioMode === 'custom'
     ? '\n\n[MODE: CUSTOM SCENARIO] The user wants a custom scenario tailored to this client. Ask focused questions to gather income, down payment, rate, and any UW flags before generating.'
     : ''
 
-  // Build the last user message — with files as vision/document content if present
   const historyMessages = messages.slice(0, -1).map((m: { role: string; content: string }) => ({
     role: m.role,
     content: m.content,
@@ -72,9 +95,8 @@ export async function POST(request: NextRequest) {
   const lastMsg = messages[messages.length - 1]
 
   type ImageUrlPart = { type: 'image_url'; image_url: { url: string } }
-  type DocumentPart = { type: 'document'; source: { type: 'base64'; media_type: 'application/pdf'; data: string } }
   type TextPart = { type: 'text'; text: string }
-  type ContentPart = TextPart | ImageUrlPart | DocumentPart
+  type ContentPart = TextPart | ImageUrlPart
 
   let lastContent: string | ContentPart[]
 
@@ -82,17 +104,15 @@ export async function POST(request: NextRequest) {
     const parts: ContentPart[] = [
       { type: 'text', text: lastMsg.content || '(analyze the attached files in the context of this client)' },
     ]
+
     for (const f of attachedFiles as { dataUrl: string; mimeType: string; name: string }[]) {
       if (f.mimeType === 'application/pdf') {
-        // PDFs must be sent as document blocks with raw base64 (not a data URI)
+        // Extract text from PDF server-side, inject as text block
         const base64Data = f.dataUrl.replace(/^data:application\/pdf;base64,/, '')
+        const pdfText = await extractPdfText(base64Data)
         parts.push({
-          type: 'document',
-          source: {
-            type: 'base64',
-            media_type: 'application/pdf',
-            data: base64Data,
-          },
+          type: 'text',
+          text: `\n\n[PDF: ${f.name}]\n${pdfText}`,
         })
       } else {
         // Images: send as image_url with full data URI
