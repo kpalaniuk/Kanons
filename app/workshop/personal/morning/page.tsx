@@ -15,6 +15,7 @@ import BirthdayCountdownCard from './BirthdayCountdownCard'
 import CaboDeparturePlan from './CaboDeparturePlan'
 import CaboVacationCard from './CaboVacationCard'
 import WelcomeBackCard from './WelcomeBackCard'
+import DailyPrincipleCard from './DailyPrincipleCard'
 import WeeklyCallGoalCard from './WeeklyCallGoalCard'
 
 // ── Gratitude Prompts ─────────────────────────────────────────────────────────
@@ -1943,6 +1944,9 @@ export default function MorningBriefPage() {
         </p>
         <p className="text-xs text-midnight/30 mt-3">Take 30 seconds. Just notice.</p>
       </div>
+
+      {/* ── Daily Hermetic Principle ── */}
+      <DailyPrincipleCard />
 
       {/* ── Footer ── */}
       <div className="text-center text-xs text-midnight/20 pt-4">
