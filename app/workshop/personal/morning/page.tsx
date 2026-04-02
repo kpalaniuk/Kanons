@@ -17,6 +17,7 @@ import CaboVacationCard from './CaboVacationCard'
 import WelcomeBackCard from './WelcomeBackCard'
 import DailyPrincipleCard from './DailyPrincipleCard'
 import WeeklyCallGoalCard from './WeeklyCallGoalCard'
+import HermeticPrincipleCard from './HermeticPrincipleCard'
 
 // ── Gratitude Prompts ─────────────────────────────────────────────────────────
 
@@ -837,6 +838,9 @@ export default function MorningBriefPage() {
 
       {/* ── San Diego Weather (Open-Meteo) ── */}
       <SanDiegoWeatherCard />
+
+      {/* ── Hermetic Principle of the Day ── */}
+      <HermeticPrincipleCard />
 
       {/* ── Birthday Countdown ── */}
       <BirthdayCountdownCard />
