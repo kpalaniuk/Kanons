@@ -18,6 +18,7 @@ import WelcomeBackCard from './WelcomeBackCard'
 import DailyPrincipleCard from './DailyPrincipleCard'
 import WeeklyCallGoalCard from './WeeklyCallGoalCard'
 import HermeticPrincipleCard from './HermeticPrincipleCard'
+import TaxDeadlineCard from './TaxDeadlineCard'
 
 // ── Gratitude Prompts ─────────────────────────────────────────────────────────
 
@@ -1136,6 +1137,9 @@ export default function MorningBriefPage() {
           </div>
         )
       })()}
+
+      {/* ── Tax Deadline Card ── */}
+      <TaxDeadlineCard />
 
       {/* ── Joshua Tree Departure Banner ── */}
       {(() => {
