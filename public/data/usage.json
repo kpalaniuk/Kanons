@@ -1,15 +1,15 @@
 {
-  "lastUpdated": "2026-04-02T04:03:42.574Z",
+  "lastUpdated": "2026-04-02T10:03:42.222Z",
   "period": "2026-02-21 to 2026-04-02",
   "providers": [
     {
       "name": "anthropic",
       "model": "claude-sonnet-4-6",
       "status": "active",
-      "calls": 4665,
-      "tokensIn": 27970,
-      "tokensOut": 2330328,
-      "estimatedCost": 437.88233419999966,
+      "calls": 4444,
+      "tokensIn": 27564,
+      "tokensOut": 2252012,
+      "estimatedCost": 422.63646364999965,
       "notes": "Primary reasoning model. Claude Sonnet 4.5 for most tasks, Opus 4 for complex thinking."
     },
     {
@@ -26,7 +26,7 @@
       "name": "openclaw",
       "model": "delivery-mirror",
       "status": "active",
-      "calls": 118,
+      "calls": 111,
       "tokensIn": 0,
       "tokensOut": 0,
       "estimatedCost": 0,
@@ -44,6 +44,30 @@
     }
   ],
   "daily": [
+    {
+      "date": "2026-03-02",
+      "provider": "google",
+      "calls": 3,
+      "tokensIn": 219569,
+      "tokensOut": 966,
+      "cost": 0.1159519
+    },
+    {
+      "date": "2026-03-02",
+      "provider": "openclaw",
+      "calls": 32,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "cost": 0
+    },
+    {
+      "date": "2026-03-02",
+      "provider": "anthropic",
+      "calls": 549,
+      "tokensIn": 4632,
+      "tokensOut": 337904,
+      "cost": 80.16949064999997
+    },
     {
       "date": "2026-03-03",
       "provider": "anthropic",
@@ -237,39 +261,7 @@
       "cost": 0.2299689
     },
     {
-      "date": "2026-03-31",
-      "provider": "openclaw",
-      "calls": 2,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-03-31",
-      "provider": "anthropic",
-      "calls": 34,
-      "tokensIn": 40,
-      "tokensOut": 13449,
-      "cost": 1.7133114000000005
-    },
-    {
       "date": "2026-04-01",
-      "provider": "openclaw",
-      "calls": 5,
-      "tokensIn": 0,
-      "tokensOut": 0,
-      "cost": 0
-    },
-    {
-      "date": "2026-04-01",
-      "provider": "anthropic",
-      "calls": 628,
-      "tokensIn": 862,
-      "tokensOut": 195640,
-      "cost": 27.55823400000002
-    },
-    {
-      "date": "2026-04-02",
       "provider": "openclaw",
       "calls": 1,
       "tokensIn": 0,
@@ -277,20 +269,28 @@
       "cost": 0
     },
     {
+      "date": "2026-04-01",
+      "provider": "anthropic",
+      "calls": 419,
+      "tokensIn": 499,
+      "tokensOut": 137930,
+      "cost": 16.05924780000001
+    },
+    {
       "date": "2026-04-02",
       "provider": "anthropic",
-      "calls": 133,
-      "tokensIn": 189,
-      "tokensOut": 37043,
-      "cost": 4.882017150000006
+      "calls": 155,
+      "tokensIn": 186,
+      "tokensOut": 29886,
+      "cost": 2.8484441999999994
     }
   ],
   "totals": {
-    "totalCalls": 4840,
-    "totalTokensIn": 5459776,
-    "totalTokensOut": 2345228,
-    "totalCost": 439.69505774999965,
-    "avgCallsPerDay": 173,
-    "avgTokensPerCall": 1613
+    "totalCalls": 4612,
+    "totalTokensIn": 5459370,
+    "totalTokensOut": 2266912,
+    "totalCost": 424.44918719999964,
+    "avgCallsPerDay": 171,
+    "avgTokensPerCall": 1675
   }
 }
